@@ -688,6 +688,230 @@ void View::DrawInfo()
         ImGui::TreePop();
     }
 
+
+    if( ImGui::TreeNode( "Queue types statistics" ) )
+    {
+        const auto scale = GetScale();
+
+        if( ImGui::BeginChild( "TableRegion", ImVec2( 0, 200 * scale ), true,
+            ImGuiWindowFlags_AlwaysVerticalScrollbar ) )
+        {
+            if( ImGui::BeginTable( "QueueTypeStats", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable ) )
+            {
+
+                ImGui::TableSetupColumn( "Type", ImGuiTableColumnFlags_DefaultSort, 0.0f, 0 );
+                ImGui::TableSetupColumn( "Occurrence", ImGuiTableColumnFlags_PreferSortDescending, 0.0f, 1 );
+                ImGui::TableSetupColumn( "Size", ImGuiTableColumnFlags_PreferSortDescending, 0.0f, 2 );
+                ImGui::TableSetupColumn( "Average", ImGuiTableColumnFlags_PreferSortDescending, 0.0f, 3 );
+                ImGui::TableHeadersRow();
+
+                auto& queueTypeStats = m_worker.getQueueTypeStats();
+
+                std::vector<std::pair<QueueType, Worker::QueueStats>> sortedStats( queueTypeStats.begin(), queueTypeStats.end() );
+
+                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+
+
+                if( sortSpecs && sortSpecs->SpecsCount > 0 )
+                {
+                    const ImGuiTableColumnSortSpecs& sortSpec = sortSpecs->Specs[0];
+                    if( sortSpecs->SpecsDirty )
+                    {
+                        m_queueTypeSortingInfos.columnIndex = sortSpec.ColumnIndex;
+                        m_queueTypeSortingInfos.direction = sortSpec.SortDirection;
+                        m_queueTypeSortingInfos.dirty = true;
+                        sortSpecs->SpecsDirty = false;
+                    }
+                }
+
+                std::sort( sortedStats.begin(), sortedStats.end(),
+                    [this]( const auto& a, const auto& b ) {
+                        switch( m_queueTypeSortingInfos.columnIndex )
+                        {
+                        case 0:
+                            return m_queueTypeSortingInfos.direction == ImGuiSortDirection_Descending
+                                ? QueueTypeToString( a.first ) > QueueTypeToString( b.first )
+                                : QueueTypeToString( a.first ) < QueueTypeToString( b.first );
+                        case 1:
+                            return m_queueTypeSortingInfos.direction == ImGuiSortDirection_Descending
+                                ? a.second.occurrenceCount > b.second.occurrenceCount
+                                : a.second.occurrenceCount < b.second.occurrenceCount;
+                        case 2:
+                            return m_queueTypeSortingInfos.direction == ImGuiSortDirection_Descending
+                                ? a.second.size > b.second.size
+                                : a.second.size < b.second.size;
+
+                        case 3:
+                        {
+                            double avgA = static_cast< double >( a.second.size ) / a.second.occurrenceCount;
+                            double avgB = static_cast< double >( b.second.size ) / b.second.occurrenceCount;
+                            return m_queueTypeSortingInfos.direction == ImGuiSortDirection_Descending
+                                ? avgA > avgB
+                                : avgA < avgB;
+                        }
+                        }
+
+                        return false;
+                    } );
+
+                m_queueTypeSortingInfos.dirty = false;
+
+                uint64_t totalSize = 0;
+                uint64_t totalOccurrences = 0;
+                double totalSum = 0;
+
+                for( const auto& [type, stats] : sortedStats )
+                {
+                    totalSize += stats.size;
+                    totalOccurrences += stats.occurrenceCount;
+                    double average = static_cast< double >( stats.size ) / static_cast< double >( stats.occurrenceCount );
+                    totalSum += average;
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex( 0 );
+                    ImGui::Text( "%s", QueueTypeToString( type ) );
+                    ImGui::TableSetColumnIndex( 1 );
+                    ImGui::Text( "%d", stats.occurrenceCount );
+                    ImGui::TableSetColumnIndex( 2 );
+                    ImGui::Text( "%s", MemSizeToString( stats.size ) );
+                    ImGui::TableSetColumnIndex( 3 );
+                    ImGui::Text( "%.2f bytes / queue", average );
+
+                }
+                if( totalSum > 0 )
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex( 0 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "Total" );
+                    ImGui::TableSetColumnIndex( 1 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%d", totalOccurrences );
+                    ImGui::TableSetColumnIndex( 2 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%s", MemSizeToString( totalSize ) );
+                    ImGui::TableSetColumnIndex( 3 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%.2f bytes / queue", totalSum / static_cast< double >( sortedStats.size() ) );
+                }
+            }
+
+            ImGui::EndChild();
+        }
+
+        ImGui::TreePop();
+    }
+
+    if( ImGui::TreeNode( "Queries statistics" ) )
+    {
+
+        const auto scale = GetScale();
+
+        if( ImGui::BeginChild( "TableRegion", ImVec2( 0, 200 * scale ), true,
+            ImGuiWindowFlags_AlwaysVerticalScrollbar ) )
+        {
+            if( ImGui::BeginTable( "QueryStats", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable ) )
+            {
+                ImGui::TableSetupColumn( "Type", ImGuiTableColumnFlags_DefaultSort, 0.0f, 0 );
+                ImGui::TableSetupColumn( "Occurrence", ImGuiTableColumnFlags_PreferSortDescending, 0.0f, 1 );
+                ImGui::TableSetupColumn( "Size", ImGuiTableColumnFlags_PreferSortDescending, 0.0f, 2 );
+                ImGui::TableSetupColumn( "Average", ImGuiTableColumnFlags_PreferSortDescending, 0.0f, 3 );
+                ImGui::TableHeadersRow();
+
+                auto& queryStats = m_worker.getQueryStats();
+
+                std::vector<std::pair<ServerQuery, Worker::QueryStats>> sortedStats( queryStats.begin(), queryStats.end() );
+
+                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                if( sortSpecs && sortSpecs->SpecsCount > 0 )
+                {
+                    const ImGuiTableColumnSortSpecs& sortSpec = sortSpecs->Specs[0];
+                    if( sortSpecs->SpecsDirty )
+                    {
+                        m_querySortingInfos.columnIndex = sortSpec.ColumnIndex;
+                        m_querySortingInfos.direction = sortSpec.SortDirection;
+                        m_querySortingInfos.dirty = true;
+                        sortSpecs->SpecsDirty = false;
+                    }
+                }
+
+
+                std::sort( sortedStats.begin(), sortedStats.end(),
+                    [this]( const auto& a, const auto& b ) {
+                        switch( m_querySortingInfos.columnIndex )
+                        {
+                        case 0:
+                            return m_querySortingInfos.direction == ImGuiSortDirection_Descending
+                                ? ServerQueryToString( a.first ) > ServerQueryToString( b.first )
+                                : ServerQueryToString( a.first ) < ServerQueryToString( b.first );
+                        case 1:
+                            return m_querySortingInfos.direction == ImGuiSortDirection_Descending
+                                ? a.second.occurrenceCount > b.second.occurrenceCount
+                                : a.second.occurrenceCount < b.second.occurrenceCount;
+                        case 2:
+                            return m_querySortingInfos.direction == ImGuiSortDirection_Descending
+                                ? a.second.size > b.second.size
+                                : a.second.size < b.second.size;
+                        case 3:
+                        {
+                            double avgA = static_cast< double >( a.second.size ) / a.second.occurrenceCount;
+                            double avgB = static_cast< double >( b.second.size ) / b.second.occurrenceCount;
+                            return m_querySortingInfos.direction == ImGuiSortDirection_Descending
+                                ? avgA > avgB
+                                : avgA < avgB;
+                        }
+
+                        }
+                        return false;
+                    } );
+
+                m_querySortingInfos.dirty = false;
+
+                uint64_t totalSize = 0;
+                uint64_t totalOccurrences = 0;
+                double totalSum = 0;
+
+                for( const auto& [type, stats] : sortedStats )
+                {
+                    if( stats.size != 0 )
+                    {
+                        totalSize += stats.size;
+                        totalOccurrences += stats.occurrenceCount;
+                        double average = static_cast< double >( stats.size ) / static_cast< double >( stats.occurrenceCount );
+                        totalSum += average;
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex( 0 );
+                        ImGui::Text( "%s", ServerQueryToString( type ) );
+                        ImGui::TableSetColumnIndex( 1 );
+                        ImGui::Text( "%d", stats.occurrenceCount );
+                        ImGui::TableSetColumnIndex( 2 );
+                        ImGui::Text( "%s", MemSizeToString( stats.size ) );
+                        ImGui::TableSetColumnIndex( 3 );
+                        ImGui::Text( "%.2f bytes / queue", average );
+                    }
+                }
+
+                if( totalSum > 0 )
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex( 0 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "Total" );
+                    ImGui::TableSetColumnIndex( 1 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%d", totalOccurrences );
+                    ImGui::TableSetColumnIndex( 2 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%s", MemSizeToString( totalSize ) );
+                    ImGui::TableSetColumnIndex( 3 );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%.2f bytes / queue", totalSum / static_cast< double >( sortedStats.size() ) );
+
+                }
+
+
+                ImGui::EndTable();
+            }
+
+            ImGui::EndChild();
+        }
+
+        ImGui::TreePop();
+    }
+
     auto& topology = m_worker.GetCpuTopology();
     if( !topology.empty() )
     {

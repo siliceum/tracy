@@ -129,6 +129,130 @@ enum class QueueType : uint8_t
     NUM_TYPES
 };
 
+
+constexpr const char* QueueTypeToString(QueueType type)
+{
+    switch (type)
+    {
+        case QueueType::ZoneText: return "ZoneText";
+        case QueueType::ZoneName: return "ZoneName";
+        case QueueType::Message: return "Message";
+        case QueueType::MessageColor: return "MessageColor";
+        case QueueType::MessageCallstack: return "MessageCallstack";
+        case QueueType::MessageColorCallstack: return "MessageColorCallstack";
+        case QueueType::MessageAppInfo: return "MessageAppInfo";
+        case QueueType::ZoneBeginAllocSrcLoc: return "ZoneBeginAllocSrcLoc";
+        case QueueType::ZoneBeginAllocSrcLocCallstack: return "ZoneBeginAllocSrcLocCallstack";
+        case QueueType::CallstackSerial: return "CallstackSerial";
+        case QueueType::Callstack: return "Callstack";
+        case QueueType::CallstackAlloc: return "CallstackAlloc";
+        case QueueType::CallstackSample: return "CallstackSample";
+        case QueueType::CallstackSampleContextSwitch: return "CallstackSampleContextSwitch";
+        case QueueType::FrameImage: return "FrameImage";
+        case QueueType::ZoneBegin: return "ZoneBegin";
+        case QueueType::ZoneBeginCallstack: return "ZoneBeginCallstack";
+        case QueueType::ZoneEnd: return "ZoneEnd";
+        case QueueType::LockWait: return "LockWait";
+        case QueueType::LockObtain: return "LockObtain";
+        case QueueType::LockRelease: return "LockRelease";
+        case QueueType::LockSharedWait: return "LockSharedWait";
+        case QueueType::LockSharedObtain: return "LockSharedObtain";
+        case QueueType::LockSharedRelease: return "LockSharedRelease";
+        case QueueType::LockName: return "LockName";
+        case QueueType::MemAlloc: return "MemAlloc";
+        case QueueType::MemAllocNamed: return "MemAllocNamed";
+        case QueueType::MemFree: return "MemFree";
+        case QueueType::MemFreeNamed: return "MemFreeNamed";
+        case QueueType::MemAllocCallstack: return "MemAllocCallstack";
+        case QueueType::MemAllocCallstackNamed: return "MemAllocCallstackNamed";
+        case QueueType::MemFreeCallstack: return "MemFreeCallstack";
+        case QueueType::MemFreeCallstackNamed: return "MemFreeCallstackNamed";
+        case QueueType::MemDiscard: return "MemDiscard";
+        case QueueType::MemDiscardCallstack: return "MemDiscardCallstack";
+        case QueueType::GpuZoneBegin: return "GpuZoneBegin";
+        case QueueType::GpuZoneBeginCallstack: return "GpuZoneBeginCallstack";
+        case QueueType::GpuZoneBeginAllocSrcLoc: return "GpuZoneBeginAllocSrcLoc";
+        case QueueType::GpuZoneBeginAllocSrcLocCallstack: return "GpuZoneBeginAllocSrcLocCallstack";
+        case QueueType::GpuZoneEnd: return "GpuZoneEnd";
+        case QueueType::GpuZoneBeginSerial: return "GpuZoneBeginSerial";
+        case QueueType::GpuZoneBeginCallstackSerial: return "GpuZoneBeginCallstackSerial";
+        case QueueType::GpuZoneBeginAllocSrcLocSerial: return "GpuZoneBeginAllocSrcLocSerial";
+        case QueueType::GpuZoneBeginAllocSrcLocCallstackSerial: return "GpuZoneBeginAllocSrcLocCallstackSerial";
+        case QueueType::GpuZoneEndSerial: return "GpuZoneEndSerial";
+        case QueueType::PlotDataInt: return "PlotDataInt";
+        case QueueType::PlotDataFloat: return "PlotDataFloat";
+        case QueueType::PlotDataDouble: return "PlotDataDouble";
+        case QueueType::ContextSwitch: return "ContextSwitch";
+        case QueueType::ThreadWakeup: return "ThreadWakeup";
+        case QueueType::GpuTime: return "GpuTime";
+        case QueueType::GpuContextName: return "GpuContextName";
+        case QueueType::CallstackFrameSize: return "CallstackFrameSize";
+        case QueueType::SymbolInformation: return "SymbolInformation";
+        case QueueType::ExternalNameMetadata: return "ExternalNameMetadata";
+        case QueueType::SymbolCodeMetadata: return "SymbolCodeMetadata";
+        case QueueType::SourceCodeMetadata: return "SourceCodeMetadata";
+        case QueueType::FiberEnter: return "FiberEnter";
+        case QueueType::FiberLeave: return "FiberLeave";
+        case QueueType::Terminate: return "Terminate";
+        case QueueType::KeepAlive: return "KeepAlive";
+        case QueueType::ThreadContext: return "ThreadContext";
+        case QueueType::GpuCalibration: return "GpuCalibration";
+        case QueueType::GpuTimeSync: return "GpuTimeSync";
+        case QueueType::Crash: return "Crash";
+        case QueueType::CrashReport: return "CrashReport";
+        case QueueType::ZoneValidation: return "ZoneValidation";
+        case QueueType::ZoneColor: return "ZoneColor";
+        case QueueType::ZoneValue: return "ZoneValue";
+        case QueueType::FrameMarkMsg: return "FrameMarkMsg";
+        case QueueType::FrameMarkMsgStart: return "FrameMarkMsgStart";
+        case QueueType::FrameMarkMsgEnd: return "FrameMarkMsgEnd";
+        case QueueType::FrameVsync: return "FrameVsync";
+        case QueueType::SourceLocation: return "SourceLocation";
+        case QueueType::LockAnnounce: return "LockAnnounce";
+        case QueueType::LockTerminate: return "LockTerminate";
+        case QueueType::LockMark: return "LockMark";
+        case QueueType::MessageLiteral: return "MessageLiteral";
+        case QueueType::MessageLiteralColor: return "MessageLiteralColor";
+        case QueueType::MessageLiteralCallstack: return "MessageLiteralCallstack";
+        case QueueType::MessageLiteralColorCallstack: return "MessageLiteralColorCallstack";
+        case QueueType::GpuNewContext: return "GpuNewContext";
+        case QueueType::CallstackFrame: return "CallstackFrame";
+        case QueueType::SysTimeReport: return "SysTimeReport";
+        case QueueType::SysPowerReport: return "SysPowerReport";
+        case QueueType::TidToPid: return "TidToPid";
+        case QueueType::HwSampleCpuCycle: return "HwSampleCpuCycle";
+        case QueueType::HwSampleInstructionRetired: return "HwSampleInstructionRetired";
+        case QueueType::HwSampleCacheReference: return "HwSampleCacheReference";
+        case QueueType::HwSampleCacheMiss: return "HwSampleCacheMiss";
+        case QueueType::HwSampleBranchRetired: return "HwSampleBranchRetired";
+        case QueueType::HwSampleBranchMiss: return "HwSampleBranchMiss";
+        case QueueType::PlotConfig: return "PlotConfig";
+        case QueueType::ParamSetup: return "ParamSetup";
+        case QueueType::AckServerQueryNoop: return "AckServerQueryNoop";
+        case QueueType::AckSourceCodeNotAvailable: return "AckSourceCodeNotAvailable";
+        case QueueType::AckSymbolCodeNotAvailable: return "AckSymbolCodeNotAvailable";
+        case QueueType::CpuTopology: return "CpuTopology";
+        case QueueType::SingleStringData: return "SingleStringData";
+        case QueueType::SecondStringData: return "SecondStringData";
+        case QueueType::MemNamePayload: return "MemNamePayload";
+        case QueueType::ThreadGroupHint: return "ThreadGroupHint";
+        case QueueType::StringData: return "StringData";
+        case QueueType::ThreadName: return "ThreadName";
+        case QueueType::PlotName: return "PlotName";
+        case QueueType::SourceLocationPayload: return "SourceLocationPayload";
+        case QueueType::CallstackPayload: return "CallstackPayload";
+        case QueueType::CallstackAllocPayload: return "CallstackAllocPayload";
+        case QueueType::FrameName: return "FrameName";
+        case QueueType::FrameImageData: return "FrameImageData";
+        case QueueType::ExternalName: return "ExternalName";
+        case QueueType::ExternalThreadName: return "ExternalThreadName";
+        case QueueType::SymbolCode: return "SymbolCode";
+        case QueueType::SourceCode: return "SourceCode";
+        case QueueType::FiberName: return "FiberName";
+    }
+    return "Unknown";
+}
+
 #pragma pack( push, 1 )
 
 struct QueueThreadContext

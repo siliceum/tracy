@@ -195,6 +195,22 @@ public:
         }
     };
 
+
+    struct QueryStats
+    {
+        uint64_t occurrenceCount = 0;
+        uint64_t size = 0;
+    };
+
+    struct QueueStats
+    {
+        uint64_t occurrenceCount = 0;
+        uint64_t size = 0;
+    };
+
+    std::unordered_map<QueueType, QueueStats>& getQueueTypeStats() { return m_queueTypeStats; }
+    std::unordered_map<ServerQuery, QueryStats>& getQueryStats() { return m_queryStats; }
+
 private:
     struct SourceLocationZones
     {
@@ -689,8 +705,11 @@ private:
     void QuerySourceFile( const char* fn, const char* image );
     void QueryDataTransfer( const void* ptr, size_t size );
     void QueryCallstackFrame( uint64_t addr );
+    void UpdateQueueTypeStats( QueueType type, uint64_t sz );
+    void UpdateQueryStats( ServerQuery type, uint64_t sz );
 
     tracy_force_inline bool DispatchProcess( const QueueItem& ev, const char*& ptr );
+    tracy_force_inline bool RunDispatchProcess( const QueueItem& ev, const char*& ptr );
     tracy_force_inline bool Process( const QueueItem& ev );
     tracy_force_inline void ProcessThreadContext( const QueueThreadContext& ev );
     tracy_force_inline void ProcessZoneBegin( const QueueZoneBegin& ev );
@@ -981,6 +1000,8 @@ private:
     std::atomic<bool> m_hasData;
     std::atomic<bool> m_shutdown { false };
 
+    std::unordered_map<QueueType, QueueStats> m_queueTypeStats;
+    std::unordered_map<ServerQuery, QueryStats> m_queryStats;
     std::atomic<bool> m_backgroundDone { true };
     std::thread m_threadBackground;
 

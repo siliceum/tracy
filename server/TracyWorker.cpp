@@ -3166,9 +3166,17 @@ void Worker::DispatchFailure( const QueueItem& ev, const char*& ptr )
     }
 }
 
+void Worker::UpdateQueryStats( ServerQuery type, uint64_t sz )
+{
+    auto& stat = m_queryStats[type];
+    stat.occurrenceCount++;
+    stat.size += sz;
+}
+
 void Worker::Query( ServerQuery type, uint64_t data, uint32_t extra )
 {
     ServerQueryPacket query { type, data, extra };
+    UpdateQueryStats(type, sizeof(ServerQuery) + sizeof(uint64_t) + sizeof(uint32_t));
     if( m_serverQuerySpaceLeft > 0 && m_serverQueryQueuePrio.empty() && m_serverQueryQueue.empty() )
     {
         m_serverQuerySpaceLeft--;
@@ -3187,6 +3195,7 @@ void Worker::Query( ServerQuery type, uint64_t data, uint32_t extra )
 void Worker::QueryTerminate()
 {
     ServerQueryPacket query { ServerQueryTerminate, 0, 0 };
+    UpdateQueryStats(ServerQueryTerminate, sizeof(ServerQuery));
     m_sock.Send( &query, ServerQueryPacketSize );
 }
 
@@ -3232,6 +3241,13 @@ void Worker::QueryDataTransfer( const void* ptr, size_t size )
     }
 }
 
+void Worker::UpdateQueueTypeStats( QueueType type, uint64_t sz )
+{
+    auto& stat = m_queueTypeStats[type];
+    stat.occurrenceCount++;
+    stat.size += sz;
+}
+
 void Worker::QueryCallstackFrame( uint64_t addr )
 {
     const auto packed = PackPointer( addr );
@@ -3242,10 +3258,11 @@ void Worker::QueryCallstackFrame( uint64_t addr )
     Query( ServerQueryCallstackFrame, addr );
 }
 
-bool Worker::DispatchProcess( const QueueItem& ev, const char*& ptr )
+bool Worker::RunDispatchProcess( const QueueItem& ev, const char*& ptr )
 {
     if( ev.hdr.idx >= (int)QueueType::StringData )
     {
+        const char* start = ptr;
         ptr += sizeof( QueueHeader ) + sizeof( QueueStringTransfer );
         if( ev.hdr.type == QueueType::FrameImageData ||
             ev.hdr.type == QueueType::SymbolCode ||
@@ -3326,6 +3343,7 @@ bool Worker::DispatchProcess( const QueueItem& ev, const char*& ptr )
     }
     else
     {
+        const char* start = ptr;
         uint16_t sz;
         switch( ev.hdr.type )
         {
@@ -3349,6 +3367,15 @@ bool Worker::DispatchProcess( const QueueItem& ev, const char*& ptr )
         }
     }
 }
+
+bool Worker::DispatchProcess( const QueueItem& ev, const char*& ptr )
+{
+    const char* start = ptr;
+    bool process = RunDispatchProcess(ev, ptr);
+    UpdateQueueTypeStats( ev.hdr.type, static_cast<int>( ptr - start ) );
+    return process;
+}
+
 
 void Worker::CheckSourceLocation( uint64_t ptr )
 {

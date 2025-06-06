@@ -105,6 +105,17 @@ class View
         uint16_t threadNum;
     };
 
+
+    struct sortingInfos
+    {
+        int columnIndex = -1;
+        ImGuiSortDirection direction = ImGuiSortDirection_Ascending;
+        bool dirty = true;
+    };
+
+    sortingInfos m_queueTypeSortingInfos;
+    sortingInfos m_querySortingInfos;
+
 public:
     struct PlotView
     {

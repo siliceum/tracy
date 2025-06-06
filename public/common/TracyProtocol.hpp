@@ -55,8 +55,34 @@ enum ServerQuery : uint8_t
     ServerQuerySymbolCode,
     ServerQuerySourceCode,
     ServerQueryDataTransfer,
-    ServerQueryDataTransferPart
+    ServerQueryDataTransferPart,
+    NUM_TYPES
 };
+
+
+constexpr const char* ServerQueryToString(ServerQuery type)
+{
+    switch (type)
+    {
+        case ServerQuery::ServerQueryTerminate: return "ServerQueryTerminate";
+        case ServerQuery::ServerQueryString: return "ServerQueryString";
+        case ServerQuery::ServerQueryThreadString: return "ServerQueryThreadString";
+        case ServerQuery::ServerQuerySourceLocation: return "ServerQuerySourceLocation";
+        case ServerQuery::ServerQueryPlotName: return "ServerQueryPlotName";
+        case ServerQuery::ServerQueryFrameName: return "ServerQueryFrameName";
+        case ServerQuery::ServerQueryParameter: return "ServerQueryParameter";
+        case ServerQuery::ServerQueryFiberName: return "ServerQueryFiberName";
+        case ServerQuery::ServerQueryExternalName: return "ServerQueryExternalName";
+        case ServerQuery::ServerQueryDisconnect: return "ServerQueryDisconnect";
+        case ServerQuery::ServerQueryCallstackFrame: return "ServerQueryCallstackFrame";
+        case ServerQuery::ServerQuerySymbol: return "ServerQuerySymbol";
+        case ServerQuery::ServerQuerySymbolCode: return "ServerQuerySymbolCode";
+        case ServerQuery::ServerQuerySourceCode: return "ServerQuerySourceCode";
+        case ServerQuery::ServerQueryDataTransfer: return "ServerQueryDataTransfer";
+        case ServerQuery::ServerQueryDataTransferPart: return "ServerQueryDataTransferPart";
+    }
+    return "Unknown";
+}
 
 struct ServerQueryPacket
 {
