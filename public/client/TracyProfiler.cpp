@@ -3372,7 +3372,53 @@ void Profiler::SendCallstackPayload( uint64_t _ptr )
     }
 }
 
-void Profiler::SendCallstackPayload64( uint64_t _ptr )
+
+struct CallstackCacheEntry {
+    uint64_t* dataPtr;
+    uint32_t sz;
+    uint32_t hash;
+
+    uint64_t* begin() { return dataPtr; }
+    uint64_t* end() { return dataPtr +  sz; }
+
+    void computeHash()
+    {
+        // As it happens, using the first frame lower bits is usually enough as a key as it is the current function being profiled.
+        // In general if the callstack is different then this is also very often different.
+        // We use this to avoid incurring the potential cache trashing incurred by dereferencing dataPtr when doing comparisons
+        hash = (uint32_t)dataPtr[0];
+    }
+
+    bool operator==(const CallstackCacheEntry& rhs) const { 
+        return rhs.sz == sz 
+            && rhs.hash == hash 
+            && !memcmp(rhs.dataPtr, dataPtr, sz * sizeof(uint64_t)); 
+    }
+
+    uint8_t commonRootDepth(const CallstackCacheEntry& rhs) const {
+        size_t commonFrames = 0;
+        int i;
+        for (i = 0; i < std::min(sz, rhs.sz); i++)
+        {
+            if (dataPtr[sz - 1 - i] != rhs.dataPtr[rhs.sz - 1 - i]) return i;
+        }
+        return (uint8_t)std::min(i, (int)std::numeric_limits<uint8_t>::max());
+    }
+};
+constexpr const bool allowCache = true;
+
+CallstackCacheEntry csCache[CallstackPayloadCacheSize] = {};
+size_t csCacheNextIdx = 0;
+
+static ptrdiff_t FindCsInCache(const CallstackCacheEntry& cs) {
+    auto it = std::find(std::begin(csCache), std::end(csCache), cs);
+    return std::end(csCache) != it ? std::distance(std::begin(csCache), it) : -1;
+}
+
+// Always points to a valid pointer since we can not evict the previous one from the cache in a single iteration
+CallstackCacheEntry previousCsCacheEntry{};
+
+void Profiler::SendCallstackPayload64( uint64_t& _ptr )
 {
     auto ptr = (uint64_t*)_ptr;
 
@@ -3385,10 +3431,53 @@ void Profiler::SendCallstackPayload64( uint64_t _ptr )
     const auto l16 = uint16_t( len );
 
     NeedDataSize( QueueDataSize[(int)QueueType::CallstackPayload] + sizeof( l16 ) + l16 );
+    bool isInCache = false;
+    TracyCZone(HashAndLookupCtx, true);
+    CallstackCacheEntry csCacheEntry{ ptr, (uint32_t)sz};
+    csCacheEntry.computeHash();
 
-    AppendDataUnsafe( &item, QueueDataSize[(int)QueueType::CallstackPayload] );
-    AppendDataUnsafe( &l16, sizeof( l16 ) );
-    AppendDataUnsafe( ptr, sizeof( uint64_t ) * sz );
+    ptrdiff_t cacheIdx = allowCache ? FindCsInCache(csCacheEntry) : -1;
+    TracyCZoneEnd(HashAndLookupCtx);
+
+    if (cacheIdx >= 0)
+    {
+        const uint64_t ptrWithCacheIndex = _ptr | (uint64_t(cacheIdx+1) << 48); // This is one of our allocations, only the low 48bits can be used in userland
+        MemWrite(&item.stringTransfer.ptr, ptrWithCacheIndex);
+        AppendDataUnsafe(&item, QueueDataSize[(int)QueueType::CallstackPayload]);
+        uint16_t zero = 0;
+        AppendDataUnsafe(&zero, sizeof(zero));
+        previousCsCacheEntry = csCache[cacheIdx];
+    }
+    else
+    {
+        AppendDataUnsafe( &item, QueueDataSize[(int)QueueType::CallstackPayload] );
+
+        uint8_t commonRootDepth = csCacheEntry.commonRootDepth(previousCsCacheEntry);
+        if (commonRootDepth > 0)
+        {
+            const size_t framesToSend = (sz - commonRootDepth);
+            const size_t lenWithoutCommonRoot = framesToSend * sizeof(uint64_t) + sizeof(uint8_t);
+            const uint16_t l16WithoutCommonRoot = uint16_t(lenWithoutCommonRoot);
+            AppendDataUnsafe(&l16WithoutCommonRoot, sizeof(l16WithoutCommonRoot));
+            AppendDataUnsafe(&commonRootDepth, sizeof(commonRootDepth));
+            AppendDataUnsafe(ptr, sizeof(uint64_t) * framesToSend );
+        }
+        else
+        {
+            AppendDataUnsafe( &l16, sizeof( l16 ) );
+            AppendDataUnsafe( ptr, sizeof( uint64_t ) * sz );
+        }
+
+        if (allowCache)
+        {
+            // Put in cache
+            if (csCache[csCacheNextIdx].dataPtr) tracy_free_fast((void*)(csCache[csCacheNextIdx].dataPtr - 1));
+            csCache[csCacheNextIdx] = csCacheEntry;
+            csCacheNextIdx = (csCacheNextIdx + 1) % CallstackPayloadCacheSize;
+            _ptr = 0; // We'll free memory ourselves later
+        }
+        previousCsCacheEntry = csCacheEntry;
+    }
 }
 
 void Profiler::SendCallstackAlloc( uint64_t _ptr )

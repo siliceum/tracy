@@ -3300,7 +3300,7 @@ bool Worker::DispatchProcess( const QueueItem& ev, const char*& ptr )
                 AddSourceLocationPayload( ptr, sz );
                 break;
             case QueueType::CallstackPayload:
-                AddCallstackPayload( ptr, sz );
+                AddCallstackPayload( sz ? ptr : (char*)ev.stringTransfer.ptr, sz );
                 break;
             case QueueType::FrameName:
                 HandleFrameName( ev.stringTransfer.ptr, ptr, sz );
@@ -4004,16 +4004,45 @@ void Worker::AddCallstackPayload( const char* _data, size_t _sz )
 {
     assert( m_pendingCallstackId == 0 );
 
-    const auto sz = _sz / sizeof( uint64_t );
+    if (_sz == 0) // Callstack is in the cache
+    {
+        const uint64_t datatransferptr = (uint64_t)(_data);
+        const uint64_t cacheIdxPlusOne = (datatransferptr >> 48) & 0xFFFFllu;
+        assert(cacheIdxPlusOne >= 1 && (cacheIdxPlusOne-1) < CallstackPayloadCacheSize);
+        m_pendingCallstackId = m_callstackPayloadIdxCache[cacheIdxPlusOne - 1];
+        m_peviousCallstackId = m_pendingCallstackId;
+        return;
+    }
+
+    auto sz = _sz / sizeof( uint64_t );
+    uint8_t commonRootDepth = 0;
+    const auto hasCommonRoot = (sz * sizeof(uint64_t) + 1) == _sz;
+    if (hasCommonRoot)
+    {
+        commonRootDepth = *_data;
+        sz += commonRootDepth;
+        _data++;
+    }
+
     const auto memsize = sizeof( VarArray<CallstackFrameId> ) + sz * sizeof( CallstackFrameId );
     auto mem = (char*)m_slab.AllocRaw( memsize );
 
     auto data = (CallstackFrameId*)mem;
     auto dst = data;
     auto src = (uint64_t*)_data;
-    for( size_t i=0; i<sz; i++ )
+    for (size_t i = 0; i < (sz-commonRootDepth); i++)
     {
-        *dst++ = PackPointer( *src++ );
+        *dst++ = PackPointer(*src++);
+    }
+    if (hasCommonRoot)
+    {
+        assert(m_peviousCallstackId >= 0);
+        const auto& previousCs = *m_data.callstackPayload[m_peviousCallstackId];
+        const CallstackFrameId* previousCsFrame = &previousCs.back();
+        for (size_t i = (sz - commonRootDepth); i < sz; i++)
+        {
+            *dst++ = *(previousCsFrame--);
+        }
     }
 
     auto arr = (VarArray<CallstackFrameId>*)( mem + sz * sizeof( CallstackFrameId ) );
@@ -4038,7 +4067,11 @@ void Worker::AddCallstackPayload( const char* _data, size_t _sz )
         m_slab.Unalloc( memsize );
     }
 
+    m_callstackPayloadIdxCache[m_callstackPayloadIdxCacheIndex] = idx;
+    m_callstackPayloadIdxCacheIndex = (m_callstackPayloadIdxCacheIndex + 1) % CallstackPayloadCacheSize;
+
     m_pendingCallstackId = idx;
+    m_peviousCallstackId = idx;
 }
 
 void Worker::AddCallstackAllocPayload( const char* data )

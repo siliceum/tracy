@@ -1010,6 +1010,11 @@ private:
 
     short_ptr<GpuCtxData> m_gpuCtxMap[256];
     uint32_t m_pendingCallstackId = 0;
+    uint32_t m_peviousCallstackId = 0;
+
+    uint32_t m_callstackPayloadIdxCache[CallstackPayloadCacheSize] = {};
+    size_t m_callstackPayloadIdxCacheIndex = 0;
+
     int16_t m_pendingSourceLocationPayload = 0;
     Vector<uint64_t> m_sourceLocationQueue;
     unordered_flat_map<uint64_t, int16_t> m_sourceLocationShrink;

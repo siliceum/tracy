@@ -129,6 +129,8 @@ enum class QueueType : uint8_t
     NUM_TYPES
 };
 
+constexpr size_t CallstackPayloadCacheSize = 32;
+
 #pragma pack( push, 1 )
 
 struct QueueThreadContext
