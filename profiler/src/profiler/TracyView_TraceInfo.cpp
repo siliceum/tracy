@@ -775,7 +775,7 @@ void View::DrawInfo()
                     ImGui::TableSetColumnIndex( 2 );
                     ImGui::Text( "%s", MemSizeToString( stats.size ) );
                     ImGui::TableSetColumnIndex( 3 );
-                    ImGui::Text( "%.2f bytes / queue", average );
+                    ImGui::Text( "%.2f bytes / item", average );
 
                 }
                 if( totalSum > 0 )
@@ -788,7 +788,7 @@ void View::DrawInfo()
                     ImGui::TableSetColumnIndex( 2 );
                     ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%s", MemSizeToString( totalSize ) );
                     ImGui::TableSetColumnIndex( 3 );
-                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%.2f bytes / queue", totalSum / static_cast< double >( sortedStats.size() ) );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%.2f bytes / item", totalSum / static_cast< double >( sortedStats.size() ) );
                 }
             }
 
@@ -884,7 +884,7 @@ void View::DrawInfo()
                         ImGui::TableSetColumnIndex( 2 );
                         ImGui::Text( "%s", MemSizeToString( stats.size ) );
                         ImGui::TableSetColumnIndex( 3 );
-                        ImGui::Text( "%.2f bytes / queue", average );
+                        ImGui::Text( "%.2f bytes / item", average );
                     }
                 }
 
@@ -898,7 +898,7 @@ void View::DrawInfo()
                     ImGui::TableSetColumnIndex( 2 );
                     ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%s", MemSizeToString( totalSize ) );
                     ImGui::TableSetColumnIndex( 3 );
-                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%.2f bytes / queue", totalSum / static_cast< double >( sortedStats.size() ) );
+                    ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), "%.2f bytes / item", totalSum / static_cast< double >( sortedStats.size() ) );
 
                 }
 
