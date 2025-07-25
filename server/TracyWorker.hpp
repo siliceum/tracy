@@ -196,12 +196,6 @@ public:
     };
 
 
-    struct QueryStats
-    {
-        uint64_t occurrenceCount = 0;
-        uint64_t size = 0;
-    };
-
     struct QueueStats
     {
         uint64_t occurrenceCount = 0;
@@ -209,7 +203,7 @@ public:
     };
 
     std::unordered_map<QueueType, QueueStats>& getQueueTypeStats() { return m_queueTypeStats; }
-    std::unordered_map<ServerQuery, QueryStats>& getQueryStats() { return m_queryStats; }
+    std::unordered_map<ServerQuery, QueueStats>& getQueryStats() { return m_queryStats; }
 
 private:
     struct SourceLocationZones
@@ -1001,7 +995,7 @@ private:
     std::atomic<bool> m_shutdown { false };
 
     std::unordered_map<QueueType, QueueStats> m_queueTypeStats;
-    std::unordered_map<ServerQuery, QueryStats> m_queryStats;
+    std::unordered_map<ServerQuery, QueueStats> m_queryStats;
     std::atomic<bool> m_backgroundDone { true };
     std::thread m_threadBackground;
 
