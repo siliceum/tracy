@@ -1,15 +1,15 @@
 #include <math.h>
 
+#include "../Fonts.hpp"
 #include "TracyColor.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
 #include "TracyPrint.hpp"
+#include "TracyTimelineContext.hpp"
 #include "TracyTimelineDraw.hpp"
 #include "TracyTimelineItem.hpp"
-#include "TracyTimelineContext.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 constexpr float MinVisSize = 3;
 
@@ -62,7 +62,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                 }
                 pos++;
             }
-            DrawLine( draw, dpos + ImVec2( 0, offset+cpuUsageHeight+2 ), dpos + ImVec2( w, offset+cpuUsageHeight+2 ), 0x22DD88DD );
+            DrawLine( draw, dpos + ImVec2( 0, offset + cpuUsageHeight + 2 ), dpos + ImVec2( w, offset + cpuUsageHeight + 2 ), 0x22DD88DD );
 
             if( hover && ImGui::IsMouseHoveringRect( ImVec2( wpos.x, wpos.y + offset ), ImVec2( wpos.x + w, wpos.y + offset + cpuUsageHeight ), true ) )
             {
@@ -85,12 +85,12 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                         auto& topo = m_worker.GetCpuTopology();
                         const auto mt = m_vd.zvStart + ( ImGui::GetIO().MousePos.x - wpos.x ) * nspx;
                         ImGui::Separator();
-                        for( int i=0; i<cpuCnt; i++ )
+                        for( int i = 0; i < cpuCnt; i++ )
                         {
                             if( !cpuData[i].cs.empty() )
                             {
                                 auto& cs = cpuData[i].cs;
-                                auto it = std::lower_bound( cs.begin(), cs.end(), mt, [] ( const auto& l, const auto& r ) { return (uint64_t)l.End() < (uint64_t)r; } );
+                                auto it = std::lower_bound( cs.begin(), cs.end(), mt, []( const auto& l, const auto& r ) { return (uint64_t)l.End() < (uint64_t)r; } );
                                 if( it != cs.end() && it->Start() <= mt && it->End() >= mt )
                                 {
                                     auto tt = m_worker.GetThreadTopology( i );
@@ -154,9 +154,9 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
     const auto sstep = sty + 1;
 
     const auto origOffset = offset;
-    for( int i=0; i<cpuCnt; i++ )
+    for( int i = 0; i < cpuCnt; i++ )
     {
-        DrawLine( draw, dpos + ImVec2( 0, offset+sty ), dpos + ImVec2( w, offset+sty ), 0x22DD88DD );
+        DrawLine( draw, dpos + ImVec2( 0, offset + sty ), dpos + ImVec2( w, offset + sty ), 0x22DD88DD );
         auto tt = m_worker.GetThreadTopology( i );
         if( !ctxDraw[i].empty() && wpos.y + offset + sty >= yMin && wpos.y + offset <= yMax )
         {
@@ -171,9 +171,9 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                     const auto& eev = cs[v.idx + v.num - 1];
                     const auto t1 = eev.IsEndValid() ? eev.End() : eev.Start();
                     const auto px1 = ( t1 - vStart ) * pxns;
-                    DrawZigZag( draw, wpos + ImVec2( 0, offset + sty/2 ), std::max( px0, -10.0 ), std::min( std::max( px1, px0+MinVisSize ), double( w + 10 ) ), sty/4, 0xFF888888 );
+                    DrawZigZag( draw, wpos + ImVec2( 0, offset + sty / 2 ), std::max( px0, -10.0 ), std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), sty / 4, 0xFF888888 );
 
-                    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset-1 ), wpos + ImVec2( std::max( px1, px0+MinVisSize ), offset + sty ) ) )
+                    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset - 1 ), wpos + ImVec2( std::max( px1, px0 + MinVisSize ), offset + sty ) ) )
                     {
                         ImGui::PopFont();
                         ImGui::BeginTooltip();
@@ -234,8 +234,8 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                     {
                         const auto accentColor = HighlightColor( color );
                         const auto darkColor = DarkenColor( color );
-                        DrawLine( draw, dpos + ImVec2( px0, offset + sty ), dpos + ImVec2( px0, offset ), dpos + ImVec2( px1-1, offset ), accentColor, 1.f );
-                        DrawLine( draw, dpos + ImVec2( px0, offset + sty ), dpos + ImVec2( px1-1, offset + sty ), dpos + ImVec2( px1-1, offset ), darkColor, 1.f );
+                        DrawLine( draw, dpos + ImVec2( px0, offset + sty ), dpos + ImVec2( px0, offset ), dpos + ImVec2( px1 - 1, offset ), accentColor, 1.f );
+                        DrawLine( draw, dpos + ImVec2( px0, offset + sty ), dpos + ImVec2( px1 - 1, offset + sty ), dpos + ImVec2( px1 - 1, offset ), darkColor, 1.f );
                     }
 
                     const auto zsz = px1 - px0;
@@ -246,26 +246,26 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                         if( x < 0 || x > w - tsz.x )
                         {
                             ImGui::PushClipRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y * 2 ), true );
-                            DrawTextContrast( draw, wpos + ImVec2( std::max( std::max( 0., px0 ), std::min( double( w - tsz.x ), x ) ), offset-1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
+                            DrawTextContrast( draw, wpos + ImVec2( std::max( std::max( 0., px0 ), std::min( double( w - tsz.x ), x ) ), offset - 1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
                             ImGui::PopClipRect();
                         }
                         else if( ev.Start() == ev.End() )
                         {
-                            DrawTextContrast( draw, wpos + ImVec2( px0 + ( px1 - px0 - tsz.x ) * 0.5, offset-1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
+                            DrawTextContrast( draw, wpos + ImVec2( px0 + ( px1 - px0 - tsz.x ) * 0.5, offset - 1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
                         }
                         else
                         {
-                            DrawTextContrast( draw, wpos + ImVec2( x, offset-1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
+                            DrawTextContrast( draw, wpos + ImVec2( x, offset - 1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
                         }
                     }
                     else
                     {
                         ImGui::PushClipRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y * 2 ), true );
-                        DrawTextContrast( draw, wpos + ImVec2( ( ev.Start() - vStart ) * pxns, offset-1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
+                        DrawTextContrast( draw, wpos + ImVec2( ( ev.Start() - vStart ) * pxns, offset - 1 ), local ? 0xFFFFFFFF : 0xAAFFFFFF, label );
                         ImGui::PopClipRect();
                     }
 
-                    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset-1 ), wpos + ImVec2( px1, offset + sty ) ) )
+                    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset - 1 ), wpos + ImVec2( px1, offset + sty ) ) )
                     {
                         m_drawThreadHighlight = thread;
                         ImGui::PopFont();
@@ -292,7 +292,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                             TextFocused( "Thread:", m_worker.GetThreadName( thread ) );
                             ImGui::SameLine();
                             ImGui::TextDisabled( "(%s)", RealToString( thread ) );
-                            
+
                             m_drawThreadMigrations = thread;
                             m_cpuDataThread = thread;
                         }
@@ -323,13 +323,13 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                         TextFocused( "Start time:", TimeToStringExact( ev.Start() ) );
                         TextFocused( "End time:", TimeToStringExact( end ) );
                         TextFocused( "Activity time:", TimeToString( end - ev.Start() ) );
-                        
+
                         // Display data about the switch in
                         auto threadCtxSwitches = m_worker.GetContextSwitchData( thread );
                         if( threadCtxSwitches )
                         {
                             auto& v = threadCtxSwitches->v;
-                            auto it = std::lower_bound( v.begin(), v.end(), ev.Start(), [](const auto& l, const auto& r) { return l.Start() < r; } );
+                            auto it = std::lower_bound( v.begin(), v.end(), ev.Start(), []( const auto& l, const auto& r ) { return l.Start() < r; } );
                             // We should have the data, or something went wrong.
                             assert( it != v.end() && it->Start() == ev.Start() );
 
@@ -337,7 +337,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                             if( it != v.begin() )
                             {
                                 auto& prev = *( it - 1 );
-                                    
+
                                 ImGui::Separator();
 
                                 TextFocused( "Wait reason:", DecodeContextSwitchReasonCode( prev.Reason() ) );
@@ -349,7 +349,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                                 TextFocused( "Wait state:", DecodeContextSwitchStateCode( prev.State() ) );
                                 TextFocused( "Waiting time:", TimeToString( it->WakeupVal() - prev.End() ) );
                             }
-                            
+
                             // Do we have information about the readying thread?
                             if( it->Start() - it->WakeupVal() )
                             {
@@ -358,9 +358,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                                 assert( it->WakeupCpu() < cpuCnt );
                                 const auto& wakeUpCpuCSwitches = cpuData[it->WakeupCpu()].cs;
                                 auto wakeupit = std::lower_bound( wakeUpCpuCSwitches.begin(), wakeUpCpuCSwitches.end(), it->WakeupVal(), []( const auto& l, const auto& r ) { return l.End() < r; } );
-                                if( wakeupit != wakeUpCpuCSwitches.end()
-                                    && wakeupit->Start() < it->WakeupVal()
-                                    && it->WakeupVal() < wakeupit->End() )
+                                if( wakeupit != wakeUpCpuCSwitches.end() && wakeupit->Start() < it->WakeupVal() && it->WakeupVal() < wakeupit->End() )
                                 {
                                     TextDisabledUnformatted( "Woken up by:" );
                                     ImGui::SameLine();
@@ -369,7 +367,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                                     bool wakeupThreadLocal, wakeupThreadUntracked;
                                     const char* wakeUpThreadProgram;
                                     auto wakeuplabel = GetThreadContextData( wakeupThread, wakeupThreadLocal, wakeupThreadUntracked, wakeUpThreadProgram );
-                                    
+
                                     uint32_t wakeupThreadColor = getDisplayThreadColor( wakeupThread, wakeupThreadLocal, wakeupThreadUntracked );
                                     TextColoredUnformatted( HighlightColor<75>( wakeupThreadColor ), wakeuplabel );
                                     ImGui::SameLine();
@@ -380,9 +378,7 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
                                     TextDisabledUnformatted( "Woken up by Kernel" );
                                 }
                             }
-
                         }
-
 
                         ImGui::EndTooltip();
                         ImGui::PushFont( g_fonts.normal, FontSmall );
@@ -420,8 +416,8 @@ bool View::DrawCpuData( const TimelineContext& ctx, const std::vector<CpuUsageDr
             sprintf( buf, "CPU %i", i );
         }
         const auto txtx = ImGui::CalcTextSize( buf ).x;
-        DrawTextSuperContrast( draw, wpos + ImVec2( ty, offset-1 ), 0xFFDD88DD, buf );
-        if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, offset-1 ), wpos + ImVec2( sty + txtx, offset + sty ) ) )
+        DrawTextSuperContrast( draw, wpos + ImVec2( ty, offset - 1 ), 0xFFDD88DD, buf );
+        if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, offset - 1 ), wpos + ImVec2( sty + txtx, offset + sty ) ) )
         {
             ImGui::PopFont();
             ImGui::BeginTooltip();
@@ -479,7 +475,7 @@ void View::DrawThreadMigrations( const TimelineContext& ctx, const int origOffse
     const auto sty = ctx.sty;
     const auto pxns = ctx.pxns;
     const auto nspx = ctx.nspx;
-    const auto dpos = wpos + ImVec2(0.5f, 0.5f);
+    const auto dpos = wpos + ImVec2( 0.5f, 0.5f );
     const auto yMin = ctx.yMin;
     const auto yMax = ctx.yMax;
     const auto hover = ctx.hover;
@@ -493,15 +489,14 @@ void View::DrawThreadMigrations( const TimelineContext& ctx, const int origOffse
         const auto color = HighlightColor( GetThreadColor( thread, -8 ) );
 
         auto& v = ctxSwitch->v;
-        auto it = std::lower_bound( v.begin(), v.end(), m_vd.zvStart, [] ( const auto& l, const auto& r ) { return l.End() < r; } );
+        auto it = std::lower_bound( v.begin(), v.end(), m_vd.zvStart, []( const auto& l, const auto& r ) { return l.End() < r; } );
         if( it != v.begin() ) --it;
-        auto end = std::lower_bound( it, v.end(), m_vd.zvEnd, [] ( const auto& l, const auto& r ) { return l.Start() < r; } );
+        auto end = std::lower_bound( it, v.end(), m_vd.zvEnd, []( const auto& l, const auto& r ) { return l.Start() < r; } );
         if( end == v.end() ) --end;
 
         const auto bgSize = GetScale() * 4.f;
         const auto lnSize = GetScale() * 2.f;
         const auto wakeupLineSize = GetScale() * 1.5f;
-
 
         auto computeScreenPos = [&]( int64_t t, uint8_t cpu ) {
             const auto px = ( t - m_vd.zvStart ) * pxns;
@@ -518,13 +513,13 @@ void View::DrawThreadMigrations( const TimelineContext& ctx, const int origOffse
 
                     DrawLine( draw, pw, startPos, wakecolor, wakeupLineSize );
                     draw->AddCircleFilled( pw, bgSize, wakecolor );
-                        
+
                     // Vertical line at beginning of thread to emphasize wakeup
                     if( wakeupWidthPixels >= 3 )
                     {
                         const float halfPx = GetScale() * 0.5f;
-                        DrawLine( draw, ImVec2{ startPos.x, startPos.y - sty * 0.5f - halfPx }, ImVec2{ startPos.x , startPos.y + sty * 0.5f + halfPx }, 0xFF000000, lnSize * 2 );
-                        DrawLine( draw, ImVec2{ startPos.x, startPos.y - sty * 0.5f - halfPx }, ImVec2{ startPos.x , startPos.y + sty * 0.5f + halfPx }, wakecolor, lnSize );
+                        DrawLine( draw, ImVec2{ startPos.x, startPos.y - sty * 0.5f - halfPx }, ImVec2{ startPos.x, startPos.y + sty * 0.5f + halfPx }, 0xFF000000, lnSize * 2 );
+                        DrawLine( draw, ImVec2{ startPos.x, startPos.y - sty * 0.5f - halfPx }, ImVec2{ startPos.x, startPos.y + sty * 0.5f + halfPx }, wakecolor, lnSize );
                     }
                 }
             }
@@ -532,7 +527,7 @@ void View::DrawThreadMigrations( const TimelineContext& ctx, const int origOffse
 
         if( it != v.end() && it->Start() > m_vd.zvStart )
         {
-            drawWakeUp( it->Start(), computeScreenPos( it->Start(), it->Cpu() ), it->WakeupVal(), it->WakeupCpu(), 0xFF444444, true);
+            drawWakeUp( it->Start(), computeScreenPos( it->Start(), it->Cpu() ), it->WakeupVal(), it->WakeupCpu(), 0xFF444444, true );
         }
         while( it < end )
         {
@@ -543,7 +538,6 @@ void View::DrawThreadMigrations( const TimelineContext& ctx, const int origOffse
 
             ++it;
 
-                
             const auto t1 = it->Start();
             const auto cpu1 = it->Cpu();
 
@@ -561,9 +555,9 @@ void View::DrawThreadMigrations( const TimelineContext& ctx, const int origOffse
                 DrawLine( draw, p0, p1, color, lnSize );
             }
 
-            const auto hue = 0.38f * float(waitReason); // Golden angle, gives new colors for each reason
-            const auto wakecolor = ImColor::HSV(hue, 1.f, 1.f);
-            drawWakeUp( t1, p1, it->WakeupVal(), it->WakeupCpu(), wakecolor, (migrationWidthPixels >= 30) );
+            const auto hue = 0.38f * float( waitReason ); // Golden angle, gives new colors for each reason
+            const auto wakecolor = ImColor::HSV( hue, 1.f, 1.f );
+            drawWakeUp( t1, p1, it->WakeupVal(), it->WakeupCpu(), wakecolor, ( migrationWidthPixels >= 30 ) );
         }
     }
 }
@@ -573,7 +567,11 @@ void View::DrawCpuDataWindow()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 700 * scale, 800 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "CPU data", &m_showCpuDataWindow );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     struct PidData
     {
@@ -589,7 +587,7 @@ void View::DrawCpuDataWindow()
         auto it = pids.find( pid );
         if( it == pids.end() )
         {
-            it = pids.emplace( pid, PidData {} ).first;
+            it = pids.emplace( pid, PidData{} ).first;
         }
         it->second.tids.emplace_back( v.first );
         it->second.data.runningTime += v.second.runningTime;
@@ -621,51 +619,51 @@ void View::DrawCpuDataWindow()
         case 0:
             if( sortspec.SortDirection == ImGuiSortDirection_Descending )
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->first > r->first; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->first > r->first; } );
             }
             else
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->first < r->first; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->first < r->first; } );
             }
             break;
         case 1:
             if( sortspec.SortDirection == ImGuiSortDirection_Descending )
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [this] ( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l->second.tids[0] ).first, m_worker.GetExternalName( r->second.tids[0] ).first ) > 0; } );
+                pdqsort_branchless( psort.begin(), psort.end(), [this]( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l->second.tids[0] ).first, m_worker.GetExternalName( r->second.tids[0] ).first ) > 0; } );
             }
             else
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [this] ( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l->second.tids[0] ).first, m_worker.GetExternalName( r->second.tids[0] ).first ) < 0; } );
+                pdqsort_branchless( psort.begin(), psort.end(), [this]( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l->second.tids[0] ).first, m_worker.GetExternalName( r->second.tids[0] ).first ) < 0; } );
             }
             break;
         case 2:
             if( sortspec.SortDirection == ImGuiSortDirection_Descending )
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->second.data.runningTime > r->second.data.runningTime; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->second.data.runningTime > r->second.data.runningTime; } );
             }
             else
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->second.data.runningTime < r->second.data.runningTime; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->second.data.runningTime < r->second.data.runningTime; } );
             }
             break;
         case 3:
             if( sortspec.SortDirection == ImGuiSortDirection_Descending )
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->second.data.runningRegions > r->second.data.runningRegions; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->second.data.runningRegions > r->second.data.runningRegions; } );
             }
             else
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->second.data.runningRegions < r->second.data.runningRegions; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->second.data.runningRegions < r->second.data.runningRegions; } );
             }
             break;
         case 4:
             if( sortspec.SortDirection == ImGuiSortDirection_Descending )
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->second.data.migrations > r->second.data.migrations; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->second.data.migrations > r->second.data.migrations; } );
             }
             else
             {
-                pdqsort_branchless( psort.begin(), psort.end(), [] ( const auto& l, const auto& r ) { return l->second.data.migrations < r->second.data.migrations; } );
+                pdqsort_branchless( psort.begin(), psort.end(), []( const auto& l, const auto& r ) { return l->second.data.migrations < r->second.data.migrations; } );
             }
             break;
         default:
@@ -760,41 +758,41 @@ void View::DrawCpuDataWindow()
                 case 1:
                     if( sortspec.SortDirection == ImGuiSortDirection_Descending )
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [this] ( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l ).second, m_worker.GetExternalName( r ).second ) > 0; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [this]( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l ).second, m_worker.GetExternalName( r ).second ) > 0; } );
                     }
                     else
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [this] ( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l ).second, m_worker.GetExternalName( r ).second ) < 0; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [this]( const auto& l, const auto& r ) { return strcmp( m_worker.GetExternalName( l ).second, m_worker.GetExternalName( r ).second ) < 0; } );
                     }
                     break;
                 case 2:
                     if( sortspec.SortDirection == ImGuiSortDirection_Descending )
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd] ( const auto& l, const auto& r ) { return ctd.find( l )->second.runningTime > ctd.find( r )->second.runningTime; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd]( const auto& l, const auto& r ) { return ctd.find( l )->second.runningTime > ctd.find( r )->second.runningTime; } );
                     }
                     else
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd] ( const auto& l, const auto& r ) { return ctd.find( l )->second.runningTime < ctd.find( r )->second.runningTime; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd]( const auto& l, const auto& r ) { return ctd.find( l )->second.runningTime < ctd.find( r )->second.runningTime; } );
                     }
                     break;
                 case 3:
                     if( sortspec.SortDirection == ImGuiSortDirection_Descending )
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd] ( const auto& l, const auto& r ) { return ctd.find( l )->second.runningRegions > ctd.find( r )->second.runningRegions; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd]( const auto& l, const auto& r ) { return ctd.find( l )->second.runningRegions > ctd.find( r )->second.runningRegions; } );
                     }
                     else
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd] ( const auto& l, const auto& r ) { return ctd.find( l )->second.runningRegions < ctd.find( r )->second.runningRegions; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd]( const auto& l, const auto& r ) { return ctd.find( l )->second.runningRegions < ctd.find( r )->second.runningRegions; } );
                     }
                     break;
                 case 4:
                     if( sortspec.SortDirection == ImGuiSortDirection_Descending )
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd] ( const auto& l, const auto& r ) { return ctd.find( l )->second.migrations > ctd.find( r )->second.migrations; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd]( const auto& l, const auto& r ) { return ctd.find( l )->second.migrations > ctd.find( r )->second.migrations; } );
                     }
                     else
                     {
-                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd] ( const auto& l, const auto& r ) { return ctd.find( l )->second.migrations < ctd.find( r )->second.migrations; } );
+                        pdqsort_branchless( pid.second.tids.begin(), pid.second.tids.end(), [&ctd]( const auto& l, const auto& r ) { return ctd.find( l )->second.migrations < ctd.find( r )->second.migrations; } );
                     }
                     break;
                 default:
@@ -885,6 +883,5 @@ void View::DrawCpuDataWindow()
     ImGui::EndChild();
     ImGui::End();
 }
-
 
 }

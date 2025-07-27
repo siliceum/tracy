@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "imgui.h"
 #include "../server/TracyEvent.hpp"
+#include "imgui.h"
 
 namespace tracy
 {
@@ -25,7 +25,11 @@ enum class ShortenName : uint8_t
 const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, float zsz );
 void TooltipNormalizedName( const char* name, const char* normalized );
 
-static inline const char* ShortenZoneName( ShortenName type, const char* name ) { ImVec2 tsz = {}; return ShortenZoneName( type, name, tsz, 0 ); }
+static inline const char* ShortenZoneName( ShortenName type, const char* name )
+{
+    ImVec2 tsz = {};
+    return ShortenZoneName( type, name, tsz, 0 );
+}
 
 uint32_t GetThreadColor( uint64_t thread, int depth, bool dynamic );
 uint32_t GetPlotColor( const PlotData& plot, const Worker& worker );

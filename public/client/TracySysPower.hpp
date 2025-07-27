@@ -7,10 +7,10 @@
 
 #ifdef TRACY_HAS_SYSPOWER
 
-#include <stdint.h>
-#include <stdio.h>
+#  include <stdint.h>
+#  include <stdio.h>
 
-#include "TracyFastVector.hpp"
+#  include "TracyFastVector.hpp"
 
 namespace tracy
 {

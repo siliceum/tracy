@@ -2,8 +2,8 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_opengl3_loader.h>
 
-#include <chrono>
 #include <GLFW/glfw3.h>
+#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
 #include <thread>
@@ -14,19 +14,17 @@
 #include "Backend.hpp"
 #include "RunQueue.hpp"
 
-
 static GLFWwindow* s_window;
 static std::function<void()> s_redraw;
-static std::function<void(float)> s_scaleChanged;
+static std::function<void( float )> s_scaleChanged;
 static RunQueue* s_mainThreadTasks;
 static WindowPosition* s_winPos;
 static bool s_iconified;
 static float s_prevScale = -1;
 
-
 static void glfw_error_callback( int error, const char* description )
 {
-    fprintf(stderr, "Error %d: %s\n", error, description);
+    fprintf( stderr, "Error %d: %s\n", error, description );
 }
 
 static void glfw_window_pos_callback( GLFWwindow* window, int x, int y )
@@ -58,8 +56,7 @@ static void glfw_window_iconify_callback( GLFWwindow*, int iconified )
     s_iconified = iconified != 0;
 }
 
-
-Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void(float)>& scaleChanged, const std::function<int(void)>& isBusy, RunQueue* mainThreadTasks )
+Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks )
 {
     glfwSetErrorCallback( glfw_error_callback );
     if( !glfwInit() ) exit( 1 );

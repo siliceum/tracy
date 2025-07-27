@@ -11,12 +11,11 @@ namespace tracy
 static size_t WriteFn( void* _data, size_t size, size_t num, void* ptr )
 {
     const auto data = (unsigned char*)_data;
-    const auto sz = size*num;
+    const auto sz = size * num;
     auto& v = *(std::string*)ptr;
     v.append( (const char*)data, sz );
     return sz;
 }
-
 
 TracyLlmApi::~TracyLlmApi()
 {
@@ -58,7 +57,7 @@ bool TracyLlmApi::Connect( const char* url )
         for( auto& model : json["data"] )
         {
             auto& id = model["id"].get_ref<const std::string&>();
-            m_models.emplace_back( LlmModel { .name = id } );
+            m_models.emplace_back( LlmModel{ .name = id } );
 
             std::string buf2;
             if( ( m_type == Type::Unknown || m_type == Type::LlamaSwap ) && GetRequest( m_url + "/running", buf2 ) == 200 && buf2.starts_with( "{\"running\":" ) )
@@ -110,17 +109,17 @@ bool TracyLlmApi::Connect( const char* url )
 struct StreamData
 {
     std::string str;
-    const std::function<bool(const nlohmann::json&)>& callback;
+    const std::function<bool( const nlohmann::json& )>& callback;
 };
 
 static size_t StreamFn( void* _data, size_t size, size_t num, void* ptr )
 {
     auto data = (const char*)_data;
-    const auto sz = size*num;
+    const auto sz = size * num;
     auto& v = *(StreamData*)ptr;
     v.str.append( data, sz );
 
-    for(;;)
+    for( ;; )
     {
         if( strncmp( v.str.c_str(), "data: [DONE]", 12 ) == 0 ) return sz;
 
@@ -148,7 +147,7 @@ static size_t StreamFn( void* _data, size_t size, size_t num, void* ptr )
     return sz;
 }
 
-bool TracyLlmApi::ChatCompletion( const nlohmann::json& req, const std::function<bool(const nlohmann::json&)>& callback, int modelIdx )
+bool TracyLlmApi::ChatCompletion( const nlohmann::json& req, const std::function<bool( const nlohmann::json& )>& callback, int modelIdx )
 {
     assert( m_curl );
     StreamData data = { .callback = callback };
@@ -156,7 +155,7 @@ bool TracyLlmApi::ChatCompletion( const nlohmann::json& req, const std::function
     const auto url = m_url + "/v1/chat/completions";
     const auto reqStr = req.dump( -1, ' ', false, nlohmann::json::error_handler_t::replace );
 
-    curl_slist *hdr = nullptr;
+    curl_slist* hdr = nullptr;
     hdr = curl_slist_append( hdr, "Accept: application/json" );
     hdr = curl_slist_append( hdr, "Content-Type: application/json" );
 
@@ -267,7 +266,7 @@ int64_t TracyLlmApi::GetRequest( const std::string& url, std::string& response )
     assert( m_curl );
     response.clear();
 
-    curl_slist *hdr = nullptr;
+    curl_slist* hdr = nullptr;
     hdr = curl_slist_append( hdr, "Accept: application/json" );
     hdr = curl_slist_append( hdr, "Content-Type: application/json" );
 
@@ -290,7 +289,7 @@ int64_t TracyLlmApi::PostRequest( const std::string& url, const std::string& dat
     assert( m_curl );
     response.clear();
 
-    curl_slist *hdr = nullptr;
+    curl_slist* hdr = nullptr;
     hdr = curl_slist_append( hdr, "Accept: application/json" );
     hdr = curl_slist_append( hdr, "Content-Type: application/json" );
 

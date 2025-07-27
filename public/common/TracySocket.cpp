@@ -17,23 +17,23 @@
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
 #  ifdef _MSC_VER
-#    pragma warning(disable:4244)
-#    pragma warning(disable:4267)
+#    pragma warning( disable : 4244 )
+#    pragma warning( disable : 4267 )
 #  endif
 #  define poll WSAPoll
 #  ifdef _MSC_VER
-#    pragma comment(lib, "ws2_32.lib")
+#    pragma comment( lib, "ws2_32.lib" )
 #  endif
 #else
 #  include <arpa/inet.h>
-#  include <sys/socket.h>
-#  include <sys/param.h>
 #  include <errno.h>
 #  include <fcntl.h>
-#  include <netinet/in.h>
 #  include <netdb.h>
-#  include <unistd.h>
+#  include <netinet/in.h>
 #  include <poll.h>
+#  include <sys/param.h>
+#  include <sys/socket.h>
+#  include <unistd.h>
 #endif
 
 #ifndef MSG_NOSIGNAL
@@ -69,8 +69,10 @@ void InitWinSock()
 }
 #endif
 
-
-enum { BufSize = 128 * 1024 };
+enum
+{
+    BufSize = 128 * 1024
+};
 
 Socket::Socket()
     : m_buf( (char*)tracy_malloc( BufSize ) )
@@ -437,7 +439,6 @@ bool Socket::IsValid() const
     return m_sock.load( std::memory_order_relaxed ) >= 0;
 }
 
-
 ListenSocket::ListenSocket()
     : m_sock( -1 )
 {
@@ -467,8 +468,8 @@ static int addrinfo_and_socket_for_family( uint16_t port, int ai_family, struct 
     char portbuf[32];
     sprintf( portbuf, "%" PRIu16, port );
     if( getaddrinfo( nullptr, portbuf, &hints, res ) != 0 ) return -1;
-    int sock = socket( (*res)->ai_family, (*res)->ai_socktype, (*res)->ai_protocol );
-    if (sock == -1) freeaddrinfo( *res );
+    int sock = socket( ( *res )->ai_family, ( *res )->ai_socktype, ( *res )->ai_protocol );
+    if( sock == -1 ) freeaddrinfo( *res );
     return sock;
 }
 
@@ -485,7 +486,7 @@ bool ListenSocket::Listen( uint16_t port, int backlog )
         m_sock = addrinfo_and_socket_for_family( port, AF_INET6, &res );
     }
 #endif
-    if (m_sock == -1)
+    if( m_sock == -1 )
     {
         // IPV6 protocol may not be available/is disabled. Try to create a socket
         // with the IPV4 protocol
@@ -504,8 +505,18 @@ bool ListenSocket::Listen( uint16_t port, int backlog )
     int val = 1;
     setsockopt( m_sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof( val ) );
 #endif
-    if( bind( m_sock, res->ai_addr, res->ai_addrlen ) == -1 ) { freeaddrinfo( res ); Close(); return false; }
-    if( listen( m_sock, backlog ) == -1 ) { freeaddrinfo( res ); Close(); return false; }
+    if( bind( m_sock, res->ai_addr, res->ai_addrlen ) == -1 )
+    {
+        freeaddrinfo( res );
+        Close();
+        return false;
+    }
+    if( listen( m_sock, backlog ) == -1 )
+    {
+        freeaddrinfo( res );
+        Close();
+        return false;
+    }
     freeaddrinfo( res );
     return true;
 }
@@ -521,7 +532,7 @@ Socket* ListenSocket::Accept()
 
     if( poll( &fd, 1, 10 ) > 0 )
     {
-        int sock = accept( m_sock, (sockaddr*)&remote, &sz);
+        int sock = accept( m_sock, (sockaddr*)&remote, &sz );
         if( sock == -1 ) return nullptr;
 
 #if defined __APPLE__
@@ -530,7 +541,7 @@ Socket* ListenSocket::Accept()
 #endif
 
         auto ptr = (Socket*)tracy_malloc( sizeof( Socket ) );
-        new(ptr) Socket( sock );
+        new( ptr ) Socket( sock );
         return ptr;
     }
     else

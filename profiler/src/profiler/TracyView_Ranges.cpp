@@ -9,7 +9,11 @@ namespace tracy
 void View::DrawRanges()
 {
     ImGui::Begin( "Time range limits", &m_showRanges, ImGuiWindowFlags_AlwaysAutoResize );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
     DrawRangeEntry( m_findZone.range, ICON_FA_MAGNIFYING_GLASS " Find zone", 0x4488DD88, "RangeFindZoneCopyFrom", 0 );
     ImGui::Separator();
     DrawRangeEntry( m_statRange, ICON_FA_ARROW_UP_WIDE_SHORT " Statistics", 0x448888EE, "RangeStatisticsCopyFrom", 1 );

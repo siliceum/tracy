@@ -33,7 +33,7 @@ public:
     ~TracyLlmApi();
 
     bool Connect( const char* url );
-    bool ChatCompletion( const nlohmann::json& req, const std::function<bool(const nlohmann::json&)>& callback, int modelIdx );
+    bool ChatCompletion( const nlohmann::json& req, const std::function<bool( const nlohmann::json& )>& callback, int modelIdx );
     bool Embeddings( const nlohmann::json& req, nlohmann::json& response, bool separateConnection = false );
     [[nodiscard]] int Tokenize( const std::string& text, int modelIdx );
 

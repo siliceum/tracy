@@ -3,9 +3,9 @@
 
 #ifdef TRACY_VERBOSE
 #  include <stdio.h>
-#  define TracyDebug(...) fprintf( stderr, __VA_ARGS__ );
+#  define TracyDebug( ... ) fprintf( stderr, __VA_ARGS__ );
 #else
-#  define TracyDebug(...)
+#  define TracyDebug( ... )
 #endif
 
 #endif

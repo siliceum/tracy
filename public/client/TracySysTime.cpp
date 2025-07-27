@@ -3,17 +3,17 @@
 #ifdef TRACY_HAS_SYSTIME
 
 #  if defined _WIN32
-#    include <windows.h>
 #    include "../common/TracyWinFamily.hpp"
+#    include <windows.h>
 #  elif defined __linux__
-#    include <stdio.h>
 #    include <inttypes.h>
+#    include <stdio.h>
 #  elif defined __APPLE__
-#    include <mach/mach_host.h>
 #    include <mach/host_info.h>
+#    include <mach/mach_host.h>
 #  elif defined BSD
-#    include <sys/types.h>
 #    include <sys/sysctl.h>
+#    include <sys/types.h>
 #  endif
 
 namespace tracy
@@ -59,9 +59,9 @@ void SysTime::ReadTimes()
     FILE* f = fopen( "/proc/stat", "r" );
     if( f )
     {
-        int read = fscanf( f, "cpu %" PRIu64 " %" PRIu64 " %" PRIu64" %" PRIu64, &user, &nice, &system, &idle );
+        int read = fscanf( f, "cpu %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64, &user, &nice, &system, &idle );
         fclose( f );
-        if (read == 4)
+        if( read == 4 )
         {
             used = user + nice + system;
         }
@@ -90,7 +90,7 @@ void SysTime::ReadTimes()
     idle = data[4];
 }
 
-#endif
+#  endif
 
 SysTime::SysTime()
 {
@@ -107,12 +107,12 @@ float SysTime::Get()
     const auto diffIdle = idle - oldIdle;
     const auto diffUsed = used - oldUsed;
 
-#if defined _WIN32
+#  if defined _WIN32
     return diffUsed == 0 ? -1 : ( diffUsed - diffIdle ) * 100.f / diffUsed;
-#elif defined __linux__ || defined __APPLE__ || defined BSD
+#  elif defined __linux__ || defined __APPLE__ || defined BSD
     const auto total = diffUsed + diffIdle;
     return total == 0 ? -1 : diffUsed * 100.f / total;
-#endif
+#  endif
 }
 
 }

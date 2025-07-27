@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#include <windows.h>
+#  include <windows.h>
 
 bool IsElevated()
 {
@@ -31,7 +31,7 @@ bool IsElevated()
 
 #else
 
-#include <unistd.h>
+#  include <unistd.h>
 
 bool IsElevated()
 {

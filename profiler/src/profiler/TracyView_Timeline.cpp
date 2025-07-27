@@ -1,5 +1,6 @@
 #include <algorithm>
 
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
 #include "TracyPrint.hpp"
@@ -9,7 +10,6 @@
 #include "TracyTimelineItemPlot.hpp"
 #include "TracyTimelineItemThread.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -36,7 +36,7 @@ void View::HandleTimelineMouse( int64_t timespan, const ImVec2& wpos, float w )
     {
         if( ImGui::GetIO().KeyCtrl && m_highlight.start != m_highlight.end )
         {
-            m_setRangePopup = RangeSlim { m_highlight.start, m_highlight.end, true };
+            m_setRangePopup = RangeSlim{ m_highlight.start, m_highlight.end, true };
         }
         m_highlight.active = false;
     }
@@ -50,7 +50,7 @@ void View::HandleTimelineMouse( int64_t timespan, const ImVec2& wpos, float w )
     {
         m_highlightZoom.end = m_vd.zvStart + ( io.MousePos.x - wpos.x ) * nspx;
     }
-    else if( m_highlightZoom.active && !IsMouseDown( 2 )  )
+    else if( m_highlightZoom.active && !IsMouseDown( 2 ) )
     {
         if( m_highlightZoom.start != m_highlightZoom.end )
         {
@@ -96,7 +96,7 @@ void View::HandleTimelineMouse( int64_t timespan, const ImVec2& wpos, float w )
         if( !m_playback.pause && m_playback.sync ) m_playback.pause = true;
         const auto delta = GetMouseDragDelta( 1 );
         m_yDelta = delta.y;
-        const auto dpx = int64_t( (delta.x * nspx) + (hwheel_delta * nspx));
+        const auto dpx = int64_t( ( delta.x * nspx ) + ( hwheel_delta * nspx ) );
         if( dpx != 0 )
         {
             m_vd.zvStart -= dpx;
@@ -178,7 +178,7 @@ void View::HandleTimelineKeyboard( int64_t timespan, const ImVec2& wpos, float w
         nextTimelineRangeEnd = m_vd.zvEnd;
     }
 
-    const auto bias = (io.MousePos.x - wpos.x) / w;
+    const auto bias = ( io.MousePos.x - wpos.x ) / w;
     const auto span = nextTimelineRangeEnd - nextTimelineRangeStart;
     // Move at a rate of 1/10th the length of the timeline per second, with a minimum of 500ns
     const auto moveInTimelineNanos = std::max<int64_t>( span / 10, 500 );
@@ -202,7 +202,7 @@ void View::HandleTimelineKeyboard( int64_t timespan, const ImVec2& wpos, float w
             {
                 // Bias if equal is 0.5. Multiply by 2 to offset back to the expected movement range.
                 nextTimelineRangeStart += timeStartDelta * mult * 2 * bias;
-                nextTimelineRangeEnd += timeEndDelta * mult * 2 * (1 - bias);
+                nextTimelineRangeEnd += timeEndDelta * mult * 2 * ( 1 - bias );
             }
             else
             {
@@ -229,14 +229,13 @@ void View::HandleTimelineKeyboard( int64_t timespan, const ImVec2& wpos, float w
         const auto lastTime = m_worker.GetLastTime();
 
         nextTimelineRangeStart = std::max<int64_t>( std::min( nextTimelineRangeStart, lastTime - 50 ), firstTime );
-        nextTimelineRangeEnd = std::max<int64_t>( std::min( nextTimelineRangeEnd, lastTime ), firstTime+1 );
+        nextTimelineRangeEnd = std::max<int64_t>( std::min( nextTimelineRangeEnd, lastTime ), firstTime + 1 );
 
         if( nextTimelineRangeEnd - nextTimelineRangeStart <= 50 ) return;
         const auto shouldPause = m_viewMode == ViewMode::Paused || !m_worker.IsConnected();
         ZoomToRange( nextTimelineRangeStart, nextTimelineRangeEnd, shouldPause );
     }
 }
-
 
 void View::DrawTimeline()
 {
@@ -384,7 +383,7 @@ void View::DrawTimeline()
             size_t numNew = threadData.size() - m_threadOrder.size() - numReinsert;
             for( size_t i = 0; i < numReinsert + numNew; i++ )
             {
-                const ThreadData *td = i < numReinsert ? m_threadReinsert[i] : threadData[m_threadOrder.size()];
+                const ThreadData* td = i < numReinsert ? m_threadReinsert[i] : threadData[m_threadOrder.size()];
                 auto it = std::find_if( m_threadOrder.begin(), m_threadOrder.end(), [td]( const auto t ) { return td->groupHint < t->groupHint; } );
                 m_threadOrder.insert( it, td );
             }
@@ -449,7 +448,7 @@ void View::DrawTimeline()
                 if( !ann->text.empty() )
                 {
                     const auto tw = ImGui::CalcTextSize( ann->text.c_str() ).x;
-                    if( aw - th*4 > tw )
+                    if( aw - th * 4 > tw )
                     {
                         draw->AddText( linepos + ImVec2( ( ann->range.min - m_vd.zvStart ) * pxns + th * 4, th * 0.5 ), 0xFFFFFFFF, ann->text.c_str() );
                     }

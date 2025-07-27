@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 
+#include "../Fonts.hpp"
 #include "../public/common/TracyStackFrames.hpp"
 #include "TracyConfig.hpp"
 #include "TracyImGui.hpp"
@@ -9,7 +10,6 @@
 #include "TracyPrint.hpp"
 #include "TracyUtility.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -32,8 +32,7 @@ static nlohmann::json GetCallstackJson( Worker& worker, const VarArray<Callstack
 {
     nlohmann::json json = {
         { "type", "callstack" },
-        { "frames", nlohmann::json::array() }
-    };
+        { "frames", nlohmann::json::array() } };
     auto& frames = json["frames"];
 
     int fidx = 0;
@@ -47,12 +46,12 @@ static nlohmann::json GetCallstackJson( Worker& worker, const VarArray<Callstack
         else
         {
             const auto fsz = frameData->size;
-            for( uint8_t f=0; f<fsz; f++ )
+            for( uint8_t f = 0; f < fsz; f++ )
             {
                 const auto& frame = frameData->data[f];
                 auto txt = worker.GetString( frame.name );
 
-                if( fidx == 0 && f != fsz-1 )
+                if( fidx == 0 && f != fsz - 1 )
                 {
                     auto test = tracy::s_tracyStackFrames;
                     bool match = false;
@@ -63,8 +62,7 @@ static nlohmann::json GetCallstackJson( Worker& worker, const VarArray<Callstack
                             match = true;
                             break;
                         }
-                    }
-                    while( *++test );
+                    } while( *++test );
                     if( match ) continue;
                 }
 
@@ -74,7 +72,7 @@ static nlohmann::json GetCallstackJson( Worker& worker, const VarArray<Callstack
                 } );
                 auto& frameJson = frames.back();
 
-                if( f == fsz-1 )
+                if( f == fsz - 1 )
                 {
                     frameJson["frame"] = fidx++;
                 }
@@ -105,7 +103,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
         int fidx = 0;
         for( auto& entry : cs )
         {
-            char buf[64*1024];
+            char buf[64 * 1024];
             auto frameData = m_worker.GetCallstackFrame( entry );
             if( !frameData )
             {
@@ -115,12 +113,12 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
             {
                 auto ptr = buf;
                 const auto fsz = frameData->size;
-                for( uint8_t f=0; f<fsz; f++ )
+                for( uint8_t f = 0; f < fsz; f++ )
                 {
                     const auto& frame = frameData->data[f];
                     auto txt = m_worker.GetString( frame.name );
 
-                    if( fidx == 0 && f != fsz-1 )
+                    if( fidx == 0 && f != fsz - 1 )
                     {
                         auto test = tracy::s_tracyStackFrames;
                         bool match = false;
@@ -131,12 +129,11 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                                 match = true;
                                 break;
                             }
-                        }
-                        while( *++test );
+                        } while( *++test );
                         if( match ) continue;
                     }
 
-                    if( f == fsz-1 )
+                    if( f == fsz - 1 )
                     {
                         ptr += sprintf( ptr, "%3i. ", fidx++ );
                     }
@@ -276,12 +273,12 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
             else
             {
                 const auto fsz = frameData->size;
-                for( uint8_t f=0; f<fsz; f++ )
+                for( uint8_t f = 0; f < fsz; f++ )
                 {
                     const auto& frame = frameData->data[f];
                     auto txt = m_worker.GetString( frame.name );
 
-                    if( fidx == 0 && f != fsz-1 )
+                    if( fidx == 0 && f != fsz - 1 )
                     {
                         auto test = s_tracyStackFrames;
                         bool match = false;
@@ -292,8 +289,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                                 match = true;
                                 break;
                             }
-                        }
-                        while( *++test );
+                        } while( *++test );
                         if( match ) continue;
                     }
 
@@ -304,7 +300,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                     {
                         if( !m_showExternalFrames )
                         {
-                            if( f == fsz-1 ) fidx++;
+                            if( f == fsz - 1 ) fidx++;
                             external++;
                             continue;
                         }
@@ -331,7 +327,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     bidx++;
-                    if( f == fsz-1 )
+                    if( f == fsz - 1 )
                     {
                         ImGui::Text( "%i", fidx++ );
                     }
@@ -419,8 +415,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                             ImGui::TextDisabled( "Custom #%" PRIu64, entry.idx );
                         }
                         break;
-                    case 3:
-                    {
+                    case 3: {
                         const auto sym = m_worker.GetSymbolData( frame.symAddr );
                         if( sym )
                         {
@@ -563,7 +558,7 @@ void View::DrawCallstackCalls( uint32_t callstack, uint16_t limit ) const
     const auto& csdata = m_worker.GetCallstack( callstack );
     const auto cssz = std::min( csdata.size(), limit );
     bool first = true;
-    for( uint16_t i=0; i<cssz; i++ )
+    for( uint16_t i = 0; i < cssz; i++ )
     {
         const auto frameData = m_worker.GetCallstackFrame( csdata[i] );
         if( !frameData ) break;
@@ -617,12 +612,12 @@ void View::CallstackTooltipContents( uint32_t idx )
         else
         {
             const auto fsz = frameData->size;
-            for( uint8_t f=0; f<fsz; f++ )
+            for( uint8_t f = 0; f < fsz; f++ )
             {
                 const auto& frame = frameData->data[f];
                 auto txt = m_worker.GetString( frame.name );
 
-                if( fidx == 0 && f != fsz-1 )
+                if( fidx == 0 && f != fsz - 1 )
                 {
                     auto test = s_tracyStackFrames;
                     bool match = false;
@@ -633,11 +628,10 @@ void View::CallstackTooltipContents( uint32_t idx )
                             match = true;
                             break;
                         }
-                    }
-                    while( *++test );
+                    } while( *++test );
                     if( match ) continue;
                 }
-                if( f == fsz-1 )
+                if( f == fsz - 1 )
                 {
                     ImGui::TextDisabled( "%i.", fidx++ );
                 }

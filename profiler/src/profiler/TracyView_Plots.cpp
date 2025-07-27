@@ -32,7 +32,7 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
         auto pvit = m_plotView.find( &plot );
         if( pvit == m_plotView.end() )
         {
-            pvit = m_plotView.emplace( &plot, PlotView { min, max } ).first;
+            pvit = m_plotView.emplace( &plot, PlotView{ min, max } ).first;
         }
         auto& pv = pvit->second;
         if( pv.min != min || pv.max != max )
@@ -108,7 +108,7 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
                 }
                 else
                 {
-                    DrawPlotPoint( wpos, x, y, offset, color, hover, true, v0, vec[i0-1].val, plot.type, plot.format, PlotHeight, plot.name );
+                    DrawPlotPoint( wpos, x, y, offset, color, hover, true, v0, vec[i0 - 1].val, plot.type, plot.format, PlotHeight, plot.name );
                 }
                 px = x;
                 py = y;
@@ -130,7 +130,7 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
                 {
                     DrawLine( draw, dpos + ImVec2( x, ymin ), dpos + ImVec2( x, ymax ), color );
 
-                    for( int i=0; i<cnt; i++ )
+                    for( int i = 0; i < cnt; i++ )
                     {
                         const auto is = i0 + i;
                         const auto& vs = vec[is];
@@ -308,7 +308,7 @@ void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint
                 const MemEvent* ev = nullptr;
                 if( change > 0 )
                 {
-                    auto it = std::lower_bound( mem.data.begin(), mem.data.end(), item.time.Val(), [] ( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+                    auto it = std::lower_bound( mem.data.begin(), mem.data.end(), item.time.Val(), []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
                     if( it != mem.data.end() && it->TimeAlloc() == item.time.Val() )
                     {
                         ev = it;
@@ -317,7 +317,7 @@ void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint
                 else
                 {
                     const auto& data = mem.data;
-                    auto it = std::lower_bound( mem.frees.begin(), mem.frees.end(), item.time.Val(), [&data] ( const auto& lhs, const auto& rhs ) { return data[lhs].TimeFree() < rhs; } );
+                    auto it = std::lower_bound( mem.frees.begin(), mem.frees.end(), item.time.Val(), [&data]( const auto& lhs, const auto& rhs ) { return data[lhs].TimeFree() < rhs; } );
                     if( it != mem.frees.end() && data[*it].TimeFree() == item.time.Val() )
                     {
                         ev = &data[*it];

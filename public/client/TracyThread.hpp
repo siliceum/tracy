@@ -35,11 +35,12 @@ public:
 class Thread
 {
 public:
-    Thread( void(*func)( void* ptr ), void* ptr )
+    Thread( void ( *func )( void* ptr ), void* ptr )
         : m_func( func )
         , m_ptr( ptr )
         , m_hnd( CreateThread( nullptr, 0, Launch, this, 0, nullptr ) )
-    {}
+    {
+    }
 
     ~Thread()
     {
@@ -50,9 +51,13 @@ public:
     HANDLE Handle() const { return m_hnd; }
 
 private:
-    static DWORD WINAPI Launch( void* ptr ) { ((Thread*)ptr)->m_func( ((Thread*)ptr)->m_ptr ); return 0; }
+    static DWORD WINAPI Launch( void* ptr )
+    {
+        ( (Thread*)ptr )->m_func( ( (Thread*)ptr )->m_ptr );
+        return 0;
+    }
 
-    void(*m_func)( void* ptr );
+    void ( *m_func )( void* ptr );
     void* m_ptr;
     HANDLE m_hnd;
 };
@@ -62,7 +67,7 @@ private:
 class Thread
 {
 public:
-    Thread( void(*func)( void* ptr ), void* ptr )
+    Thread( void ( *func )( void* ptr ), void* ptr )
         : m_func( func )
         , m_ptr( ptr )
     {
@@ -77,8 +82,12 @@ public:
     pthread_t Handle() const { return m_thread; }
 
 private:
-    static void* Launch( void* ptr ) { ((Thread*)ptr)->m_func( ((Thread*)ptr)->m_ptr ); return nullptr; }
-    void(*m_func)( void* ptr );
+    static void* Launch( void* ptr )
+    {
+        ( (Thread*)ptr )->m_func( ( (Thread*)ptr )->m_ptr );
+        return nullptr;
+    }
+    void ( *m_func )( void* ptr );
     void* m_ptr;
     pthread_t m_thread;
 };

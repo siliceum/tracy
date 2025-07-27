@@ -12,7 +12,7 @@ using TracyMutex = std::shared_mutex;
 
 #else
 
-#include <mutex>
+#  include <mutex>
 
 namespace tracy
 {

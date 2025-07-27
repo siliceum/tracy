@@ -24,13 +24,13 @@ struct AsmOp
     int id;
     int descId;
     int numVariants;
-    const AsmVar*const* variant;
+    const AsmVar* const* variant;
 };
 
 struct MicroArchitecture
 {
     int numOps;
-    const AsmOp*const* ops;
+    const AsmOp* const* ops;
 };
 
 extern const char* MicroArchitectureList[];

@@ -24,7 +24,7 @@ static Mouse s_mouse = {};
 
 void MouseFrame()
 {
-    for( int i=0; i<MouseButtons; i++ )
+    for( int i = 0; i < MouseButtons; i++ )
     {
         s_mouse.mouseDown[i] = ImGui::IsMouseDown( i );
         s_mouse.mouseClicked[i] = ImGui::IsMouseClicked( i );

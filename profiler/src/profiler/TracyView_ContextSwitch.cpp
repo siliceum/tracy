@@ -1,5 +1,6 @@
 #include <algorithm>
 
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
 #include "TracyPrint.hpp"
@@ -7,7 +8,6 @@
 #include "TracyTimelineDraw.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -69,7 +69,7 @@ const char* View::DecodeContextSwitchReason( uint8_t reason )
     {
     case ContextSwitchData::Win32_Executive: return "(Thread is waiting for the scheduler)";
     case ContextSwitchData::Win32_FreePage: return "(Thread is waiting for a free virtual memory page)";
-    case ContextSwitchData::Win32_PageIn: return "(Thread is waiting for a virtual memory page to arrive in memory)";    
+    case ContextSwitchData::Win32_PageIn: return "(Thread is waiting for a virtual memory page to arrive in memory)";
     case ContextSwitchData::Win32_PoolAllocation: return "(Thread is waiting for a system allocation)";
     case ContextSwitchData::Win32_DelayExecution: return "(Thread execution is delayed)";
     case ContextSwitchData::Win32_Suspended: return "(Thread execution is suspended)";
@@ -190,9 +190,8 @@ void View::DrawContextSwitchList( const TimelineContext& ctx, const std::vector<
         const auto& ev = *it;
         switch( v.type )
         {
-        case ContextSwitchDrawType::Waiting:
-        {
-            const auto& prev = *(it-1);
+        case ContextSwitchDrawType::Waiting: {
+            const auto& prev = *( it - 1 );
             const bool migration = prev.Cpu() != ev.Cpu();
             const auto px0 = std::max( { ( prev.End() - vStart ) * pxns, -10.0, double( minpx ) } );
             const auto pxw = ( ev.WakeupVal() - vStart ) * pxns;
@@ -202,7 +201,7 @@ void View::DrawContextSwitchList( const TimelineContext& ctx, const std::vector<
             {
                 draw->AddRectFilled( dpos + ImVec2( px0, offset + ty05 ), dpos + ImVec2( px1, endOffset ), 0x661C2321 );
             }
-            DrawLine( draw, dpos + ImVec2( px0, offset + ty05 - 0.5f ), dpos + ImVec2( std::min( pxw, w+10.0 ), offset + ty05 - 0.5f ), color, lineSize );
+            DrawLine( draw, dpos + ImVec2( px0, offset + ty05 - 0.5f ), dpos + ImVec2( std::min( pxw, w + 10.0 ), offset + ty05 - 0.5f ), color, lineSize );
             if( ev.WakeupVal() != ev.Start() )
             {
                 DrawLine( draw, dpos + ImVec2( std::max( pxw, 10.0 ), offset + ty05 - 0.5f ), dpos + ImVec2( px1, offset + ty05 - 0.5f ), 0xFF2280A0, lineSize );
@@ -275,27 +274,26 @@ void View::DrawContextSwitchList( const TimelineContext& ctx, const std::vector<
                     const auto waitStack = v.data;
                     if( waitStack )
                     {
-                            ImGui::Separator();
-                            TextDisabledUnformatted( ICON_FA_HOURGLASS_HALF " Wait stack:" );
-                            CallstackTooltipContents( waitStack );
-                            if( ImGui::IsMouseClicked( 0 ) )
-                            {
-                                m_callstackInfoWindow = waitStack;
-                            }
+                        ImGui::Separator();
+                        TextDisabledUnformatted( ICON_FA_HOURGLASS_HALF " Wait stack:" );
+                        CallstackTooltipContents( waitStack );
+                        if( ImGui::IsMouseClicked( 0 ) )
+                        {
+                            m_callstackInfoWindow = waitStack;
+                        }
                     }
                     ImGui::EndTooltip();
                 }
             }
             break;
         }
-        case ContextSwitchDrawType::Folded:
-        {
+        case ContextSwitchDrawType::Folded: {
             const auto num = v.data;
             const auto px0 = std::max( ( ev.Start() - vStart ) * pxns, -10.0 );
             const auto eit = it + num - 1;
             const auto end = eit->IsEndValid() ? eit->End() : eit->Start();
             const auto px1ns = end - vStart;
-            minpx = std::min( std::max( px1ns * pxns, px0+MinCtxSize ), double( w + 10 ) );
+            minpx = std::min( std::max( px1ns * pxns, px0 + MinCtxSize ), double( w + 10 ) );
             if( num == 1 )
             {
                 DrawLine( draw, dpos + ImVec2( px0, offset + ty05 - 0.5f ), dpos + ImVec2( minpx, offset + ty05 - 0.5f ), 0xFF22DD22, lineSize );
@@ -327,7 +325,7 @@ void View::DrawContextSwitchList( const TimelineContext& ctx, const std::vector<
             }
             else
             {
-                DrawZigZag( draw, wpos + ImVec2( 0, offset + ty05 ), px0, minpx, ty/4, 0xFF888888 );
+                DrawZigZag( draw, wpos + ImVec2( 0, offset + ty05 ), px0, minpx, ty / 4, 0xFF888888 );
                 if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( minpx, offset + ty + 1 ) ) )
                 {
                     ImGui::BeginTooltip();
@@ -344,8 +342,7 @@ void View::DrawContextSwitchList( const TimelineContext& ctx, const std::vector<
             }
             break;
         }
-        case ContextSwitchDrawType::Running:
-        {
+        case ContextSwitchDrawType::Running: {
             const auto end = ev.IsEndValid() ? ev.End() : ev.Start();
             const auto px0 = std::max( { ( ev.Start() - vStart ) * pxns, -10.0, double( minpx ) } );
             const auto px1 = std::min( ( end - vStart ) * pxns, w + 10.0 );
@@ -389,7 +386,11 @@ void View::DrawWaitStacks()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1400 * scale, 500 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Wait stacks", &m_showWaitStacks );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 #ifdef TRACY_NO_STATISTICS
     ImGui::TextWrapped( "Rebuild without the TRACY_NO_STATISTICS macro to enable wait stacks." );
 #else
@@ -403,8 +404,8 @@ void View::DrawWaitStacks()
             auto end = t->ctxSwitchSamples.end();
             if( m_waitStackRange.active )
             {
-                it = std::lower_bound( it, end, m_waitStackRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
-                end = std::lower_bound( it, end, m_waitStackRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                it = std::lower_bound( it, end, m_waitStackRange.min, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                end = std::lower_bound( it, end, m_waitStackRange.max, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
             }
             totalCount += std::distance( it, end );
             while( it != end )
@@ -474,7 +475,8 @@ void View::DrawWaitStacks()
     auto expand = ImGui::TreeNode( ICON_FA_SHUFFLE " Visible threads:" );
     ImGui::SameLine();
     size_t visibleThreads = 0;
-    for( const auto& t : m_threadOrder ) if( WaitStackThread( t->id ) ) visibleThreads++;
+    for( const auto& t : m_threadOrder )
+        if( WaitStackThread( t->id ) ) visibleThreads++;
     if( visibleThreads == m_threadOrder.size() )
     {
         ImGui::TextDisabled( "(%zu)", m_threadOrder.size() );
@@ -550,8 +552,7 @@ void View::DrawWaitStacks()
     {
         switch( m_waitStackMode )
         {
-        case 0:
-        {
+        case 0: {
             TextDisabledUnformatted( "Wait stack:" );
             ImGui::SameLine();
             if( ImGui::SmallButton( " " ICON_FA_CARET_LEFT " " ) )
@@ -577,7 +578,7 @@ void View::DrawWaitStacks()
             ImGui::SameLine();
             ImGui::Spacing();
             ImGui::SameLine();
-            Vector<decltype(stacks.begin())> data;
+            Vector<decltype( stacks.begin() )> data;
             data.reserve( stacks.size() );
             for( auto it = stacks.begin(); it != stacks.end(); ++it ) data.push_back( it );
             pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r ) { return l->second > r->second; } );
@@ -590,8 +591,7 @@ void View::DrawWaitStacks()
             DrawCallstackTable( data[m_waitStack]->first, false );
             break;
         }
-        case 1:
-        {
+        case 1: {
             SmallCheckbox( ICON_FA_LAYER_GROUP " Group by function name", &m_groupWaitStackBottomUp );
             auto tree = GetCallstackFrameTreeBottomUp( stacks, m_groupCallstackTreeByNameBottomUp );
             if( !tree.empty() )
@@ -605,8 +605,7 @@ void View::DrawWaitStacks()
             }
             break;
         }
-        case 2:
-        {
+        case 2: {
             SmallCheckbox( ICON_FA_LAYER_GROUP " Group by function name", &m_groupWaitStackTopDown );
             auto tree = GetCallstackFrameTreeTopDown( stacks, m_groupCallstackTreeByNameTopDown );
             if( !tree.empty() )

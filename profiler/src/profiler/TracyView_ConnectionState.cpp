@@ -1,9 +1,9 @@
+#include "../Fonts.hpp"
 #include "TracyFileselector.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTexture.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {

@@ -1,11 +1,11 @@
 #include <inttypes.h>
 
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -17,38 +17,262 @@ constexpr size_t PageChunkBits = ChunkBits + PageBits;
 constexpr size_t PageChunkSize = 1 << PageChunkBits;
 
 uint32_t MemDecayColor[256] = {
-    0x0, 0xFF077F07, 0xFF078007, 0xFF078207, 0xFF078307, 0xFF078507, 0xFF078707, 0xFF078807,
-    0xFF078A07, 0xFF078B07, 0xFF078D07, 0xFF078F07, 0xFF079007, 0xFF089208, 0xFF089308, 0xFF089508,
-    0xFF089708, 0xFF089808, 0xFF089A08, 0xFF089B08, 0xFF089D08, 0xFF089F08, 0xFF08A008, 0xFF08A208,
-    0xFF09A309, 0xFF09A509, 0xFF09A709, 0xFF09A809, 0xFF09AA09, 0xFF09AB09, 0xFF09AD09, 0xFF09AF09,
-    0xFF09B009, 0xFF09B209, 0xFF09B309, 0xFF09B509, 0xFF0AB70A, 0xFF0AB80A, 0xFF0ABA0A, 0xFF0ABB0A,
-    0xFF0ABD0A, 0xFF0ABF0A, 0xFF0AC00A, 0xFF0AC20A, 0xFF0AC30A, 0xFF0AC50A, 0xFF0AC70A, 0xFF0BC80B,
-    0xFF0BCA0B, 0xFF0BCB0B, 0xFF0BCD0B, 0xFF0BCF0B, 0xFF0BD00B, 0xFF0BD20B, 0xFF0BD30B, 0xFF0BD50B,
-    0xFF0BD70B, 0xFF0BD80B, 0xFF0BDA0B, 0xFF0CDB0C, 0xFF0CDD0C, 0xFF0CDF0C, 0xFF0CE00C, 0xFF0CE20C,
-    0xFF0CE30C, 0xFF0CE50C, 0xFF0CE70C, 0xFF0CE80C, 0xFF0CEA0C, 0xFF0CEB0C, 0xFF0DED0D, 0xFF0DEF0D,
-    0xFF0DF00D, 0xFF0DF20D, 0xFF0DF30D, 0xFF0DF50D, 0xFF0DF70D, 0xFF0DF80D, 0xFF0DFA0D, 0xFF0DFB0D,
-    0xFF0DFD0D, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E,
-    0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0EFF0E, 0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F,
-    0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F, 0xFF0FFF0F,
-    0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF10FF10,
-    0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF10FF10, 0xFF11FF11, 0xFF11FF11, 0xFF11FF11, 0xFF11FF11,
-    0xFF11FF11, 0xFF11FF11, 0xFF11FF11, 0xFF11FF11, 0xFF11FF11, 0xFF11FF11, 0xFF11FF11, 0xFF12FF12,
-    0x0, 0xFF1212FF, 0xFF1111FF, 0xFF1111FF, 0xFF1111FF, 0xFF1111FF, 0xFF1111FF, 0xFF1111FF,
-    0xFF1111FF, 0xFF1111FF, 0xFF1111FF, 0xFF1111FF, 0xFF1111FF, 0xFF1010FF, 0xFF1010FF, 0xFF1010FF,
-    0xFF1010FF, 0xFF1010FF, 0xFF1010FF, 0xFF1010FF, 0xFF1010FF, 0xFF1010FF, 0xFF1010FF, 0xFF1010FF,
-    0xFF1010FF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF,
-    0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0F0FFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF,
-    0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF, 0xFF0E0EFF,
-    0xFF0D0DFD, 0xFF0D0DFB, 0xFF0D0DFA, 0xFF0D0DF8, 0xFF0D0DF7, 0xFF0D0DF5, 0xFF0D0DF3, 0xFF0D0DF2,
-    0xFF0D0DF0, 0xFF0D0DEF, 0xFF0D0DED, 0xFF0C0CEB, 0xFF0C0CEA, 0xFF0C0CE8, 0xFF0C0CE7, 0xFF0C0CE5,
-    0xFF0C0CE3, 0xFF0C0CE2, 0xFF0C0CE0, 0xFF0C0CDF, 0xFF0C0CDD, 0xFF0C0CDB, 0xFF0B0BDA, 0xFF0B0BD8,
-    0xFF0B0BD7, 0xFF0B0BD5, 0xFF0B0BD3, 0xFF0B0BD2, 0xFF0B0BD0, 0xFF0B0BCF, 0xFF0B0BCD, 0xFF0B0BCB,
-    0xFF0B0BCA, 0xFF0B0BC8, 0xFF0A0AC7, 0xFF0A0AC5, 0xFF0A0AC3, 0xFF0A0AC2, 0xFF0A0AC0, 0xFF0A0ABF,
-    0xFF0A0ABD, 0xFF0A0ABB, 0xFF0A0ABA, 0xFF0A0AB8, 0xFF0A0AB7, 0xFF0909B5, 0xFF0909B3, 0xFF0909B2,
-    0xFF0909B0, 0xFF0909AF, 0xFF0909AD, 0xFF0909AB, 0xFF0909AA, 0xFF0909A8, 0xFF0909A7, 0xFF0909A5,
-    0xFF0909A3, 0xFF0808A2, 0xFF0808A0, 0xFF08089F, 0xFF08089D, 0xFF08089B, 0xFF08089A, 0xFF080898,
-    0xFF080897, 0xFF080895, 0xFF080893, 0xFF080892, 0xFF070790, 0xFF07078F, 0xFF07078D, 0xFF07078B,
-    0xFF07078A, 0xFF070788, 0xFF070787, 0xFF070785, 0xFF070783, 0xFF070782, 0xFF070780, 0xFF07077F,
+    0x0,
+    0xFF077F07,
+    0xFF078007,
+    0xFF078207,
+    0xFF078307,
+    0xFF078507,
+    0xFF078707,
+    0xFF078807,
+    0xFF078A07,
+    0xFF078B07,
+    0xFF078D07,
+    0xFF078F07,
+    0xFF079007,
+    0xFF089208,
+    0xFF089308,
+    0xFF089508,
+    0xFF089708,
+    0xFF089808,
+    0xFF089A08,
+    0xFF089B08,
+    0xFF089D08,
+    0xFF089F08,
+    0xFF08A008,
+    0xFF08A208,
+    0xFF09A309,
+    0xFF09A509,
+    0xFF09A709,
+    0xFF09A809,
+    0xFF09AA09,
+    0xFF09AB09,
+    0xFF09AD09,
+    0xFF09AF09,
+    0xFF09B009,
+    0xFF09B209,
+    0xFF09B309,
+    0xFF09B509,
+    0xFF0AB70A,
+    0xFF0AB80A,
+    0xFF0ABA0A,
+    0xFF0ABB0A,
+    0xFF0ABD0A,
+    0xFF0ABF0A,
+    0xFF0AC00A,
+    0xFF0AC20A,
+    0xFF0AC30A,
+    0xFF0AC50A,
+    0xFF0AC70A,
+    0xFF0BC80B,
+    0xFF0BCA0B,
+    0xFF0BCB0B,
+    0xFF0BCD0B,
+    0xFF0BCF0B,
+    0xFF0BD00B,
+    0xFF0BD20B,
+    0xFF0BD30B,
+    0xFF0BD50B,
+    0xFF0BD70B,
+    0xFF0BD80B,
+    0xFF0BDA0B,
+    0xFF0CDB0C,
+    0xFF0CDD0C,
+    0xFF0CDF0C,
+    0xFF0CE00C,
+    0xFF0CE20C,
+    0xFF0CE30C,
+    0xFF0CE50C,
+    0xFF0CE70C,
+    0xFF0CE80C,
+    0xFF0CEA0C,
+    0xFF0CEB0C,
+    0xFF0DED0D,
+    0xFF0DEF0D,
+    0xFF0DF00D,
+    0xFF0DF20D,
+    0xFF0DF30D,
+    0xFF0DF50D,
+    0xFF0DF70D,
+    0xFF0DF80D,
+    0xFF0DFA0D,
+    0xFF0DFB0D,
+    0xFF0DFD0D,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0EFF0E,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF0FFF0F,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF10FF10,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF11FF11,
+    0xFF12FF12,
+    0x0,
+    0xFF1212FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1111FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF1010FF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0F0FFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0E0EFF,
+    0xFF0D0DFD,
+    0xFF0D0DFB,
+    0xFF0D0DFA,
+    0xFF0D0DF8,
+    0xFF0D0DF7,
+    0xFF0D0DF5,
+    0xFF0D0DF3,
+    0xFF0D0DF2,
+    0xFF0D0DF0,
+    0xFF0D0DEF,
+    0xFF0D0DED,
+    0xFF0C0CEB,
+    0xFF0C0CEA,
+    0xFF0C0CE8,
+    0xFF0C0CE7,
+    0xFF0C0CE5,
+    0xFF0C0CE3,
+    0xFF0C0CE2,
+    0xFF0C0CE0,
+    0xFF0C0CDF,
+    0xFF0C0CDD,
+    0xFF0C0CDB,
+    0xFF0B0BDA,
+    0xFF0B0BD8,
+    0xFF0B0BD7,
+    0xFF0B0BD5,
+    0xFF0B0BD3,
+    0xFF0B0BD2,
+    0xFF0B0BD0,
+    0xFF0B0BCF,
+    0xFF0B0BCD,
+    0xFF0B0BCB,
+    0xFF0B0BCA,
+    0xFF0B0BC8,
+    0xFF0A0AC7,
+    0xFF0A0AC5,
+    0xFF0A0AC3,
+    0xFF0A0AC2,
+    0xFF0A0AC0,
+    0xFF0A0ABF,
+    0xFF0A0ABD,
+    0xFF0A0ABB,
+    0xFF0A0ABA,
+    0xFF0A0AB8,
+    0xFF0A0AB7,
+    0xFF0909B5,
+    0xFF0909B3,
+    0xFF0909B2,
+    0xFF0909B0,
+    0xFF0909AF,
+    0xFF0909AD,
+    0xFF0909AB,
+    0xFF0909AA,
+    0xFF0909A8,
+    0xFF0909A7,
+    0xFF0909A5,
+    0xFF0909A3,
+    0xFF0808A2,
+    0xFF0808A0,
+    0xFF08089F,
+    0xFF08089D,
+    0xFF08089B,
+    0xFF08089A,
+    0xFF080898,
+    0xFF080897,
+    0xFF080895,
+    0xFF080893,
+    0xFF080892,
+    0xFF070790,
+    0xFF07078F,
+    0xFF07078D,
+    0xFF07078B,
+    0xFF07078A,
+    0xFF070788,
+    0xFF070787,
+    0xFF070785,
+    0xFF070783,
+    0xFF070782,
+    0xFF070780,
+    0xFF07077F,
 };
 
 struct MemoryPage
@@ -62,7 +286,7 @@ static tracy_force_inline MemoryPage& GetPage( unordered_flat_map<uint64_t, Memo
     auto it = memmap.find( page );
     if( it == memmap.end() )
     {
-        it = memmap.emplace( page, MemoryPage { page, {} } ).first;
+        it = memmap.emplace( page, MemoryPage{ page, {} } ).first;
     }
     return it->second;
 }
@@ -128,11 +352,7 @@ std::vector<MemoryPage> View::GetMemoryPages() const
 
                 const auto a0 = alloc.Ptr() - memlow;
                 const auto a1 = a0 + alloc.Size();
-                int8_t val = alloc.TimeFree() < 0 ?
-                    int8_t( std::max( int64_t( 1 ), 127 - ( ( m_memInfo.range.max - alloc.TimeAlloc() ) >> 24 ) ) ) :
-                    ( alloc.TimeFree() > m_memInfo.range.max ?
-                        int8_t( std::max( int64_t( 1 ), 127 - ( ( m_memInfo.range.max - alloc.TimeAlloc() ) >> 24 ) ) ) :
-                        int8_t( -std::max( int64_t( 1 ), 127 - ( ( m_memInfo.range.max - alloc.TimeFree() ) >> 24 ) ) ) );
+                int8_t val = alloc.TimeFree() < 0 ? int8_t( std::max( int64_t( 1 ), 127 - ( ( m_memInfo.range.max - alloc.TimeAlloc() ) >> 24 ) ) ) : ( alloc.TimeFree() > m_memInfo.range.max ? int8_t( std::max( int64_t( 1 ), 127 - ( ( m_memInfo.range.max - alloc.TimeAlloc() ) >> 24 ) ) ) : int8_t( -std::max( int64_t( 1 ), 127 - ( ( m_memInfo.range.max - alloc.TimeFree() ) >> 24 ) ) ) );
 
                 const auto c0 = a0 >> ChunkBits;
                 const auto c1 = a1 >> ChunkBits;
@@ -148,9 +368,7 @@ std::vector<MemoryPage> View::GetMemoryPages() const
         {
             const auto a0 = alloc.Ptr() - memlow;
             const auto a1 = a0 + alloc.Size();
-            const int8_t val = alloc.TimeFree() < 0 ?
-                int8_t( std::max( int64_t( 1 ), 127 - ( ( lastTime - std::min( lastTime, alloc.TimeAlloc() ) ) >> 24 ) ) ) :
-                int8_t( -std::max( int64_t( 1 ), 127 - ( ( lastTime - std::min( lastTime, alloc.TimeFree() ) ) >> 24 ) ) );
+            const int8_t val = alloc.TimeFree() < 0 ? int8_t( std::max( int64_t( 1 ), 127 - ( ( lastTime - std::min( lastTime, alloc.TimeAlloc() ) ) >> 24 ) ) ) : int8_t( -std::max( int64_t( 1 ), 127 - ( ( lastTime - std::min( lastTime, alloc.TimeFree() ) ) >> 24 ) ) );
 
             const auto c0 = a0 >> ChunkBits;
             const auto c1 = a1 >> ChunkBits;
@@ -175,7 +393,11 @@ void View::DrawMemory()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1100 * scale, 500 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Memory", &m_memInfo.show, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     auto& memNameMap = m_worker.GetMemNameMap();
     if( memNameMap.size() > 1 )
@@ -260,7 +482,7 @@ void View::DrawMemory()
     ImGui::BeginChild( "##memory" );
     if( ImGui::TreeNode( ICON_FA_AT " Allocations" ) )
     {
-        bool findClicked =  ImGui::InputTextWithHint( "###address", "Enter memory address to search for", m_memInfo.pattern, 1024, ImGuiInputTextFlags_EnterReturnsTrue );
+        bool findClicked = ImGui::InputTextWithHint( "###address", "Enter memory address to search for", m_memInfo.pattern, 1024, ImGuiInputTextFlags_EnterReturnsTrue );
         ImGui::SameLine();
         findClicked |= ImGui::Button( ICON_FA_MAGNIFYING_GLASS " Find" );
         if( findClicked )
@@ -280,10 +502,10 @@ void View::DrawMemory()
             match.reserve( mem.active.size() );     // heuristic
             if( m_memInfo.range.active )
             {
-                auto it = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+                auto it = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.min, []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
                 if( it != mem.data.end() )
                 {
-                    auto end = std::lower_bound( it, mem.data.end(), m_memInfo.range.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+                    auto end = std::lower_bound( it, mem.data.end(), m_memInfo.range.max, []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
                     while( it != end )
                     {
                         if( it->Ptr() <= m_memInfo.ptrFind && it->Ptr() + it->Size() > m_memInfo.ptrFind )
@@ -320,7 +542,7 @@ void View::DrawMemory()
                     {
                         ImGui::Text( "0x%" PRIx64 "+%" PRIu64, v->Ptr(), m_memInfo.ptrFind - v->Ptr() );
                     }
-                    }, -1, m_memInfo.pool );
+                }, -1, m_memInfo.pool );
             }
         }
         ImGui::TreePop();
@@ -334,10 +556,10 @@ void View::DrawMemory()
         items.reserve( mem.active.size() );
         if( m_memInfo.range.active )
         {
-            auto it = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+            auto it = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.min, []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
             if( it != mem.data.end() )
             {
-                auto end = std::lower_bound( it, mem.data.end(), m_memInfo.range.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+                auto end = std::lower_bound( it, mem.data.end(), m_memInfo.range.max, []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
                 while( it != end )
                 {
                     const auto tf = it->TimeFree();
@@ -369,7 +591,7 @@ void View::DrawMemory()
         {
             ListMemData( items, []( auto v ) {
                 ImGui::Text( "0x%" PRIx64, v->Ptr() );
-                }, -1, m_memInfo.pool );
+            }, -1, m_memInfo.pool );
         }
         else
         {
@@ -411,8 +633,7 @@ void View::DrawMemory()
                     do
                     {
                         idx++;
-                    }
-                    while( idx < PageSize && page.data[idx] == 0 );
+                    } while( idx < PageSize && page.data[idx] == 0 );
                 }
                 else
                 {
@@ -421,8 +642,7 @@ void View::DrawMemory()
                     do
                     {
                         idx++;
-                    }
-                    while( idx < PageSize && page.data[idx] == val );
+                    } while( idx < PageSize && page.data[idx] == val );
                     DrawLine( draw, dpos + ImVec2( i0, line ), dpos + ImVec2( idx, line ), MemDecayColor[(uint8_t)val] );
                 }
             }
@@ -548,7 +768,9 @@ void View::DrawMemoryAllocWindow()
         ImGui::Separator();
         TextFocused( "Appeared at", TimeToStringExact( ev.TimeAlloc() ) );
         if( ImGui::IsItemClicked() ) CenterAtTime( ev.TimeAlloc() );
-        ImGui::SameLine(); ImGui::Spacing(); ImGui::SameLine();
+        ImGui::SameLine();
+        ImGui::Spacing();
+        ImGui::SameLine();
         SmallColorBox( GetThreadColor( tidAlloc, 0 ) );
         ImGui::SameLine();
         TextFocused( "Thread:", m_worker.GetThreadName( tidAlloc ) );
@@ -574,7 +796,9 @@ void View::DrawMemoryAllocWindow()
         {
             TextFocused( "Freed at", TimeToStringExact( ev.TimeFree() ) );
             if( ImGui::IsItemClicked() ) CenterAtTime( ev.TimeFree() );
-            ImGui::SameLine(); ImGui::Spacing(); ImGui::SameLine();
+            ImGui::SameLine();
+            ImGui::Spacing();
+            ImGui::SameLine();
             SmallColorBox( GetThreadColor( tidFree, 0 ) );
             ImGui::SameLine();
             TextFocused( "Thread:", m_worker.GetThreadName( tidFree ) );
@@ -657,10 +881,10 @@ void View::DrawMemoryAllocWindow()
     if( !show ) m_memoryAllocInfoWindow = -1;
 }
 
-void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<void(const MemEvent*)>& DrawAddress, int64_t startTime, uint64_t pool )
+void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<void( const MemEvent* )>& DrawAddress, int64_t startTime, uint64_t pool )
 {
     if( startTime == -1 ) startTime = 0;
-    if( ImGui::BeginTable( "##mem", 8, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY, ImVec2( 0, ImGui::GetTextLineHeightWithSpacing() * std::min<int64_t>( 1+vec.size(), 15 ) ) ) )
+    if( ImGui::BeginTable( "##mem", 8, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY, ImVec2( 0, ImGui::GetTextLineHeightWithSpacing() * std::min<int64_t>( 1 + vec.size(), 15 ) ) ) )
     {
         ImGui::TableSetupScrollFreeze( 0, 1 );
         ImGui::TableSetupColumn( "Address", ImGuiTableColumnFlags_NoHide );
@@ -723,7 +947,7 @@ void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<v
         clipper.Begin( vec.end() - vec.begin() );
         while( clipper.Step() )
         {
-            for( auto i=clipper.DisplayStart; i<clipper.DisplayEnd; i++ )
+            for( auto i = clipper.DisplayStart; i < clipper.DisplayEnd; i++ )
             {
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn();
@@ -912,7 +1136,11 @@ void View::DrawAllocList()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1100 * scale, 500 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Allocations list", &m_memInfo.showAllocList );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     std::vector<const MemEvent*> data;
     auto basePtr = m_worker.GetMemoryNamed( m_memInfo.pool ).data.data();
@@ -925,7 +1153,7 @@ void View::DrawAllocList()
     TextFocused( "Number of allocations:", RealToString( m_memInfo.allocList.size() ) );
     ListMemData( data, []( auto v ) {
         ImGui::Text( "0x%" PRIx64, v->Ptr() );
-        }, -1, m_memInfo.pool );
+    }, -1, m_memInfo.pool );
     ImGui::End();
 }
 

@@ -1,10 +1,10 @@
+#include "../Fonts.hpp"
 #include "TracyColor.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTimelineContext.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -52,8 +52,8 @@ bool View::DrawGpu( const TimelineContext& ctx, const GpuCtxData& gpu, int& offs
                     if( !singleThread )
                     {
                         ImGui::PushFont( g_fonts.normal, FontSmall );
-                        DrawTextContrast( draw, wpos + ImVec2( ty, offset-1-sstep ), 0xFFFFAAAA, m_worker.GetThreadName( td.first ) );
-                        DrawLine( draw, dpos + ImVec2( 0, offset+sty-sstep ), dpos + ImVec2( w, offset+sty-sstep ), 0x22FFAAAA );
+                        DrawTextContrast( draw, wpos + ImVec2( ty, offset - 1 - sstep ), 0xFFFFAAAA, m_worker.GetThreadName( td.first ) );
+                        DrawLine( draw, dpos + ImVec2( 0, offset + sty - sstep ), dpos + ImVec2( w, offset + sty - sstep ), 0x22FFAAAA );
                         ImGui::PopFont();
                     }
 
@@ -79,8 +79,8 @@ bool View::DrawGpu( const TimelineContext& ctx, const GpuCtxData& gpu, int& offs
                     if( !singleThread )
                     {
                         ImGui::PushFont( g_fonts.normal, FontSmall );
-                        DrawTextContrast( draw, wpos + ImVec2( ty, offset-1-sstep ), 0xFFFFAAAA, m_worker.GetThreadName( td.first ) );
-                        DrawLine( draw, dpos + ImVec2( 0, offset+sty-sstep ), dpos + ImVec2( w, offset+sty-sstep ), 0x22FFAAAA );
+                        DrawTextContrast( draw, wpos + ImVec2( ty, offset - 1 - sstep ), 0xFFFFAAAA, m_worker.GetThreadName( td.first ) );
+                        DrawLine( draw, dpos + ImVec2( 0, offset + sty - sstep ), dpos + ImVec2( w, offset + sty - sstep ), 0x22FFAAAA );
                         ImGui::PopFont();
                     }
 
@@ -132,14 +132,14 @@ template<typename Adapter, typename V>
 int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset, int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
 {
     // cast to uint64_t, so that unended zones (end = -1) are still drawn
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ), [begin, drift] ( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
     if( it == vec.end() ) return depth;
 
     Adapter a;
 
-    const auto zitend = std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ), [begin, drift] ( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuStart(), begin, drift ) < (uint64_t)r; } );
+    const auto zitend = std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuStart(), begin, drift ) < (uint64_t)r; } );
     if( it == zitend ) return depth;
-    if( AdjustGpuTime( a(*(zitend-1)).GpuEnd(), begin, drift ) < m_vd.zvStart ) return depth;
+    if( AdjustGpuTime( a( *( zitend - 1 ) ).GpuEnd(), begin, drift ) < m_vd.zvStart ) return depth;
 
     const auto w = ImGui::GetContentRegionAvail().x - 1;
     const auto ty = ImGui::GetTextLineHeight();
@@ -153,7 +153,7 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
 
     while( it < zitend )
     {
-        auto& ev = a(*it);
+        auto& ev = a( *it );
         auto end = m_worker.GetZoneEnd( ev );
         if( end == std::numeric_limits<int64_t>::max() ) break;
         const auto start = AdjustGpuTime( ev.GpuStart(), begin, drift );
@@ -168,14 +168,14 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             auto px1ns = end - m_vd.zvStart;
             auto rend = end;
             auto nextTime = end + MinVisNs;
-            for(;;)
+            for( ;; )
             {
                 const auto prevIt = it;
-                it = std::lower_bound( it, zitend, std::max<int64_t>( 0, nextTime ), [begin, drift] ( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
+                it = std::lower_bound( it, zitend, std::max<int64_t>( 0, nextTime ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
                 if( it == prevIt ) ++it;
                 num += std::distance( prevIt, it );
                 if( it == zitend ) break;
-                const auto nend = AdjustGpuTime( m_worker.GetZoneEnd( a(*it) ), begin, drift );
+                const auto nend = AdjustGpuTime( m_worker.GetZoneEnd( a( *it ) ), begin, drift );
                 const auto nsnext = nend - m_vd.zvStart;
                 if( nsnext < 0 || nsnext - px1ns >= MinVisNs * 2 ) break;
                 px1ns = nsnext;
@@ -183,9 +183,9 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
                 nextTime = nend + nspx;
             }
             const auto px1 = px1ns * pxns;
-            draw->AddRectFilled( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( std::max( px1, px0+MinVisSize ), double( w + 10 ) ), offset + ty ), color );
-            DrawZigZag( draw, wpos + ImVec2( 0, offset + ty/2 ), std::max( px0, -10.0 ), std::min( std::max( px1, px0+MinVisSize ), double( w + 10 ) ), ty/4, DarkenColor( color ) );
-            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( std::max( px1, px0+MinVisSize ), double( w + 10 ) ), offset + ty + 1 ) ) )
+            draw->AddRectFilled( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), offset + ty ), color );
+            DrawZigZag( draw, wpos + ImVec2( 0, offset + ty / 2 ), std::max( px0, -10.0 ), std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), ty / 4, DarkenColor( color ) );
+            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), offset + ty + 1 ) ) )
             {
                 if( num > 1 )
                 {
@@ -258,8 +258,8 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             else
             {
                 const auto darkColor = DarkenColor( zoneColor.color );
-                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px0, offset ), dpos + ImVec2( px1-1, offset ), zoneColor.accentColor, zoneColor.thickness );
-                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px1-1, offset + tsz.y ), dpos + ImVec2( px1-1, offset ), darkColor, zoneColor.thickness );
+                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px0, offset ), dpos + ImVec2( px1 - 1, offset ), zoneColor.accentColor, zoneColor.thickness );
+                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px1 - 1, offset + tsz.y ), dpos + ImVec2( px1 - 1, offset ), darkColor, zoneColor.thickness );
             }
             if( tsz.x < zsz )
             {
@@ -315,21 +315,21 @@ template<typename Adapter, typename V>
 int View::SkipGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset, int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
 {
     // cast to uint64_t, so that unended zones (end = -1) are still drawn
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ), [begin, drift] ( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
     if( it == vec.end() ) return depth;
 
     Adapter a;
 
-    const auto zitend = std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ), [begin, drift] ( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuStart(), begin, drift ) < (uint64_t)r; } );
+    const auto zitend = std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuStart(), begin, drift ) < (uint64_t)r; } );
     if( it == zitend ) return depth;
-    if( AdjustGpuTime( a(*(zitend-1)).GpuEnd(), begin, drift ) < m_vd.zvStart ) return depth;
+    if( AdjustGpuTime( a( *( zitend - 1 ) ).GpuEnd(), begin, drift ) < m_vd.zvStart ) return depth;
 
     depth++;
     int maxdepth = depth;
 
     while( it < zitend )
     {
-        auto& ev = a(*it);
+        auto& ev = a( *it );
         auto end = m_worker.GetZoneEnd( ev );
         if( end == std::numeric_limits<int64_t>::max() ) break;
         const auto start = AdjustGpuTime( ev.GpuStart(), begin, drift );
@@ -340,13 +340,13 @@ int View::SkipGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             const auto MinVisNs = MinVisSize * nspx;
             auto px1ns = end - m_vd.zvStart;
             auto nextTime = end + MinVisNs;
-            for(;;)
+            for( ;; )
             {
                 const auto prevIt = it;
-                it = std::lower_bound( it, zitend, nextTime, [begin, drift] ( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
+                it = std::lower_bound( it, zitend, nextTime, [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
                 if( it == prevIt ) ++it;
                 if( it == zitend ) break;
-                const auto nend = AdjustGpuTime( m_worker.GetZoneEnd( a(*it) ), begin, drift );
+                const auto nend = AdjustGpuTime( m_worker.GetZoneEnd( a( *it ) ), begin, drift );
                 const auto nsnext = nend - m_vd.zvStart;
                 if( nsnext - px1ns >= MinVisNs * 2 ) break;
                 px1ns = nsnext;

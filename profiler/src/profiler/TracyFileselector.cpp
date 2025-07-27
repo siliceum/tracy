@@ -41,7 +41,7 @@ bool HasFailed()
 }
 
 #ifdef __EMSCRIPTEN__
-static std::function<void(const char*)> s_openFileCallback;
+static std::function<void( const char* )> s_openFileCallback;
 
 extern "C" int nativeOpenFile()
 {
@@ -50,7 +50,7 @@ extern "C" int nativeOpenFile()
 }
 #endif
 
-static bool OpenFileImpl( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+static bool OpenFileImpl( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
 #ifndef TRACY_NO_FILESELECTOR
 #  ifdef __EMSCRIPTEN__
@@ -59,11 +59,13 @@ static bool OpenFileImpl( const char* ext, const char* desc, const std::function
         var input = document.createElement( 'input' );
         input.type = 'file';
         input.accept = UTF8ToString( $0 );
-        input.onchange = (e) => {
+        input.onchange = ( e ) = >
+        {
             var file = e.target.files[0];
             var reader = new FileReader();
             reader.readAsArrayBuffer( file );
-            reader.onload = () => {
+            reader.onload = () = >
+            {
                 var buf = reader.result;
                 var view = new Uint8Array( buf );
                 FS.createDataFile( '/', 'upload.tracy', view, true, true );
@@ -72,7 +74,8 @@ static bool OpenFileImpl( const char* ext, const char* desc, const std::function
             };
         };
         input.click();
-    }, ext );
+    },
+            ext );
     return true;
 #  else
     nfdu8filteritem_t filter = { desc, ext };
@@ -93,7 +96,7 @@ static bool OpenFileImpl( const char* ext, const char* desc, const std::function
     return false;
 }
 
-static bool SaveFileImpl( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+static bool SaveFileImpl( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
 #if !defined TRACY_NO_FILESELECTOR && !defined __EMSCRIPTEN__
     nfdu8filteritem_t filter = { desc, ext };
@@ -113,12 +116,12 @@ static bool SaveFileImpl( const char* ext, const char* desc, const std::function
     return false;
 }
 
-void OpenFile( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+void OpenFile( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
     if( !OpenFileImpl( ext, desc, callback ) ) s_hasFailed = true;
 }
 
-void SaveFile( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+void SaveFile( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
     if( !SaveFileImpl( ext, desc, callback ) ) s_hasFailed = true;
 }

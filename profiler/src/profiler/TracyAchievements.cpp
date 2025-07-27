@@ -10,14 +10,17 @@
 namespace tracy
 {
 
-namespace data { extern AchievementCategory* AchievementCategories[]; }
+namespace data
+{
+extern AchievementCategory* AchievementCategories[];
+}
 
 AchievementsMgr::AchievementsMgr()
 {
     auto cat = data::AchievementCategories;
     while( *cat )
     {
-        FillMap( (*cat)->items, *cat );
+        FillMap( ( *cat )->items, *cat );
         cat++;
     }
 
@@ -53,7 +56,7 @@ AchievementsMgr::AchievementsMgr()
             {
                 while( *c )
                 {
-                    if( (*c)->unlockTime == 0 ) (*c)->unlockTime = it->doneTime;
+                    if( ( *c )->unlockTime == 0 ) ( *c )->unlockTime = it->doneTime;
                     c++;
                 }
             }
@@ -62,7 +65,7 @@ AchievementsMgr::AchievementsMgr()
             {
                 while( *c )
                 {
-                    if( (*c)->unlockTime == 0 ) (*c)->unlockTime = it->doneTime;
+                    if( ( *c )->unlockTime == 0 ) ( *c )->unlockTime = it->doneTime;
                     c++;
                 }
             }
@@ -80,12 +83,12 @@ AchievementsMgr::AchievementsMgr()
     auto c = data::AchievementCategories;
     while( *c )
     {
-        if( (*c)->unlockTime > 0 )
+        if( ( *c )->unlockTime > 0 )
         {
-            auto items = (*c)->items;
+            auto items = ( *c )->items;
             while( *items )
             {
-                if( (*items)->unlockTime == 0 ) (*items)->unlockTime = (*c)->unlockTime;
+                if( ( *items )->unlockTime == 0 ) ( *items )->unlockTime = ( *c )->unlockTime;
                 items++;
             }
         }
@@ -117,15 +120,15 @@ void AchievementsMgr::Achieve( const char* id )
     auto c = a.items;
     if( c )
     {
-        while( *c ) (*c++)->unlockTime = t;
+        while( *c ) ( *c++ )->unlockTime = t;
     }
     c = a.unlocks;
     if( c )
     {
         while( *c )
         {
-            (*c)->unlockTime = t;
-            auto cit = m_map.find( (*c)->id );
+            ( *c )->unlockTime = t;
+            auto cit = m_map.find( ( *c )->id );
             if( cit->second.category->unlockTime == 0 ) cit->second.category->unlockTime = t;
             c++;
         }
@@ -174,11 +177,11 @@ bool AchievementsMgr::CategoryNeedsAttention( const char* id ) const
     auto c = data::AchievementCategories;
     while( *c )
     {
-        if( strcmp( (*c)->id, id ) == 0 )
+        if( strcmp( ( *c )->id, id ) == 0 )
         {
             for( auto& v : m_map )
             {
-                if( v.second.category == (*c) )
+                if( v.second.category == ( *c ) )
                 {
                     auto& it = v.second.item;
                     if( it->unlockTime > 0 && !it->hideNew ) return true;
@@ -197,8 +200,8 @@ void AchievementsMgr::FillMap( data::AchievementItem** items, data::AchievementC
 {
     while( *items )
     {
-        m_map.emplace( (*items)->id, AchievementPair { *items, category } );
-        if( (*items)->items) FillMap( (*items)->items, category );
+        m_map.emplace( ( *items )->id, AchievementPair{ *items, category } );
+        if( ( *items )->items ) FillMap( ( *items )->items, category );
         items++;
     }
 }

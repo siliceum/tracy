@@ -1,9 +1,9 @@
 #ifndef __TRACYLLMTOOLS_HPP__
 #define __TRACYLLMTOOLS_HPP__
 
-#include <nlohmann/json.hpp>
 #include <memory>
 #include <mutex>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <thread>
 #include <vector>

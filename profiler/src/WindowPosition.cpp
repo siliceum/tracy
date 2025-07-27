@@ -5,7 +5,6 @@
 
 #include "profiler/TracyStorage.hpp"
 
-
 WindowPosition::WindowPosition()
     : m_fn( tracy::GetSavePath( "window.position" ) )
 {

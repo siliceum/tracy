@@ -1,5 +1,6 @@
 #include <inttypes.h>
 
+#include "../Fonts.hpp"
 #include "TracyColor.hpp"
 #include "TracyFilesystem.hpp"
 #include "TracyImGui.hpp"
@@ -9,7 +10,6 @@
 #include "TracyTimelineContext.hpp"
 #include "TracyTimelineDraw.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -120,7 +120,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
     auto draw = ImGui::GetWindowDrawList();
 
     const auto ty025 = round( ty * 0.25f );
-    const auto ty05  = round( ty * 0.5f );
+    const auto ty05 = round( ty * 0.5f );
 
     const auto& lockMapData = m_worker.GetLockMap();
     const auto MinVisPx = GetScale() * MinVisSize;
@@ -231,7 +231,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                     const auto threadBit = GetThreadBit( lock.thread );
                     int16_t markloc = 0;
                     auto it = v.ptr.get();
-                    for(;;)
+                    for( ;; )
                     {
                         if( it->ptr->thread == lock.thread )
                         {
@@ -272,8 +272,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                                 ImGui::TextUnformatted( "Recursive lock acquire in thread." );
                             }
                             break;
-                        case LockState::HasBlockingLock:
-                        {
+                        case LockState::HasBlockingLock: {
                             if( v.ptr->lockCount == 1 )
                             {
                                 ImGui::Text( "Thread \"%s\" has lock. Blocked threads (%" PRIu64 "):", m_worker.GetThreadName( tid ), TracyCountBits( v.ptr->waitList ) );
@@ -297,8 +296,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                             ImGui::Unindent( ty );
                             break;
                         }
-                        case LockState::WaitLock:
-                        {
+                        case LockState::WaitLock: {
                             if( v.ptr->lockCount > 0 )
                             {
                                 ImGui::Text( "Thread \"%s\" is blocked by other thread:", m_worker.GetThreadName( tid ) );
@@ -352,8 +350,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                                 ImGui::Unindent( ty );
                             }
                             break;
-                        case LockState::HasBlockingLock:
-                        {
+                        case LockState::HasBlockingLock: {
                             if( ptr->sharedList == 0 )
                             {
                                 assert( v.ptr->lockCount == 1 );
@@ -409,8 +406,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                             ImGui::Unindent( ty );
                             break;
                         }
-                        case LockState::WaitLock:
-                        {
+                        case LockState::WaitLock: {
                             assert( v.ptr->lockCount == 0 || v.ptr->lockCount == 1 );
                             if( v.ptr->lockCount != 0 || ptr->sharedList != 0 )
                             {
@@ -448,7 +444,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                 }
             }
 
-            const auto cfilled  = v.state == LockState::HasLock ? 0xFF228A22 : ( v.state == LockState::HasBlockingLock ? 0xFF228A8A : 0xFF2222BD );
+            const auto cfilled = v.state == LockState::HasLock ? 0xFF228A22 : ( v.state == LockState::HasBlockingLock ? 0xFF228A8A : 0xFF2222BD );
             draw->AddRectFilled( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ), cfilled );
             if( m_lockHighlight.thread != lock.thread && ( v.state == LockState::HasBlockingLock ) != m_lockHighlight.blocked && v.next != lockmap.timeline.end() && m_lockHighlight.id == int64_t( lock.id ) && m_lockHighlight.begin <= v.ptr->ptr->Time() && m_lockHighlight.end >= v.next->ptr->Time() )
             {

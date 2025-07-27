@@ -13,7 +13,7 @@
 
 #ifdef TRACY_HAS_SYSTIME
 
-#include <stdint.h>
+#  include <stdint.h>
 
 namespace tracy
 {

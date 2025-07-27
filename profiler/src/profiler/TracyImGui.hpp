@@ -2,7 +2,7 @@
 #define __TRACYIMGUI_HPP__
 
 #ifdef _MSC_VER
-#  pragma warning( disable: 4244 )  // conversion from don't care to whatever, possible loss of data
+#  pragma warning( disable : 4244 )  // conversion from don't care to whatever, possible loss of data
 #endif
 
 #include <math.h>
@@ -27,13 +27,11 @@ namespace tracy
 extern bool s_wasActive;
 bool WasActive();
 
-
 void DrawZigZag( ImDrawList* draw, const ImVec2& wpos, double start, double end, double h, uint32_t color );
 void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0, double x1, double y1, double sw, uint32_t color, bool fix_stripes_in_screen_space, bool inverted );
 void DrawHistogramMinMaxLabel( ImDrawList* draw, int64_t tmin, int64_t tmax, ImVec2 wpos, float w, float ty );
 void PrintSource( const std::vector<Tokenizer::Line>& lines );
 bool PrintTextWrapped( const char* text, const char* end = nullptr );
-
 
 static constexpr const uint32_t SyntaxColors[] = {
     0xFFB2B2B2,     // default
@@ -64,7 +62,6 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
     0xFFBF75C6,     // register
     0xFFE899CE,     // literal
 };
-
 
 [[maybe_unused]] static inline float GetScale()
 {
@@ -129,7 +126,7 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
     const auto h = ImGui::GetCursorPosY() - ty * 0.5f;
     const auto w = ImGui::GetWindowWidth();
     draw->AddCircleFilled( wpos + ImVec2( w * 0.5f - ty, h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f     , h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f        ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f, h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
     draw->AddCircleFilled( wpos + ImVec2( w * 0.5f + ty, h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
 }
 
@@ -144,7 +141,7 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
 [[maybe_unused]] static inline void SmallColorBox( uint32_t color )
 {
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
-    ImGui::ColorButton( "c1", ImVec4( (color & 0xFF) / 255.f, ((color>>8) & 0xFF ) / 255.f, ((color>>16) & 0xFF ) / 255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
+    ImGui::ColorButton( "c1", ImVec4( ( color & 0xFF ) / 255.f, ( ( color >> 8 ) & 0xFF ) / 255.f, ( ( color >> 16 ) & 0xFF ) / 255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
     ImGui::PopStyleVar();
 }
 

@@ -1,6 +1,6 @@
 #ifdef _WIN32
-#  include <windows.h>
 #  include <io.h>
+#  include <windows.h>
 #else
 #  include <unistd.h>
 #endif
@@ -59,12 +59,11 @@ std::vector<TracyLlmEmbeddings::Result> TracyLlmEmbeddings::Search( const std::v
     std::vector<Result> ret;
     auto result = m_index.search( embedding.data(), k );
     ret.reserve( result.size() );
-    for( size_t i=0; i<result.size(); i++ )
+    for( size_t i = 0; i < result.size(); i++ )
     {
-        ret.emplace_back( Result {
+        ret.emplace_back( Result{
             .idx = result[i].member.key,
-            .distance = result[i].distance
-        } );
+            .distance = result[i].distance } );
     }
     return ret;
 }

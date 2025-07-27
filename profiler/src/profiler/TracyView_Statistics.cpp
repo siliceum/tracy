@@ -1,11 +1,11 @@
 #include <sstream>
 
+#include "../Fonts.hpp"
 #include "TracyFilesystem.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -40,7 +40,11 @@ void View::DrawStatistics()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1400 * scale, 600 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Statistics", &m_showStatistics, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 #ifdef TRACY_NO_STATISTICS
     ImGui::TextWrapped( "Collection of statistical data is disabled in this build." );
     ImGui::TextWrapped( "Rebuild without the TRACY_NO_STATISTICS macro to enable statistics view." );
@@ -93,7 +97,6 @@ void View::DrawStatistics()
     ImGui::Spacing();
     ImGui::SameLine();
 
-
     Vector<SrcLocZonesSlim> srcloc;
 
     bool copySrclocsToClipboard = false;
@@ -131,7 +134,7 @@ void View::DrawStatistics()
                             if( cit->second.count != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
                             }
                         }
                         else
@@ -165,9 +168,9 @@ void View::DrawStatistics()
                             if( cnt != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, threadNum, cnt, total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, threadNum, cnt, total } );
                             }
-                            m_statCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total, threadNum };
+                            m_statCache[it->first] = StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total, threadNum };
                         }
                     }
                     else
@@ -182,7 +185,7 @@ void View::DrawStatistics()
                             {
                                 if( cit->second.count != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
+                                    srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
                                 }
                             }
                             else
@@ -215,9 +218,9 @@ void View::DrawStatistics()
                                 const auto threadNum = (uint16_t)threads.size();
                                 if( cnt != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, threadNum, cnt, total } );
+                                    srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, threadNum, cnt, total } );
                                 }
-                                m_statCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total, threadNum };
+                                m_statCache[it->first] = StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total, threadNum };
                             }
                         }
                     }
@@ -250,7 +253,7 @@ void View::DrawStatistics()
                     }
                     if( !filterActive )
                     {
-                        srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
+                        srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
                     }
                     else
                     {
@@ -258,7 +261,7 @@ void View::DrawStatistics()
                         auto name = m_worker.GetString( sl.name.active ? sl.name : sl.function );
                         if( m_statisticsFilter.PassFilter( name ) )
                         {
-                            srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
+                            srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
                         }
                     }
                 }
@@ -354,7 +357,7 @@ void View::DrawStatistics()
                             if( cit->second.count != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cit->second.count, cit->second.total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, cit->second.count, cit->second.total } );
                             }
                         }
                         else
@@ -376,9 +379,9 @@ void View::DrawStatistics()
                             if( cnt != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cnt, total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, cnt, total } );
                             }
-                            m_gpuStatCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total };
+                            m_gpuStatCache[it->first] = StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total };
                         }
                     }
                     else
@@ -393,7 +396,7 @@ void View::DrawStatistics()
                             {
                                 if( cit->second.count != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cit->second.count, cit->second.total } );
+                                    srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, cit->second.count, cit->second.total } );
                                 }
                             }
                             else
@@ -414,9 +417,9 @@ void View::DrawStatistics()
                                 }
                                 if( cnt != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cnt, total } );
+                                    srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, cnt, total } );
                                 }
-                                m_gpuStatCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total };
+                                m_gpuStatCache[it->first] = StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total };
                             }
                         }
                     }
@@ -434,7 +437,7 @@ void View::DrawStatistics()
                     int64_t total = it->second.total;
                     if( !filterActive )
                     {
-                        srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, count, total } );
+                        srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, count, total } );
                     }
                     else
                     {
@@ -442,7 +445,7 @@ void View::DrawStatistics()
                         auto name = m_worker.GetString( sl.name.active ? sl.name : sl.function );
                         if( m_statisticsFilter.PassFilter( name ) )
                         {
-                            srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, count, total } );
+                            srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, count, total } );
                         }
                     }
                 }
@@ -496,7 +499,7 @@ void View::DrawStatistics()
             {
                 imgNames.emplace_back( m_worker.GetString( img ) );
             }
-            pdqsort_branchless( imgNames.begin(), imgNames.end(), [] ( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
+            pdqsort_branchless( imgNames.begin(), imgNames.end(), []( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
             for( auto& img : imgNames )
             {
                 bool sel = false;
@@ -607,7 +610,7 @@ void View::DrawStatistics()
         {
             ImGui::BeginChild( "##statistics" );
             if( ImGui::BeginTable( "##statistics", m_statMode == 0 ? 6 : 5,
-                ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY ) )
+                                   ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY ) )
             {
                 ImGui::TableSetupScrollFreeze( 0, 1 );
                 ImGui::TableSetupColumn( "Name", ImGuiTableColumnFlags_NoHide );
@@ -824,7 +827,7 @@ void View::DrawStatistics()
                         auto it = symStat.find( v.first );
                         if( it == symStat.end() )
                         {
-                            data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                            data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                         }
                         else
                         {
@@ -833,26 +836,26 @@ void View::DrawStatistics()
                                 auto samples = m_worker.GetSamplesForSymbol( v.first );
                                 if( samples )
                                 {
-                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                     if( it != samples->end() )
                                     {
-                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                         const auto count = uint32_t( end - it );
-                                        data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                        data.push_back_no_space_check( SymList{ v.first, 0, count } );
                                     }
                                     else
                                     {
-                                        data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                        data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                                     }
                                 }
                                 else
                                 {
-                                    data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                    data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                                 }
                             }
                             else
                             {
-                                data.push_back_no_space_check( SymList { v.first, it->second.incl, it->second.excl } );
+                                data.push_back_no_space_check( SymList{ v.first, it->second.incl, it->second.excl } );
                             }
                         }
                     }
@@ -865,7 +868,7 @@ void View::DrawStatistics()
                     auto it = symStat.find( v.first );
                     if( it == symStat.end() )
                     {
-                        data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                        data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                     }
                     else
                     {
@@ -874,26 +877,26 @@ void View::DrawStatistics()
                             auto samples = m_worker.GetSamplesForSymbol( v.first );
                             if( samples )
                             {
-                                auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                 if( it != samples->end() )
                                 {
-                                    auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                    auto end = std::lower_bound( it, samples->end(), m_statRange.max, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                     const auto count = uint32_t( end - it );
-                                    data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                    data.push_back_no_space_check( SymList{ v.first, 0, count } );
                                 }
                                 else
                                 {
-                                    data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                    data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                                 }
                             }
                             else
                             {
-                                data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                             }
                         }
                         else
                         {
-                            data.push_back_no_space_check( SymList { v.first, it->second.incl, it->second.excl } );
+                            data.push_back_no_space_check( SymList{ v.first, it->second.incl, it->second.excl } );
                         }
                     }
                 }
@@ -932,18 +935,18 @@ void View::DrawStatistics()
                                 auto samples = m_worker.GetSamplesForSymbol( v.first );
                                 if( samples )
                                 {
-                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                     if( it != samples->end() )
                                     {
-                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                         const auto count = uint32_t( end - it );
-                                        data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                        data.push_back_no_space_check( SymList{ v.first, 0, count } );
                                     }
                                 }
                             }
                             else
                             {
-                                data.push_back_no_space_check( SymList { v.first, v.second.incl, v.second.excl } );
+                                data.push_back_no_space_check( SymList{ v.first, v.second.incl, v.second.excl } );
                             }
                         }
                     }
@@ -958,12 +961,12 @@ void View::DrawStatistics()
                         auto samples = m_worker.GetSamplesForSymbol( v.first );
                         if( samples )
                         {
-                            auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                            auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                             if( it != samples->end() )
                             {
-                                auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                auto end = std::lower_bound( it, samples->end(), m_statRange.max, []( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
                                 const auto count = uint32_t( end - it );
-                                data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                data.push_back_no_space_check( SymList{ v.first, 0, count } );
                             }
                         }
                     }
@@ -972,7 +975,7 @@ void View::DrawStatistics()
                 {
                     for( auto& v : symStat )
                     {
-                        data.push_back_no_space_check( SymList { v.first, v.second.incl, v.second.excl } );
+                        data.push_back_no_space_check( SymList{ v.first, v.second.incl, v.second.excl } );
                     }
                 }
             }

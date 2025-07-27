@@ -1,10 +1,10 @@
 #include <inttypes.h>
 
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -16,7 +16,11 @@ void View::DrawInfo()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 400 * scale, 650 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Trace information", &m_showInfo, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
     ImGui::PushFont( g_fonts.normal, FontBig );
     TextFocused( "Program:", m_worker.GetCaptureProgram().c_str() );
     ImGui::PopFont();
@@ -142,7 +146,7 @@ void View::DrawInfo()
             TextFocused( "Input data:", MemSizeToString( bytes.first ) );
             TextFocused( "Compressed:", MemSizeToString( bytes.second ) );
             char buf[64];
-            auto ptr = PrintFloat( buf, buf+62, 100. * bytes.second / bytes.first, 2 );
+            auto ptr = PrintFloat( buf, buf + 62, 100. * bytes.second / bytes.first, 2 );
             memcpy( ptr, "%", 2 );
             TextFocused( "Ratio:", buf );
             ImGui::EndTooltip();
@@ -167,7 +171,7 @@ void View::DrawInfo()
             if( expand )
             {
                 auto& cache = m_worker.GetSourceFileCache();
-                std::vector<decltype(cache.begin())> vec;
+                std::vector<decltype( cache.begin() )> vec;
                 vec.reserve( cache.size() );
                 for( auto it = cache.begin(); it != cache.end(); ++it ) vec.emplace_back( it );
                 pdqsort_branchless( vec.begin(), vec.end(), []( const auto& lhs, const auto& rhs ) { return strcmp( lhs->first, rhs->first ) < 0; } );
@@ -241,7 +245,7 @@ void View::DrawInfo()
                     vec.reserve( fsz );
                     const auto midSz = vec.size();
                     total = m_frameSortData.total;
-                    for( size_t i=m_frameSortData.frameNum; i<fsz; i++ )
+                    for( size_t i = m_frameSortData.frameNum; i < fsz; i++ )
                     {
                         const auto t = m_worker.GetFrameTime( *m_frames, i );
                         if( t > 0 )
@@ -264,7 +268,7 @@ void View::DrawInfo()
                     auto& vec = m_frameSortData.data;
                     assert( vec.empty() );
                     vec.reserve( frameRange.second - frameRange.first );
-                    for( int i=frameRange.first; i<frameRange.second; i++ )
+                    for( int i = frameRange.first; i < frameRange.second; i++ )
                     {
                         const auto t = m_worker.GetFrameTime( *m_frames, i );
                         if( t > 0 )
@@ -283,7 +287,7 @@ void View::DrawInfo()
                 auto& vec = m_frameSortData.data;
                 const auto vsz = vec.size();
                 m_frameSortData.average = float( total ) / vsz;
-                m_frameSortData.median = vec[vsz/2];
+                m_frameSortData.median = vec[vsz / 2];
                 m_frameSortData.total = total;
                 m_frameSortData.frameNum = fsz;
             }
@@ -368,17 +372,17 @@ void View::DrawInfo()
                                     const auto tMinLog = log10( tmin );
                                     const auto zmax = ( log10( tmax ) - tMinLog ) / numBins;
                                     int64_t i;
-                                    for( i=0; i<numBins; i++ )
+                                    for( i = 0; i < numBins; i++ )
                                     {
-                                        const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i+1 ) * zmax ) );
+                                        const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i + 1 ) * zmax ) );
                                         auto nit = std::lower_bound( framesBegin, framesEnd, nextBinVal );
                                         const auto distance = std::distance( framesBegin, nit );
                                         if( distance >= m_frameSortData.minBinVal ) break;
                                         framesBegin = nit;
                                     }
-                                    for( int64_t j=numBins-1; j>i; j-- )
+                                    for( int64_t j = numBins - 1; j > i; j-- )
                                     {
-                                        const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( j-1 ) * zmax ) );
+                                        const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( j - 1 ) * zmax ) );
                                         auto nit = std::lower_bound( framesBegin, framesEnd, nextBinVal );
                                         const auto distance = std::distance( nit, framesEnd );
                                         if( distance >= m_frameSortData.minBinVal ) break;
@@ -389,17 +393,17 @@ void View::DrawInfo()
                                 {
                                     const auto zmax = tmax - tmin;
                                     int64_t i;
-                                    for( i=0; i<numBins; i++ )
+                                    for( i = 0; i < numBins; i++ )
                                     {
-                                        const auto nextBinVal = tmin + ( i+1 ) * zmax / numBins;
+                                        const auto nextBinVal = tmin + ( i + 1 ) * zmax / numBins;
                                         auto nit = std::lower_bound( framesBegin, framesEnd, nextBinVal );
                                         const auto distance = std::distance( framesBegin, nit );
                                         if( distance >= m_frameSortData.minBinVal ) break;
                                         framesBegin = nit;
                                     }
-                                    for( int64_t j=numBins-1; j>i; j-- )
+                                    for( int64_t j = numBins - 1; j > i; j-- )
                                     {
-                                        const auto nextBinVal = tmin + ( j-1 ) * zmax / numBins;
+                                        const auto nextBinVal = tmin + ( j - 1 ) * zmax / numBins;
                                         auto nit = std::lower_bound( framesBegin, framesEnd, nextBinVal );
                                         const auto distance = std::distance( nit, framesEnd );
                                         if( distance >= m_frameSortData.minBinVal ) break;
@@ -408,7 +412,7 @@ void View::DrawInfo()
                                 }
 
                                 tmin = *framesBegin;
-                                tmax = *(framesEnd-1);
+                                tmax = *( framesEnd - 1 );
                             }
 
                             if( m_frameSortData.logTime )
@@ -416,31 +420,31 @@ void View::DrawInfo()
                                 const auto tMinLog = log10( tmin );
                                 const auto zmax = ( log10( tmax ) - tMinLog ) / numBins;
                                 auto fit = framesBegin;
-                                for( int64_t i=0; i<numBins; i++ )
+                                for( int64_t i = 0; i < numBins; i++ )
                                 {
-                                    const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i+1 ) * zmax ) );
+                                    const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i + 1 ) * zmax ) );
                                     auto nit = std::lower_bound( fit, framesEnd, nextBinVal );
                                     bins[i] = std::distance( fit, nit );
                                     fit = nit;
                                 }
-                                bins[numBins-1] += std::distance( fit, framesEnd );
+                                bins[numBins - 1] += std::distance( fit, framesEnd );
                             }
                             else
                             {
                                 const auto zmax = tmax - tmin;
                                 auto fit = framesBegin;
-                                for( int64_t i=0; i<numBins; i++ )
+                                for( int64_t i = 0; i < numBins; i++ )
                                 {
-                                    const auto nextBinVal = tmin + ( i+1 ) * zmax / numBins;
+                                    const auto nextBinVal = tmin + ( i + 1 ) * zmax / numBins;
                                     auto nit = std::lower_bound( fit, framesEnd, nextBinVal );
                                     bins[i] = std::distance( fit, nit );
                                     fit = nit;
                                 }
-                                bins[numBins-1] += std::distance( fit, framesEnd );
+                                bins[numBins - 1] += std::distance( fit, framesEnd );
                             }
 
                             int64_t maxVal = bins[0];
-                            for( int i=1; i<numBins; i++ )
+                            for( int i = 1; i < numBins; i++ )
                             {
                                 maxVal = std::max( maxVal, bins[i] );
                             }
@@ -450,13 +454,13 @@ void View::DrawInfo()
                             ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
                             ImGui::Checkbox( "###draw1", &m_frameSortData.drawAvgMed );
                             ImGui::SameLine();
-                            ImGui::ColorButton( "c1", ImVec4( 0xFF/255.f, 0x44/255.f, 0x44/255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
+                            ImGui::ColorButton( "c1", ImVec4( 0xFF / 255.f, 0x44 / 255.f, 0x44 / 255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
                             ImGui::SameLine();
                             ImGui::TextUnformatted( "Mean time" );
                             ImGui::SameLine();
                             ImGui::Spacing();
                             ImGui::SameLine();
-                            ImGui::ColorButton( "c2", ImVec4( 0x44/255.f, 0x88/255.f, 0xFF/255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
+                            ImGui::ColorButton( "c2", ImVec4( 0x44 / 255.f, 0x88 / 255.f, 0xFF / 255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
                             ImGui::SameLine();
                             ImGui::TextUnformatted( "Median time" );
                             ImGui::PopStyleVar();
@@ -475,24 +479,24 @@ void View::DrawInfo()
                             if( m_frameSortData.logVal )
                             {
                                 const auto hAdj = double( Height - 4 ) / log10( maxVal + 1 );
-                                for( int i=0; i<numBins; i++ )
+                                for( int i = 0; i < numBins; i++ )
                                 {
                                     const auto val = bins[i];
                                     if( val > 0 )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 ), dpos + ImVec2( 2+i, Height-3 - log10( val + 1 ) * hAdj ), 0xFF22DDDD );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 ), dpos + ImVec2( 2 + i, Height - 3 - log10( val + 1 ) * hAdj ), 0xFF22DDDD );
                                     }
                                 }
                             }
                             else
                             {
                                 const auto hAdj = double( Height - 4 ) / maxVal;
-                                for( int i=0; i<numBins; i++ )
+                                for( int i = 0; i < numBins; i++ )
                                 {
                                     const auto val = bins[i];
                                     if( val > 0 )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 ), dpos + ImVec2( 2+i, Height-3 - val * hAdj ), 0xFF22DDDD );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 ), dpos + ImVec2( 2 + i, Height - 3 - val * hAdj ), 0xFF22DDDD );
                                     }
                                 }
                             }
@@ -521,7 +525,7 @@ void View::DrawInfo()
 
                                 static const double logticks[] = { log10( 2 ), log10( 3 ), log10( 4 ), log10( 5 ), log10( 6 ), log10( 7 ), log10( 8 ), log10( 9 ) };
 
-                                for( int i=start; i<=end; i++ )
+                                for( int i = start; i <= end; i++ )
                                 {
                                     const auto x = ( i - start + offset ) * step;
 
@@ -537,7 +541,7 @@ void View::DrawInfo()
                                         }
                                     }
 
-                                    for( int j=0; j<8; j++ )
+                                    for( int j = 0; j < 8; j++ )
                                     {
                                         const auto xoff = x + logticks[j] * step;
                                         if( xoff >= 0 )
@@ -609,22 +613,22 @@ void View::DrawInfo()
 
                                 if( ta == tm )
                                 {
-                                    DrawLine( draw, ImVec2( dpos.x + ta, dpos.y ), ImVec2( dpos.x + ta, dpos.y+Height-2 ), 0xFFFF88FF );
+                                    DrawLine( draw, ImVec2( dpos.x + ta, dpos.y ), ImVec2( dpos.x + ta, dpos.y + Height - 2 ), 0xFFFF88FF );
                                 }
                                 else
                                 {
-                                    DrawLine( draw, ImVec2( dpos.x + ta, dpos.y ), ImVec2( dpos.x + ta, dpos.y+Height-2 ), 0xFF4444FF );
-                                    DrawLine( draw, ImVec2( dpos.x + tm, dpos.y ), ImVec2( dpos.x + tm, dpos.y+Height-2 ), 0xFFFF8844 );
+                                    DrawLine( draw, ImVec2( dpos.x + ta, dpos.y ), ImVec2( dpos.x + ta, dpos.y + Height - 2 ), 0xFF4444FF );
+                                    DrawLine( draw, ImVec2( dpos.x + tm, dpos.y ), ImVec2( dpos.x + tm, dpos.y + Height - 2 ), 0xFFFF8844 );
                                 }
                             }
 
-                            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 2, 2 ), wpos + ImVec2( w-2, Height + round( ty * 1.5 ) ) ) )
+                            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 2, 2 ), wpos + ImVec2( w - 2, Height + round( ty * 1.5 ) ) ) )
                             {
                                 const auto ltmin = log10( tmin );
                                 const auto ltmax = log10( tmax );
 
                                 auto& io = ImGui::GetIO();
-                                DrawLine( draw, ImVec2( io.MousePos.x + 0.5f, dpos.y ), ImVec2( io.MousePos.x + 0.5f, dpos.y+Height-2 ), 0x33FFFFFF );
+                                DrawLine( draw, ImVec2( io.MousePos.x + 0.5f, dpos.y ), ImVec2( io.MousePos.x + 0.5f, dpos.y + Height - 2 ), 0x33FFFFFF );
 
                                 const auto bin = int64_t( io.MousePos.x - wpos.x - 2 );
                                 int64_t t0, t1;
@@ -634,19 +638,19 @@ void View::DrawInfo()
 
                                     // Hackfix for inability to select data in last bin.
                                     // A proper solution would be nice.
-                                    if( bin+1 == numBins )
+                                    if( bin + 1 == numBins )
                                     {
                                         t1 = tmax;
                                     }
                                     else
                                     {
-                                        t1 = int64_t( pow( 10, ltmin + double( bin+1 ) / numBins * ( ltmax - ltmin ) ) );
+                                        t1 = int64_t( pow( 10, ltmin + double( bin + 1 ) / numBins * ( ltmax - ltmin ) ) );
                                     }
                                 }
                                 else
                                 {
-                                    t0 = int64_t( tmin + double( bin )   / numBins * ( tmax - tmin ) );
-                                    t1 = int64_t( tmin + double( bin+1 ) / numBins * ( tmax - tmin ) );
+                                    t0 = int64_t( tmin + double( bin ) / numBins * ( tmax - tmin ) );
+                                    t1 = int64_t( tmin + double( bin + 1 ) / numBins * ( tmax - tmin ) );
                                 }
 
                                 ImGui::BeginTooltip();
@@ -675,7 +679,7 @@ void View::DrawInfo()
                                 }
                                 const auto c = uint32_t( ( sin( s_time * 10 ) * 0.25 + 0.75 ) * 255 );
                                 const auto color = 0xFF000000 | ( c << 16 ) | ( c << 8 ) | c;
-                                DrawLine( draw, ImVec2( dpos.x + framePos, dpos.y ), ImVec2( dpos.x + framePos, dpos.y+Height-2 ), color );
+                                DrawLine( draw, ImVec2( dpos.x + framePos, dpos.y ), ImVec2( dpos.x + framePos, dpos.y + Height - 2 ), color );
                                 m_wasActive = true;
                             }
                         }
@@ -750,10 +754,10 @@ void View::DrawInfo()
             float width = 0;
             float origy = dpos.y;
 
-            std::vector<decltype(topology.begin())> tsort;
+            std::vector<decltype( topology.begin() )> tsort;
             tsort.reserve( topology.size() );
             for( auto it = topology.begin(); it != topology.end(); ++it ) tsort.emplace_back( it );
-            pdqsort_branchless( tsort.begin(), tsort.end(), [] ( const auto& l, const auto& r ) { return l->first < r->first; } );
+            pdqsort_branchless( tsort.begin(), tsort.end(), []( const auto& l, const auto& r ) { return l->first < r->first; } );
             for( auto& package : tsort )
             {
                 if( package->first != 0 ) dpos.y += ty;
@@ -761,10 +765,10 @@ void View::DrawInfo()
                 draw->AddText( dpos, 0xFFFFFFFF, buf );
                 dpos.y += ty;
 
-                std::vector<decltype(package->second.begin())> dsort;
+                std::vector<decltype( package->second.begin() )> dsort;
                 dsort.reserve( package->second.size() );
                 for( auto it = package->second.begin(); it != package->second.end(); ++it ) dsort.emplace_back( it );
-                pdqsort_branchless( dsort.begin(), dsort.end(), [] ( const auto& l, const auto& r ) { return l->first < r->first; } );
+                pdqsort_branchless( dsort.begin(), dsort.end(), []( const auto& l, const auto& r ) { return l->first < r->first; } );
                 for( auto& die : dsort )
                 {
                     dpos.y += small;
@@ -784,10 +788,10 @@ void View::DrawInfo()
 
                     draw->AddRect( dpos, dpos + ImVec2( margin + coreWidth * std::min<size_t>( cpl, die->second.size() ), ph ), 0xFFFFFFFF );
 
-                    std::vector<decltype(die->second.begin())> csort;
+                    std::vector<decltype( die->second.begin() )> csort;
                     csort.reserve( die->second.size() );
                     for( auto it = die->second.begin(); it != die->second.end(); ++it ) csort.emplace_back( it );
-                    pdqsort_branchless( csort.begin(), csort.end(), [] ( const auto& l, const auto& r ) { return l->first < r->first; } );
+                    pdqsort_branchless( csort.begin(), csort.end(), []( const auto& l, const auto& r ) { return l->first < r->first; } );
                     auto cpos = dpos + ImVec2( margin, margin );
                     int ll = cpl;
                     for( auto& core : csort )
@@ -796,7 +800,7 @@ void View::DrawInfo()
                         draw->AddText( cpos, 0xFFFFFFFF, buf );
                         draw->AddRect( cpos + ImVec2( 0, ty ), cpos + ImVec2( inCoreWidth + small, inCoreHeight + small ), 0xFFFFFFFF );
 
-                        for( int i=0; i<core->second.size(); i++ )
+                        for( int i = 0; i < core->second.size(); i++ )
                         {
                             sprintf( buf, ICON_FA_SHUFFLE "%" PRIu32, core->second[i] );
                             draw->AddText( cpos + ImVec2( margin + i * ( margin + ttsz ), ty + small ), 0xFFFFFFFF, buf );
@@ -805,7 +809,7 @@ void View::DrawInfo()
                         if( --ll == 0 )
                         {
                             ll = cpl;
-                            cpos.x -= (cpl-1) * coreWidth;
+                            cpos.x -= ( cpl - 1 ) * coreWidth;
                             cpos.y += coreHeight;
                         }
                         else
@@ -834,7 +838,7 @@ void View::DrawInfo()
         {
             ImGui::TextColored( ImVec4( 255, 0, 0, 255 ), "Error in regular expression" );
         }
-        if( ImGui::SmallButton( "Add new substitution" ) ) m_sourceSubstitutions.emplace_back( SourceRegex {} );
+        if( ImGui::SmallButton( "Add new substitution" ) ) m_sourceSubstitutions.emplace_back( SourceRegex{} );
         int idx = 0, remove = -1;
         bool changed = false;
         ImGui::Columns( 2, nullptr, false );
@@ -884,7 +888,7 @@ void View::DrawInfo()
             m_sourceRegexValid = regexValid;
         }
 
-        ImGui::Checkbox("Enforce source file modification time older than trace capture time", &m_validateSourceAge);
+        ImGui::Checkbox( "Enforce source file modification time older than trace capture time", &m_validateSourceAge );
 
         ImGui::TreePop();
     }

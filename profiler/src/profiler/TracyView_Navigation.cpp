@@ -26,7 +26,7 @@ void View::ZoomToZone( const GpuEvent& ev )
         int64_t begin;
         if( td->second.timeline.is_magic() )
         {
-            begin = ((Vector<GpuEvent>*)&td->second.timeline)->front().GpuStart();
+            begin = ( (Vector<GpuEvent>*)&td->second.timeline )->front().GpuStart();
         }
         else
         {

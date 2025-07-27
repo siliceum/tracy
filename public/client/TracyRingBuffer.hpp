@@ -1,5 +1,5 @@
-#include <atomic>
 #include <assert.h>
+#include <atomic>
 #include <errno.h>
 #include <linux/perf_event.h>
 #include <stdint.h>
@@ -37,7 +37,7 @@ public:
         }
         m_metadata = (perf_event_mmap_page*)mapAddr;
         assert( m_metadata->data_offset == pageSize );
-        m_buffer = ((char*)mapAddr) + pageSize;
+        m_buffer = ( (char*)mapAddr ) + pageSize;
         m_tail = m_metadata->data_tail;
     }
 

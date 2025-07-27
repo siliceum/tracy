@@ -5,10 +5,10 @@
 #include <optional>
 #include <vector>
 
-#include "TracyImGui.hpp"
+#include "../public/common/TracyForceInline.hpp"
 #include "../server/TracyTaskDispatch.hpp"
 #include "../server/tracy_robin_hood.h"
-#include "../public/common/TracyForceInline.hpp"
+#include "TracyImGui.hpp"
 
 namespace tracy
 {

@@ -24,7 +24,7 @@ static tracy_force_inline T* GetFrameTreeItemGroup( unordered_flat_map<uint64_t,
     if( !frameDataPtr ) return nullptr;
 
     auto& frameData = *frameDataPtr;
-    auto& frame = frameData.data[frameData.size-1];
+    auto& frame = frameData.data[frameData.size - 1];
     auto fidx = frame.name.Idx();
 
     auto it = tree.find( fidx );
@@ -42,7 +42,7 @@ static tracy_force_inline T* GetParentFrameTreeItemGroup( unordered_flat_map<uin
     if( !frameDataPtr ) return nullptr;
 
     auto& frameData = *frameDataPtr;
-    auto& frame = frameData.data[frameData.size-1];
+    auto& frame = frameData.data[frameData.size - 1];
     auto fidx = frame.name.Idx();
 
     auto it = tree.find( fidx );
@@ -52,7 +52,6 @@ static tracy_force_inline T* GetParentFrameTreeItemGroup( unordered_flat_map<uin
     }
     return &it->second;
 }
-
 
 unordered_flat_map<uint32_t, View::MemPathData> View::GetCallstackPaths( const MemData& mem, MemRange memRange ) const
 {
@@ -73,12 +72,12 @@ unordered_flat_map<uint32_t, View::MemPathData> View::GetCallstackPaths( const M
                 {
                     auto& ev = *it++;
                     if( ev.CsAlloc() == 0 ) continue;
-                    const bool is_inactive =  ev.TimeFree() >= 0 && ev.TimeFree() < m_memInfo.range.max;
+                    const bool is_inactive = ev.TimeFree() >= 0 && ev.TimeFree() < m_memInfo.range.max;
                     if( hide_inactive == is_inactive ) continue;
                     auto pit = pathSum.find( ev.CsAlloc() );
                     if( pit == pathSum.end() )
                     {
-                        pathSum.emplace( ev.CsAlloc(), MemPathData { 1, ev.Size() } );
+                        pathSum.emplace( ev.CsAlloc(), MemPathData{ 1, ev.Size() } );
                     }
                     else
                     {
@@ -96,7 +95,7 @@ unordered_flat_map<uint32_t, View::MemPathData> View::GetCallstackPaths( const M
                     auto pit = pathSum.find( ev.CsAlloc() );
                     if( pit == pathSum.end() )
                     {
-                        pathSum.emplace( ev.CsAlloc(), MemPathData { 1, ev.Size() } );
+                        pathSum.emplace( ev.CsAlloc(), MemPathData{ 1, ev.Size() } );
                     }
                     else
                     {
@@ -114,12 +113,12 @@ unordered_flat_map<uint32_t, View::MemPathData> View::GetCallstackPaths( const M
             for( auto& ev : mem.data )
             {
                 if( ev.CsAlloc() == 0 ) continue;
-                const bool is_inactive =  ev.TimeFree() >= 0;
+                const bool is_inactive = ev.TimeFree() >= 0;
                 if( hide_inactive == is_inactive ) continue;
                 auto it = pathSum.find( ev.CsAlloc() );
                 if( it == pathSum.end() )
                 {
-                    pathSum.emplace( ev.CsAlloc(), MemPathData { 1, ev.Size() } );
+                    pathSum.emplace( ev.CsAlloc(), MemPathData{ 1, ev.Size() } );
                 }
                 else
                 {
@@ -136,7 +135,7 @@ unordered_flat_map<uint32_t, View::MemPathData> View::GetCallstackPaths( const M
                 auto it = pathSum.find( ev.CsAlloc() );
                 if( it == pathSum.end() )
                 {
-                    pathSum.emplace( ev.CsAlloc(), MemPathData { 1, ev.Size() } );
+                    pathSum.emplace( ev.CsAlloc(), MemPathData{ 1, ev.Size() } );
                 }
                 else
                 {
@@ -278,7 +277,6 @@ unordered_flat_map<uint64_t, CallstackFrameTree> View::GetParentsCallstackFrameT
     return root;
 }
 
-
 unordered_flat_map<uint64_t, MemCallstackFrameTree> View::GetCallstackFrameTreeTopDown( const MemData& mem ) const
 {
     unordered_flat_map<uint64_t, MemCallstackFrameTree> root;
@@ -418,7 +416,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
     {
         sorted.emplace_back( it );
     }
-    pdqsort_branchless( sorted.begin(), sorted.end(), [] ( const auto& lhs, const auto& rhs ) { return lhs->second.alloc > rhs->second.alloc; } );
+    pdqsort_branchless( sorted.begin(), sorted.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second.alloc > rhs->second.alloc; } );
 
     int lidx = 0;
     for( auto& _v : sorted )
@@ -430,7 +428,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
         if( frameDataPtr )
         {
             auto& frameData = *frameDataPtr;
-            auto frame = frameData.data[frameData.size-1];
+            auto frame = frameData.data[frameData.size - 1];
             bool expand = false;
 
             const auto frameName = m_worker.GetString( frame.name );
@@ -498,7 +496,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
                 const auto sz = mem.size();
                 m_memInfo.showAllocList = true;
                 m_memInfo.allocList.clear();
-                for( size_t i=0; i<sz; i++ )
+                for( size_t i = 0; i < sz; i++ )
                 {
                     if( v.callstacks.find( mem[i].CsAlloc() ) != v.callstacks.end() )
                     {
@@ -592,7 +590,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, CallstackFrame
     {
         sorted.emplace_back( it );
     }
-    pdqsort_branchless( sorted.begin(), sorted.end(), [] ( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
+    pdqsort_branchless( sorted.begin(), sorted.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
 
     int lidx = 0;
     for( auto& _v : sorted )
@@ -604,7 +602,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, CallstackFrame
         if( frameDataPtr )
         {
             auto& frameData = *frameDataPtr;
-            auto frame = frameData.data[frameData.size-1];
+            auto frame = frameData.data[frameData.size - 1];
             bool expand = false;
 
             const auto frameName = m_worker.GetString( frame.name );
@@ -736,7 +734,7 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
     {
         sorted.emplace_back( it );
     }
-    pdqsort_branchless( sorted.begin(), sorted.end(), [] ( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
+    pdqsort_branchless( sorted.begin(), sorted.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
 
     int lidx = 0;
     for( auto& _v : sorted )
@@ -748,7 +746,7 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
         if( frameDataPtr )
         {
             auto& frameData = *frameDataPtr;
-            auto frame = frameData.data[frameData.size-1];
+            auto frame = frameData.data[frameData.size - 1];
             bool expand = false;
 
             const auto frameName = m_worker.GetString( frame.name );

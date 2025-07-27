@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <math.h>
 
+#include "../Fonts.hpp"
 #include "TracyFilesystem.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
@@ -10,7 +11,6 @@
 #include "TracyTimelineDraw.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -44,8 +44,8 @@ void View::DrawSampleList( const TimelineContext& ctx, const std::vector<Samples
             const auto t1 = eit->time.Val();
             const auto px1 = ( t1 - vStart ) * pxns;
 
-            DrawZigZag( draw, wpos + ImVec2( 0, ty0375 ), px0, std::max( px1, px0+MinVis ), ty01, 0xFF997777 );
-            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, y0 ), wpos + ImVec2( std::max( px1, px0+MinVis ), y1 ) ) )
+            DrawZigZag( draw, wpos + ImVec2( 0, ty0375 ), px0, std::max( px1, px0 + MinVis ), ty01, 0xFF997777 );
+            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, y0 ), wpos + ImVec2( std::max( px1, px0 + MinVis ), y1 ) ) )
             {
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted( "Multiple call stack samples" );
@@ -89,7 +89,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
             auto it = baseMap.find( symAddr );
             if( it == baseMap.end() )
             {
-                baseMap.emplace( symAddr, SymList { symAddr, v.incl, v.excl, 0 } );
+                baseMap.emplace( symAddr, SymList{ symAddr, v.incl, v.excl, 0 } );
             }
             else
             {
@@ -99,7 +99,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                 it->second.count++;
             }
         }
-        for( auto& v : data ) inlineMap.emplace( v.symAddr, SymList { v.symAddr, v.incl, v.excl, v.count } );
+        for( auto& v : data ) inlineMap.emplace( v.symAddr, SymList{ v.symAddr, v.incl, v.excl, v.count } );
         data.clear();
         for( auto& v : baseMap )
         {
@@ -292,11 +292,11 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                 auto sit = inlineMap.find( *inSym );
                                 if( sit != inlineMap.end() )
                                 {
-                                    inSymList.push_back( SymList { *inSym, sit->second.incl, sit->second.excl } );
+                                    inSymList.push_back( SymList{ *inSym, sit->second.incl, sit->second.excl } );
                                 }
                                 else
                                 {
-                                    inSymList.push_back( SymList { *inSym, 0, 0 } );
+                                    inSymList.push_back( SymList{ *inSym, 0, 0 } );
                                 }
                                 inSym++;
                             }
@@ -326,7 +326,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                         auto oit = outMap.find( symAddr );
                                         if( oit == outMap.end() )
                                         {
-                                            outMap.emplace( symAddr, SymList { symAddr, sit->second.incl, sit->second.excl, 1 } );
+                                            outMap.emplace( symAddr, SymList{ symAddr, sit->second.incl, sit->second.excl, 1 } );
                                         }
                                         else
                                         {
@@ -340,7 +340,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                         auto oit = outMap.find( symAddr );
                                         if( oit == outMap.end() )
                                         {
-                                            outMap.emplace( symAddr, SymList { symAddr, 0, 0, 1 } );
+                                            outMap.emplace( symAddr, SymList{ symAddr, 0, 0, 1 } );
                                         }
                                         else
                                         {
@@ -359,7 +359,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                         auto statIt = inlineMap.find( v.symAddr );
                         if( statIt != inlineMap.end() )
                         {
-                            inSymList.push_back( SymList { v.symAddr, statIt->second.incl, statIt->second.excl } );
+                            inSymList.push_back( SymList{ v.symAddr, statIt->second.incl, statIt->second.excl } );
                         }
 
                         if( accumulationMode == AccumulationMode::SelfOnly )
@@ -922,8 +922,7 @@ void View::DrawSampleParents()
         ImGui::BeginChild( "##sampleParents" );
         switch( m_sampleParents.mode )
         {
-        case 0:
-        {
+        case 0: {
             TextDisabledUnformatted( "Entry call stack:" );
             ImGui::SameLine();
             if( ImGui::SmallButton( " " ICON_FA_CARET_LEFT " " ) )
@@ -946,7 +945,7 @@ void View::DrawSampleParents()
                 if( clicked ) m_sampleParents.sel = std::min( std::max( sel, 1 ), int( stats.size() ) ) - 1;
                 ImGui::EndPopup();
             }
-            Vector<decltype(stats.begin())> data;
+            Vector<decltype( stats.begin() )> data;
             data.reserve( stats.size() );
             for( auto it = stats.begin(); it != stats.end(); ++it ) data.push_back( it );
             pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r ) { return l->second > r->second; } );
@@ -994,7 +993,7 @@ void View::DrawSampleParents()
                     auto frameData = entry.custom ? m_worker.GetParentCallstackFrame( entry ) : m_worker.GetCallstackFrame( entry );
                     assert( frameData );
                     const auto fsz = frameData->size;
-                    for( uint8_t f=0; f<fsz; f++ )
+                    for( uint8_t f = 0; f < fsz; f++ )
                     {
                         const auto& frame = frameData->data[f];
                         auto filename = m_worker.GetString( frame.file );
@@ -1004,7 +1003,7 @@ void View::DrawSampleParents()
                         {
                             if( !m_showExternalFrames )
                             {
-                                if( f == fsz-1 ) fidx++;
+                                if( f == fsz - 1 ) fidx++;
                                 external++;
                                 continue;
                             }
@@ -1031,7 +1030,7 @@ void View::DrawSampleParents()
                         ImGui::TableNextRow();
                         ImGui::TableNextColumn();
                         bidx++;
-                        if( f == fsz-1 )
+                        if( f == fsz - 1 )
                         {
                             ImGui::Text( "%i", fidx++ );
                         }
@@ -1114,8 +1113,7 @@ void View::DrawSampleParents()
                                 ImGui::SetClipboardText( tmp );
                             }
                             break;
-                        case 3:
-                        {
+                        case 3: {
                             const auto sym = m_worker.GetSymbolData( frame.symAddr );
                             if( sym )
                             {
@@ -1230,8 +1228,7 @@ void View::DrawSampleParents()
             }
             break;
         }
-        case 1:
-        {
+        case 1: {
             auto tree = GetParentsCallstackFrameTreeBottomUp( stats, m_sampleParents.groupBottomUp );
             if( !tree.empty() )
             {
@@ -1245,8 +1242,7 @@ void View::DrawSampleParents()
 
             break;
         }
-        case 2:
-        {
+        case 2: {
             auto tree = GetParentsCallstackFrameTreeTopDown( stats, m_sampleParents.groupTopDown );
             if( !tree.empty() )
             {

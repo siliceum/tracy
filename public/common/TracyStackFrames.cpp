@@ -17,8 +17,7 @@ const char* s_tracyStackFrames_[] = {
     "tracy::ScopedZone::{ctor}",
     "tracy::ScopedZone::ScopedZone(tracy::SourceLocationData const*, int, bool)",
     "tracy::Profiler::Message",
-    nullptr
-};
+    nullptr };
 
 const char** s_tracyStackFrames = s_tracyStackFrames_;
 
@@ -114,8 +113,7 @@ const StringMatch s_tracySkipSubframes_[] = {
     { "/include/xtestintrin.h", 22 },
     { "/bits/atomic_base.h", 19 },
     { "/atomic", 7 },
-    {}
-};
+    {} };
 
 const StringMatch* s_tracySkipSubframes = s_tracySkipSubframes_;
 

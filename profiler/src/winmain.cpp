@@ -1,8 +1,8 @@
 #ifdef _WIN32
-#  include <windows.h>
-#  include <stdlib.h>
 #  include <intrin.h>
 #  include <stdint.h>
+#  include <stdlib.h>
+#  include <windows.h>
 
 namespace tracy
 {

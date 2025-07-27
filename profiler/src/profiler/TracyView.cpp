@@ -1,5 +1,5 @@
 #ifdef _MSC_VER
-#  pragma warning( disable: 4267 )  // conversion from don't care to whatever, possible loss of data
+#  pragma warning( disable : 4267 )  // conversion from don't care to whatever, possible loss of data
 #endif
 
 #ifdef __MINGW32__
@@ -13,6 +13,9 @@
 
 #include "imgui.h"
 
+#include "../Fonts.hpp"
+#include "../public/common/TracyStackFrames.hpp"
+#include "../server/TracySysUtil.hpp"
 #include "TracyConfig.hpp"
 #include "TracyFileRead.hpp"
 #include "TracyFilesystem.hpp"
@@ -21,15 +24,12 @@
 #include "TracySourceView.hpp"
 #include "TracyTexture.hpp"
 #include "TracyView.hpp"
-#include "../server/TracySysUtil.hpp"
-#include "../public/common/TracyStackFrames.hpp"
-#include "../Fonts.hpp"
 
-#include "imgui_internal.h"
 #include "IconsFontAwesome6.h"
+#include "imgui_internal.h"
 
 #ifndef M_PI_2
-#define M_PI_2 1.57079632679489661923
+#  define M_PI_2 1.57079632679489661923
 #endif
 
 namespace tracy
@@ -37,7 +37,7 @@ namespace tracy
 
 double s_time = 0;
 
-View::View( void(*cbMainThread)(const std::function<void()>&, bool), const char* addr, uint16_t port, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
+View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), const char* addr, uint16_t port, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
     : m_worker( addr, port, s_config.memoryLimit == 0 ? -1 : ( s_config.memoryLimitPercent * tracy::GetPhysicalMemorySize() / 100 ) )
     , m_staticView( false )
     , m_viewMode( ViewMode::LastFrames )
@@ -68,7 +68,7 @@ View::View( void(*cbMainThread)(const std::function<void()>&, bool), const char*
     SetupConfig();
 }
 
-View::View( void(*cbMainThread)(const std::function<void()>&, bool), FileRead& f, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
+View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), FileRead& f, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
     : m_worker( f )
     , m_filename( f.GetFilename() )
     , m_staticView( true )
@@ -275,19 +275,16 @@ static const char* CompressionName[] = {
     "LZ4 HC",
     "LZ4 HC extreme",
     "Zstd",
-    nullptr
-};
+    nullptr };
 
 static const char* CompressionDesc[] = {
     "Fastest save, fast load time, big file size",
     "Slow save, fastest load time, reasonable file size",
     "Very slow save, fastest load time, file smaller than LZ4 HC",
     "Configurable save time (fast-slowest), reasonable load time, smallest file size",
-    nullptr
-};
+    nullptr };
 
 static_assert( sizeof( CompressionName ) == sizeof( CompressionDesc ), "Unmatched compression names and descriptions" );
-
 
 bool View::Draw()
 {
@@ -474,12 +471,12 @@ bool View::Draw()
                         else
                         {
                             const auto fsz = frameData->size;
-                            for( uint8_t f=0; f<fsz; f++ )
+                            for( uint8_t f = 0; f < fsz; f++ )
                             {
                                 const auto& frame = frameData->data[f];
                                 auto txt = m_worker.GetString( frame.name );
 
-                                if( fidx == 0 && f != fsz-1 )
+                                if( fidx == 0 && f != fsz - 1 )
                                 {
                                     auto test = s_tracyStackFrames;
                                     bool match = false;
@@ -490,14 +487,13 @@ bool View::Draw()
                                             match = true;
                                             break;
                                         }
-                                    }
-                                    while( *++test );
+                                    } while( *++test );
                                     if( match ) continue;
                                 }
 
                                 ImGui::TableNextRow();
                                 ImGui::TableNextColumn();
-                                if( f == fsz-1 )
+                                if( f == fsz - 1 )
                                 {
                                     ImGui::Text( "%i", fidx++ );
                                 }
@@ -672,10 +668,12 @@ bool View::Draw()
 static const char* MainWindowButtons[] = {
     ICON_FA_PLAY " Resume",
     ICON_FA_PAUSE " Pause",
-    ICON_FA_SQUARE " Stopped"
-};
+    ICON_FA_SQUARE " Stopped" };
 
-enum { MainWindowButtonsCount = sizeof( MainWindowButtons ) / sizeof( *MainWindowButtons ) };
+enum
+{
+    MainWindowButtonsCount = sizeof( MainWindowButtons ) / sizeof( *MainWindowButtons )
+};
 
 bool View::DrawImpl()
 {
@@ -729,7 +727,7 @@ bool View::DrawImpl()
     auto& threadHints = m_worker.GetPendingThreadHints();
     if( !threadHints.empty() )
     {
-        m_threadReinsert.reserve( threadHints.size()  );
+        m_threadReinsert.reserve( threadHints.size() );
         for( auto v : threadHints )
         {
             auto it = std::find_if( m_threadOrder.begin(), m_threadOrder.end(), [v]( const auto& t ) { return t->id == v; } );
@@ -761,7 +759,7 @@ bool View::DrawImpl()
 
     const auto th = ImGui::GetTextLineHeight();
     float bw = 0;
-    for( int i=0; i<MainWindowButtonsCount; i++ )
+    for( int i = 0; i < MainWindowButtonsCount; i++ )
     {
         bw = std::max( bw, ImGui::CalcTextSize( MainWindowButtons[i] ).x );
     }
@@ -874,12 +872,12 @@ bool View::DrawImpl()
         else if( m_viewModeHeuristicTry )
         {
             const auto lastTime = m_worker.GetLastTime() - m_worker.GetFirstTime();
-            if( lastTime > 5*1000*1000*1000ll )
+            if( lastTime > 5 * 1000 * 1000 * 1000ll )
             {
                 if( m_viewMode == ViewMode::LastFrames && m_worker.GetFrameCount( *m_worker.GetFramesBase() ) <= ( m_worker.IsOnDemand() ? 3 : 2 ) )
                 {
                     m_viewMode = ViewMode::LastRange;
-                    ZoomToRange( lastTime - 5*1000*1000*1000ll, lastTime, false );
+                    ZoomToRange( lastTime - 5 * 1000 * 1000 * 1000ll, lastTime, false );
                 }
                 else
                 {
@@ -890,9 +888,9 @@ bool View::DrawImpl()
     }
     else
     {
-        ImGui::PushStyleColor( ImGuiCol_Button, (ImVec4)ImColor::HSV( 0.f, 0.6f, 0.6f) );
-        ImGui::PushStyleColor( ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV( 0.f, 0.7f, 0.7f) );
-        ImGui::PushStyleColor( ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV( 0.f, 0.8f, 0.8f) );
+        ImGui::PushStyleColor( ImGuiCol_Button, (ImVec4)ImColor::HSV( 0.f, 0.6f, 0.6f ) );
+        ImGui::PushStyleColor( ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV( 0.f, 0.7f, 0.7f ) );
+        ImGui::PushStyleColor( ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV( 0.f, 0.8f, 0.8f ) );
         if( ImGui::Button( ICON_FA_POWER_OFF ) ) keepOpen = false;
         ImGui::PopStyleColor( 3 );
     }
@@ -941,10 +939,10 @@ bool View::DrawImpl()
         if( ImGui::Button( ICON_FA_MAGNIFYING_GLASS_PLUS ) ) ImGui::OpenPopup( "ZoomPopup" );
         if( ImGui::BeginPopup( "ZoomPopup" ) )
         {
-            if( ImGui::Button( "50%" ) )  m_sscb( 1.f/2 );
-            if( ImGui::Button( "57%" ) )  m_sscb( 1.f/1.75f );
-            if( ImGui::Button( "66%" ) )  m_sscb( 1.f/1.5f );
-            if( ImGui::Button( "80%" ) )  m_sscb( 1.f/1.25f );
+            if( ImGui::Button( "50%" ) ) m_sscb( 1.f / 2 );
+            if( ImGui::Button( "57%" ) ) m_sscb( 1.f / 1.75f );
+            if( ImGui::Button( "66%" ) ) m_sscb( 1.f / 1.5f );
+            if( ImGui::Button( "80%" ) ) m_sscb( 1.f / 1.25f );
             if( ImGui::Button( "100%" ) ) m_sscb( 1.f );
             if( ImGui::Button( "125%" ) ) m_sscb( 1.25f );
             if( ImGui::Button( "150%" ) ) m_sscb( 1.5f );
@@ -1377,11 +1375,11 @@ void View::DrawSourceTooltip( const char* filename, uint32_t srcline, int before
     if( separateTooltip ) ImGui::BeginTooltip();
     ImGui::PushFont( g_fonts.mono, FontNormal );
     auto& lines = m_srcHintCache.get();
-    const int start = std::max( 0, (int)srcline - ( before+1 ) );
+    const int start = std::max( 0, (int)srcline - ( before + 1 ) );
     const int end = std::min<int>( m_srcHintCache.get().size(), srcline + after );
     bool first = true;
     int bottomEmpty = 0;
-    for( int i=start; i<end; i++ )
+    for( int i = start; i < end; i++ )
     {
         auto& line = lines[i];
         if( line.begin == line.end )
@@ -1413,7 +1411,7 @@ void View::DrawSourceTooltip( const char* filename, uint32_t srcline, int before
                     ImGui::SameLine( 0, 0 );
                 }
                 auto color = SyntaxColors[(int)it->color];
-                if( i != srcline-1 ) color = ( color & 0xFFFFFF ) | 0x99000000;
+                if( i != srcline - 1 ) color = ( color & 0xFFFFFF ) | 0x99000000;
                 TextColoredUnformatted( color, it->begin, it->end );
                 ImGui::SameLine( 0, 0 );
                 ptr = it->end;
@@ -1434,7 +1432,7 @@ bool View::Save( const char* fn, FileCompression comp, int zlevel, bool buildDic
 
     m_userData.StateShouldBePreserved();
     m_saveThreadState.store( SaveThreadState::Saving, std::memory_order_relaxed );
-    m_saveThread = std::thread( [this, f{std::move( f )}, buildDict] {
+    m_saveThread = std::thread( [this, f{ std::move( f ) }, buildDict] {
         std::lock_guard<std::mutex> lock( m_worker.GetDataLock() );
         m_worker.Write( *f, buildDict );
         f->Finish();
@@ -1461,11 +1459,11 @@ void View::SelectThread( uint64_t thread )
 bool View::WasActive() const
 {
     return m_wasActive ||
-        m_zoomAnim.active ||
-        m_notificationTime > 0 ||
-        !m_playback.pause ||
-        m_worker.IsConnected() ||
-        !m_worker.IsBackgroundDone();
+           m_zoomAnim.active ||
+           m_notificationTime > 0 ||
+           !m_playback.pause ||
+           m_worker.IsConnected() ||
+           !m_worker.IsBackgroundDone();
 }
 
 void View::AddLlmAttachment( const nlohmann::json& json )

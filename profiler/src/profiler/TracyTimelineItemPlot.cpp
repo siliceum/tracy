@@ -1,7 +1,7 @@
+#include "TracyTimelineItemPlot.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTimelineContext.hpp"
-#include "TracyTimelineItemPlot.hpp"
 #include "TracyUtility.hpp"
 #include "TracyView.hpp"
 #include "TracyWorker.hpp"
@@ -12,7 +12,6 @@ namespace tracy
 
 constexpr int PlotHeightPx = 100;
 constexpr int MinVisSize = 3;
-
 
 TimelineItemPlot::TimelineItemPlot( View& view, Worker& worker, PlotData* plot )
     : TimelineItem( view, worker, plot, true )
@@ -81,7 +80,7 @@ void TimelineItemPlot::HeaderTooltip( const char* label ) const
     TextFocused( "Avg value:", FormatPlotValue( m_plot->sum / m_plot->data.size(), m_plot->format ) );
     TextFocused( "Data/second:", RealToString( double( m_plot->data.size() ) / activity * 1000000000ll ) );
 
-    const auto it = std::lower_bound( m_plot->data.begin(), m_plot->data.end(), last - 1000000000ll * 10, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+    const auto it = std::lower_bound( m_plot->data.begin(), m_plot->data.end(), last - 1000000000ll * 10, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
     const auto tr10 = last - it->time.Val();
     if( tr10 != 0 )
     {
@@ -157,8 +156,8 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
             return;
         }
 
-        auto it = std::lower_bound( vec.begin(), vec.end(), vStart, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
-        auto end = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+        auto it = std::lower_bound( vec.begin(), vec.end(), vStart, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+        auto end = std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
 
         m_rightEnd = end == vec.end() && vec.back().time.Val() < m_worker.GetLastTime();
 
@@ -198,12 +197,12 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
         ++it;
         while( it < end )
         {
-            auto next = std::upper_bound( it, end, int64_t( it->time.Val() + MinVisNs ), [] ( const auto& l, const auto& r ) { return l < r.time.Val(); } );
+            auto next = std::upper_bound( it, end, int64_t( it->time.Val() + MinVisNs ), []( const auto& l, const auto& r ) { return l < r.time.Val(); } );
             assert( next > it );
             const auto rsz = uint32_t( next - it );
             if( rsz < 4 )
             {
-                for( int i=0; i<rsz; i++ )
+                for( int i = 0; i < rsz; i++ )
                 {
                     m_draw.emplace_back( 0 );
                     m_draw.emplace_back( it - vec.begin() );
@@ -219,7 +218,7 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
                 uint32_t offset = it - vec.begin();
                 if( rsz < NumSamples )
                 {
-                    for( cnt=0; cnt<rsz; cnt++ )
+                    for( cnt = 0; cnt < rsz; cnt++ )
                     {
                         samples[cnt] = offset + cnt;
                     }
@@ -228,7 +227,7 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
                 {
                     const auto skip = ( rsz + NumSamples - 1 ) / NumSamples;
                     const auto limit = rsz / skip;
-                    for( cnt=0; cnt<limit; cnt++ )
+                    for( cnt = 0; cnt < limit; cnt++ )
                     {
                         samples[cnt] = offset + cnt * skip;
                     }
@@ -237,13 +236,13 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
                 }
                 it = next;
 
-                pdqsort_branchless( samples, samples+cnt, [&vec] ( const auto& l, const auto& r ) { return vec[l].val < vec[r].val; } );
+                pdqsort_branchless( samples, samples + cnt, [&vec]( const auto& l, const auto& r ) { return vec[l].val < vec[r].val; } );
 
                 assert( rsz > 0 );
                 m_draw.emplace_back( rsz );
                 m_draw.emplace_back( offset );
                 m_draw.emplace_back( samples[0] );
-                m_draw.emplace_back( samples[cnt-1] );
+                m_draw.emplace_back( samples[cnt - 1] );
             }
         }
     } );

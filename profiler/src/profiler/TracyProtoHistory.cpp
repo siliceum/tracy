@@ -1,5 +1,5 @@
-#include "TracyFileHeader.hpp"
 #include "TracyProtoHistory.hpp"
+#include "TracyFileHeader.hpp"
 
 namespace tracy
 {
@@ -23,8 +23,7 @@ constexpr ProtocolHistory_t ProtocolHistoryArr[] = {
     { 23, FileVersion( 0, 6, 0 ) },
     { 14, FileVersion( 0, 5, 0 ) },
     { 1, FileVersion( 0, 4, 1 ) },
-    {}
-};
+    {} };
 
 const ProtocolHistory_t* ProtocolHistory = ProtocolHistoryArr;
 

@@ -402,8 +402,7 @@ static const char* DecodeIosDevice( const char* id )
         "iPod5,1", "iPod Touch 5th gen",
         "iPod7,1", "iPod Touch 6th gen",
         "iPod9,1", "iPod Touch 7th gen",
-        nullptr
-    };
+        nullptr };
 
     auto ptr = DeviceTable;
     while( *ptr )

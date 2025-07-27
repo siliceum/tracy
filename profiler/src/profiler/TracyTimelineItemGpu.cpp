@@ -1,8 +1,8 @@
+#include "TracyTimelineItemGpu.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPopcnt.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTimelineContext.hpp"
-#include "TracyTimelineItemGpu.hpp"
 #include "TracyUtility.hpp"
 #include "TracyView.hpp"
 #include "TracyWorker.hpp"
@@ -75,7 +75,7 @@ void TimelineItemGpu::HeaderTooltip( const char* label ) const
                     }
                     else
                     {
-                        tid = m_worker.DecompressThread( (*it->second.timeline.begin())->Thread() );
+                        tid = m_worker.DecompressThread( ( *it->second.timeline.begin() )->Thread() );
                     }
                 }
             }
@@ -147,7 +147,7 @@ int64_t TimelineItemGpu::RangeBegin() const
         int64_t t0;
         if( td.second.timeline.is_magic() )
         {
-            t0 = ((Vector<GpuEvent>*)&td.second.timeline)->front().GpuStart();
+            t0 = ( (Vector<GpuEvent>*)&td.second.timeline )->front().GpuStart();
         }
         else
         {
@@ -169,7 +169,7 @@ int64_t TimelineItemGpu::RangeEnd() const
         int64_t t0;
         if( td.second.timeline.is_magic() )
         {
-            t0 = ((Vector<GpuEvent>*)&td.second.timeline)->front().GpuStart();
+            t0 = ( (Vector<GpuEvent>*)&td.second.timeline )->front().GpuStart();
         }
         else
         {
@@ -179,7 +179,7 @@ int64_t TimelineItemGpu::RangeEnd() const
         {
             if( td.second.timeline.is_magic() )
             {
-                t = std::max( t, std::min( m_worker.GetLastTime(), m_worker.GetZoneEnd( ((Vector<GpuEvent>*)&td.second.timeline)->back() ) ) );
+                t = std::max( t, std::min( m_worker.GetLastTime(), m_worker.GetZoneEnd( ( (Vector<GpuEvent>*)&td.second.timeline )->back() ) ) );
             }
             else
             {

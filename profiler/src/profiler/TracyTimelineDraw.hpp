@@ -27,7 +27,6 @@ struct TimelineDraw
     uint32_t inheritedColor;
 };
 
-
 enum class ContextSwitchDrawType : uint8_t
 {
     Waiting,
@@ -42,13 +41,11 @@ struct ContextSwitchDraw
     uint32_t data;                  // Folded: number of items -OR- Waiting: wait stack
 };
 
-
 struct SamplesDraw
 {
     uint32_t num;
     uint32_t idx;
 };
-
 
 struct MessagesDraw
 {
@@ -57,13 +54,11 @@ struct MessagesDraw
     uint32_t num;
 };
 
-
 struct CpuUsageDraw
 {
     int own;
     int other;
 };
-
 
 struct CpuCtxDraw
 {
@@ -71,16 +66,14 @@ struct CpuCtxDraw
     uint32_t num;
 };
 
-
-
 struct LockState
 {
     enum Type : uint8_t
     {
-        Nothing         = 1 << 0,
-        HasLock         = 1 << 1,   // green
+        Nothing = 1 << 0,
+        HasLock = 1 << 1,   // green
         HasBlockingLock = 1 << 2,   // yellow
-        WaitLock        = 1 << 3    // red
+        WaitLock = 1 << 3    // red
     };
 };
 

@@ -1,8 +1,8 @@
 #ifndef __TRACYVIEWDATA_HPP__
 #define __TRACYVIEWDATA_HPP__
 
-#include <stdint.h>
 #include <regex>
+#include <stdint.h>
 
 #include "TracyUtility.hpp"
 
@@ -25,13 +25,17 @@ struct Range
 struct RangeSlim
 {
     bool operator==( const Range& other ) const { return other.active == active && other.min == min && other.max == max; }
-    bool operator!=( const Range& other ) const { return !(*this == other); }
-    void operator=( const Range& other ) { active = other.active; min = other.min; max = other.max; }
+    bool operator!=( const Range& other ) const { return !( *this == other ); }
+    void operator=( const Range& other )
+    {
+        active = other.active;
+        min = other.min;
+        max = other.max;
+    }
 
     int64_t min, max;
     bool active = false;
 };
-
 
 struct ViewData
 {

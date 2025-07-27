@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <thread>
 
-#include "TracyTimelineItem.hpp"
 #include "TracyTimelineContext.hpp"
 #include "TracyTimelineController.hpp"
+#include "TracyTimelineItem.hpp"
 #include "TracyView.hpp"
 
 #include "../Fonts.hpp"
@@ -101,7 +101,7 @@ std::optional<int> TimelineController::CalculateScrollPosition() const
 
 void TimelineController::End( double pxns, const ImVec2& wpos, bool hover, bool vcenter, float yMin, float yMax )
 {
-    auto shouldUpdateCenterItem = [&] () {
+    auto shouldUpdateCenterItem = [&]() {
         const auto imguiChangedScroll = m_scroll != ImGui::GetScrollY();
         const auto& mouseDelta = ImGui::GetIO().MouseDelta;
         const auto mouseMoved = mouseDelta.x != 0.0f || mouseDelta.y != 0.0f;

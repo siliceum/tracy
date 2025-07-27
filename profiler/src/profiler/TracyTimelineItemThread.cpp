@@ -17,7 +17,6 @@ namespace tracy
 constexpr float MinVisSize = 3;
 constexpr float MinCtxSize = 4;
 
-
 TimelineItemThread::TimelineItemThread( View& view, Worker& worker, const ThreadData* thread )
     : TimelineItem( view, worker, thread, true )
     , m_thread( thread )
@@ -34,9 +33,9 @@ bool TimelineItemThread::IsEmpty() const
 {
     auto& crash = m_worker.GetCrashEvent();
     return crash.thread != m_thread->id &&
-        m_thread->timeline.empty() &&
-        m_thread->messages.empty() &&
-        m_thread->ghostZones.empty();
+           m_thread->timeline.empty() &&
+           m_thread->messages.empty() &&
+           m_thread->ghostZones.empty();
 }
 
 uint32_t TimelineItemThread::HeaderColor() const
@@ -77,7 +76,7 @@ int64_t TimelineItemThread::RangeBegin() const
     {
         if( m_thread->timeline.is_magic() )
         {
-            auto& tl = *((Vector<ZoneEvent>*)&m_thread->timeline);
+            auto& tl = *( (Vector<ZoneEvent>*)&m_thread->timeline );
             first = std::min( first, tl.front().Start() );
         }
         else
@@ -116,7 +115,7 @@ int64_t TimelineItemThread::RangeEnd() const
     {
         if( m_thread->timeline.is_magic() )
         {
-            auto& tl = *((Vector<ZoneEvent>*)&m_thread->timeline);
+            auto& tl = *( (Vector<ZoneEvent>*)&m_thread->timeline );
             last = std::max( last, m_worker.GetZoneEnd( tl.back() ) );
         }
         else
@@ -288,7 +287,7 @@ void TimelineItemThread::DrawExtraPopupItems()
     {
         m_view.SelectThread( m_thread->id );
     }
- }
+}
 
 void TimelineItemThread::DrawFinished()
 {
@@ -368,12 +367,12 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
 
     const auto MinVisNs = int64_t( round( GetScale() * MinVisSize * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart - 2 * MinVisNs ), [] ( const auto& l, const auto& r ) { return l.end.Val() < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart - 2 * MinVisNs ), []( const auto& l, const auto& r ) { return l.end.Val() < r; } );
     if( it == vec.end() ) return depth;
 
-    const auto zitend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.start.Val() < r; } );
+    const auto zitend = std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.start.Val() < r; } );
     if( it == zitend ) return depth;
-    if( (zitend-1)->end.Val() < vStart ) return depth;
+    if( ( zitend - 1 )->end.Val() < vStart ) return depth;
 
     int maxdepth = depth + 1;
 
@@ -386,9 +385,9 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
         {
             auto nextTime = end + MinVisNs;
             auto next = it + 1;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, zitend, nextTime, [] ( const auto& l, const auto& r ) { return l.end.Val() < r; } );
+                next = std::lower_bound( next, zitend, nextTime, []( const auto& l, const auto& r ) { return l.end.Val() < r; } );
                 if( next == zitend ) break;
                 auto prev = next - 1;
                 const auto pt = prev->end.Val();
@@ -396,7 +395,7 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
                 if( nt - pt >= MinVisNs ) break;
                 nextTime = nt + MinVisNs;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::GhostFolded, uint16_t( depth ), (void**)&ev, (next-1)->end } );
+            if( visible ) m_draw.emplace_back( TimelineDraw{ TimelineDrawType::GhostFolded, uint16_t( depth ), (void**)&ev, ( next - 1 )->end } );
             it = next;
         }
         else
@@ -406,7 +405,7 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
                 const auto d = PreprocessGhostLevel( ctx, m_worker.GetGhostChildren( ev.child ), depth + 1, visible );
                 if( d > maxdepth ) maxdepth = d;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::Ghost, uint16_t( depth ), (void**)&ev } );
+            if( visible ) m_draw.emplace_back( TimelineDraw{ TimelineDrawType::Ghost, uint16_t( depth ), (void**)&ev } );
             ++it;
         }
     }
@@ -436,37 +435,37 @@ int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V
 
     const auto MinVisNs = int64_t( round( GetScale() * MinVisSize * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), vStart, [this] ( const auto& l, const auto& r ) { Adapter a; return m_worker.GetZoneEnd( a(l) ) < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), vStart, [this]( const auto& l, const auto& r ) { Adapter a; return m_worker.GetZoneEnd( a(l) ) < r; } );
     if( it == vec.end() ) return depth;
 
-    const auto zitend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { Adapter a; return a(l).Start() < r; } );
+    const auto zitend = std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { Adapter a; return a(l).Start() < r; } );
     if( it == zitend ) return depth;
     Adapter a;
-    if( !a(*it).IsEndValid() && m_worker.GetZoneEnd( a(*it) ) < vStart ) return depth;
-    if( m_worker.GetZoneEnd( a(*(zitend-1)) ) < vStart ) return depth;
+    if( !a( *it ).IsEndValid() && m_worker.GetZoneEnd( a( *it ) ) < vStart ) return depth;
+    if( m_worker.GetZoneEnd( a( *( zitend - 1 ) ) ) < vStart ) return depth;
 
     int maxdepth = depth + 1;
 
     while( it < zitend )
     {
-        auto& ev = a(*it);
+        auto& ev = a( *it );
         const auto end = m_worker.GetZoneEnd( ev );
         const auto zsz = end - ev.Start();
         if( zsz < MinVisNs )
         {
             auto nextTime = end + MinVisNs;
             auto next = it + 1;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, zitend, nextTime, [this] ( const auto& l, const auto& r ) { Adapter a; return m_worker.GetZoneEnd( a(l) ) < r; } );
+                next = std::lower_bound( next, zitend, nextTime, [this]( const auto& l, const auto& r ) { Adapter a; return m_worker.GetZoneEnd( a(l) ) < r; } );
                 if( next == zitend ) break;
                 auto prev = next - 1;
-                const auto pt = m_worker.GetZoneEnd( a(*prev) );
-                const auto nt = m_worker.GetZoneEnd( a(*next) );
+                const auto pt = m_worker.GetZoneEnd( a( *prev ) );
+                const auto nt = m_worker.GetZoneEnd( a( *next ) );
                 if( nt - pt >= MinVisNs ) break;
                 nextTime = nt + MinVisNs;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::Folded, uint16_t( depth ), (void**)&ev, m_worker.GetZoneEnd( a(*(next-1)) ), uint32_t( next - it ), inheritedColor } );
+            if( visible ) m_draw.emplace_back( TimelineDraw{ TimelineDrawType::Folded, uint16_t( depth ), (void**)&ev, m_worker.GetZoneEnd( a( *( next - 1 ) ) ), uint32_t( next - it ), inheritedColor } );
             it = next;
         }
         else
@@ -498,7 +497,7 @@ int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V
                 const auto d = PreprocessZoneLevel( ctx, m_worker.GetZoneChildren( ev.Child() ), depth + 1, visible, childrenInherited );
                 if( d > maxdepth ) maxdepth = d;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::Zone, uint16_t( depth ), (void**)&ev, 0, 0, currentInherited } );
+            if( visible ) m_draw.emplace_back( TimelineDraw{ TimelineDrawType::Zone, uint16_t( depth ), (void**)&ev, 0, 0, currentInherited } );
             ++it;
         }
     }
@@ -513,11 +512,11 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
     const auto vEnd = ctx.vEnd;
 
     auto& vec = ctxSwitch.v;
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart ), [] ( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart ), []( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
     if( it == vec.end() ) return;
     if( it != vec.begin() ) --it;
 
-    auto citend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.Start() < r; } );
+    auto citend = std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.Start() < r; } );
     if( it == citend ) return;
     if( citend != vec.end() ) ++citend;
 
@@ -540,18 +539,18 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
             uint32_t waitStack = 0;
             if( !sampleData.empty() )
             {
-                auto sdit = std::lower_bound( sampleData.begin(), sampleData.end(), ev.Start(), [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+                auto sdit = std::lower_bound( sampleData.begin(), sampleData.end(), ev.Start(), []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
                 bool found = sdit != sampleData.end() && sdit->time.Val() == ev.Start();
                 if( !found && it != vec.begin() )
                 {
                     auto eit = it;
                     --eit;
-                    sdit = std::lower_bound( sampleData.begin(), sampleData.end(), eit->End(), [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+                    sdit = std::lower_bound( sampleData.begin(), sampleData.end(), eit->End(), []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
                     found = sdit != sampleData.end() && sdit->time.Val() == eit->End();
                 }
                 if( found ) waitStack = sdit->callstack.Val();
             }
-            m_ctxDraw.emplace_back( ContextSwitchDraw { ContextSwitchDrawType::Waiting, uint32_t( it - vec.begin() ), waitStack } );
+            m_ctxDraw.emplace_back( ContextSwitchDraw{ ContextSwitchDrawType::Waiting, uint32_t( it - vec.begin() ), waitStack } );
         }
 
         const auto end = ev.IsEndValid() ? ev.End() : ev.Start();
@@ -560,9 +559,9 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
         {
             auto nextTime = end + MinCtxNs;
             auto next = it + 1;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, citend, nextTime, [] ( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
+                next = std::lower_bound( next, citend, nextTime, []( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
                 if( next == citend ) break;
                 auto prev = next - 1;
                 const auto pt = prev->IsEndValid() ? prev->End() : prev->Start();
@@ -570,12 +569,12 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
                 if( nt - pt >= MinCtxNs ) break;
                 nextTime = nt + MinCtxNs;
             }
-            m_ctxDraw.emplace_back( ContextSwitchDraw { ContextSwitchDrawType::Folded, uint32_t( it - vec.begin() ), uint32_t( next - it ) } );
+            m_ctxDraw.emplace_back( ContextSwitchDraw{ ContextSwitchDrawType::Folded, uint32_t( it - vec.begin() ), uint32_t( next - it ) } );
             it = next;
         }
         else
         {
-            m_ctxDraw.emplace_back( ContextSwitchDraw { ContextSwitchDrawType::Running, uint32_t( it - vec.begin() ) } );
+            m_ctxDraw.emplace_back( ContextSwitchDraw{ ContextSwitchDrawType::Running, uint32_t( it - vec.begin() ) } );
             ++it;
         }
     }
@@ -593,9 +592,9 @@ void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Ve
     const auto MinVis = 5 * GetScale();
     const auto MinVisNs = int64_t( round( MinVis * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), vStart - MinVisNs, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), vStart - MinVisNs, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
     if( it == vec.end() ) return;
-    const auto itend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+    const auto itend = std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
     if( it == itend ) return;
 
     m_hasSamples = true;
@@ -614,9 +613,9 @@ void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Ve
         {
             const auto t0 = it->time.Val();
             auto nextTime = t0 + MinVisNs;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, itend, nextTime, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+                next = std::lower_bound( next, itend, nextTime, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
                 if( next == itend ) break;
                 auto prev = next - 1;
                 const auto pt = prev->time.Val();
@@ -625,7 +624,7 @@ void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Ve
                 nextTime = nt + MinVisNs;
             }
         }
-        m_samplesDraw.emplace_back( SamplesDraw { uint32_t( next - it - 1 ), uint32_t( it - vec.begin() ) } );
+        m_samplesDraw.emplace_back( SamplesDraw{ uint32_t( next - it - 1 ), uint32_t( it - vec.begin() ) } );
         it = next;
     }
 }
@@ -638,9 +637,9 @@ void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const V
 
     const auto MinVisNs = int64_t( round( GetScale() * MinVisSize * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), vStart, [] ( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), vStart, []( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
     if( it == vec.end() ) return;
-    auto end = std::lower_bound( it, vec.end(), vEnd+1, [] ( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
+    auto end = std::lower_bound( it, vec.end(), vEnd + 1, []( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
     if( it == end ) return;
 
     m_hasMessages = true;
@@ -652,9 +651,9 @@ void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const V
 
     while( it < end )
     {
-        const auto msgTime = (*it)->time;
+        const auto msgTime = ( *it )->time;
         const auto nextTime = msgTime + MinVisNs;
-        const auto next = std::upper_bound( it, vec.end(), nextTime, [] ( const auto& lhs, const auto& rhs ) { return lhs < rhs->time; } );
+        const auto next = std::upper_bound( it, vec.end(), nextTime, []( const auto& lhs, const auto& rhs ) { return lhs < rhs->time; } );
         const auto num = next - it;
         bool hilite;
         if( num == 1 )
@@ -666,14 +665,14 @@ void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const V
             if( hMsg && hThread == tid )
             {
                 const auto hTime = hMsg->time;
-                hilite = (*it)->time <= hTime && ( next == vec.end() || (*next)->time > hTime );
+                hilite = ( *it )->time <= hTime && ( next == vec.end() || ( *next )->time > hTime );
             }
             else
             {
                 hilite = false;
             }
         }
-        m_msgDraw.emplace_back( MessagesDraw { *it, hilite, uint32_t( num ) } );
+        m_msgDraw.emplace_back( MessagesDraw{ *it, hilite, uint32_t( num ) } );
         it = next;
     }
 }
@@ -919,12 +918,12 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
         {
             if( lockInfoWindow == v.first )
             {
-                m_lockDraw.emplace_back( std::make_unique<LockDraw>( LockDraw { v.first, true, it->second } ) );
+                m_lockDraw.emplace_back( std::make_unique<LockDraw>( LockDraw{ v.first, true, it->second } ) );
             }
             continue;
         }
 
-        auto drawData = std::make_unique<LockDraw>( LockDraw { v.first, false, it->second } );
+        auto drawData = std::make_unique<LockDraw>( LockDraw{ v.first, false, it->second } );
         auto drawPtr = drawData.get();
         m_lockDraw.emplace_back( std::move( drawData ) );
 
@@ -937,8 +936,8 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
             const auto threadBit = GetThreadBit( thread );
             const auto& tl = lockmap.timeline;
 
-            auto vbegin = std::lower_bound( tl.begin(), tl.end(), std::max( range.start, vStart ), [] ( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
-            const auto vend = std::lower_bound( vbegin, tl.end(), std::min( range.end, vEnd ), [] ( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
+            auto vbegin = std::lower_bound( tl.begin(), tl.end(), std::max( range.start, vStart ), []( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
+            const auto vend = std::lower_bound( vbegin, tl.end(), std::min( range.end, vEnd ), []( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
 
             if( vbegin > tl.begin() ) vbegin--;
 
@@ -993,7 +992,7 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
             }
 
             auto& dst = drawPtr->data;
-            for(;;)
+            for( ;; )
             {
                 while( vbegin < vend && ( state & mask ) != 0 )
                 {
@@ -1010,7 +1009,7 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
                 int64_t t1 = next == tl.end() ? m_worker.GetLastTime() : next->ptr->Time();
                 uint32_t condensed = 0;
 
-                for(;;)
+                for( ;; )
                 {
                     if( next >= vend || t1 - t0 > MinVisNs ) break;
                     auto n = next;
@@ -1035,7 +1034,7 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
                     state = ns;
                 }
 
-                dst.emplace_back( LockDrawItem { t1, drawState, condensed, vbegin, next } );
+                dst.emplace_back( LockDrawItem{ t1, drawState, condensed, vbegin, next } );
 
                 vbegin = next;
             }

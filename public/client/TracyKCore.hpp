@@ -3,9 +3,9 @@
 
 #ifdef __linux__
 
-#include <stdint.h>
+#  include <stdint.h>
 
-#include "TracyFastVector.hpp"
+#  include "TracyFastVector.hpp"
 
 namespace tracy
 {

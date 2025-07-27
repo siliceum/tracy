@@ -8,23 +8,23 @@
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 #include <string.h>
+#include <string>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <unordered_map>
-#include <xkbcommon/xkbcommon.h>
-#include <xkbcommon/xkbcommon-compose.h>
 #include <wayland-client.h>
 #include <wayland-cursor.h>
 #include <wayland-egl.h>
+#include <xkbcommon/xkbcommon-compose.h>
+#include <xkbcommon/xkbcommon.h>
 
+#include "wayland-cursor-shape-client-protocol.h"
+#include "wayland-fractional-scale-client-protocol.h"
+#include "wayland-viewporter-client-protocol.h"
 #include "wayland-xdg-activation-client-protocol.h"
 #include "wayland-xdg-decoration-client-protocol.h"
 #include "wayland-xdg-shell-client-protocol.h"
-#include "wayland-fractional-scale-client-protocol.h"
-#include "wayland-viewporter-client-protocol.h"
-#include "wayland-cursor-shape-client-protocol.h"
 #include "wayland-xdg-toplevel-icon-client-protocol.h"
 
 #include "profiler/TracyImGui.hpp"
@@ -166,8 +166,8 @@ constexpr ImGuiKey s_keyTable[] = {
 };
 
 static std::function<void()> s_redraw;
-static std::function<void(float)> s_scaleChanged;
-static std::function<int(void)> s_isBusy;
+static std::function<void( float )> s_scaleChanged;
+static std::function<int( void )> s_isBusy;
 static RunQueue* s_mainThreadTasks;
 
 static struct wl_display* s_dpy;
@@ -248,7 +248,6 @@ struct KeyRepeat
     uint64_t time;
 };
 static KeyRepeat s_keyRepeat;
-
 
 static void RecomputeScale()
 {
@@ -355,9 +354,7 @@ constexpr struct wl_pointer_listener pointerListener = {
     .frame = PointerFrame,
     .axis_source = PointerAxisSource,
     .axis_stop = PointerAxisStop,
-    .axis_discrete = PointerAxisDiscrete
-};
-
+    .axis_discrete = PointerAxisDiscrete };
 
 static void KeyboardKeymap( void*, struct wl_keyboard* kbd, uint32_t format, int32_t fd, uint32_t size )
 {
@@ -503,9 +500,7 @@ constexpr struct wl_keyboard_listener keyboardListener = {
     .leave = KeyboardLeave,
     .key = KeyboardKey,
     .modifiers = KeyboardModifiers,
-    .repeat_info = KeyboardRepeatInfo
-};
-
+    .repeat_info = KeyboardRepeatInfo };
 
 static void SeatCapabilities( void*, struct wl_seat* seat, uint32_t caps )
 {
@@ -547,9 +542,7 @@ static void SeatName( void*, struct wl_seat* seat, const char* name )
 
 constexpr struct wl_seat_listener seatListener = {
     .capabilities = SeatCapabilities,
-    .name = SeatName
-};
-
+    .name = SeatName };
 
 static void WmPing( void*, struct xdg_wm_base* shell, uint32_t serial )
 {
@@ -557,9 +550,7 @@ static void WmPing( void*, struct xdg_wm_base* shell, uint32_t serial )
 }
 
 constexpr struct xdg_wm_base_listener wmListener = {
-    .ping = WmPing
-};
-
+    .ping = WmPing };
 
 static void OutputGeometry( void*, struct wl_output* output, int32_t x, int32_t y, int32_t phys_w, int32_t phys_h, int32_t subpixel, const char* make, const char* model, int32_t transform )
 {
@@ -584,18 +575,14 @@ constexpr struct wl_output_listener outputListener = {
     .geometry = OutputGeometry,
     .mode = OutputMode,
     .done = OutputDone,
-    .scale = OutputScale
-};
-
+    .scale = OutputScale };
 
 static void DecorationConfigure( void*, struct zxdg_toplevel_decoration_v1* tldec, uint32_t mode )
 {
 }
 
 constexpr struct zxdg_toplevel_decoration_v1_listener decorationListener = {
-    .configure = DecorationConfigure
-};
-
+    .configure = DecorationConfigure };
 
 static void IconMgrSize( void*, struct xdg_toplevel_icon_manager_v1*, int32_t size )
 {
@@ -608,9 +595,7 @@ static void IconMgrDone( void*, struct xdg_toplevel_icon_manager_v1* )
 
 constexpr struct xdg_toplevel_icon_manager_v1_listener iconMgrListener = {
     .icon_size = IconMgrSize,
-    .done = IconMgrDone
-};
-
+    .done = IconMgrDone };
 
 static void RegistryGlobal( void*, struct wl_registry* reg, uint32_t name, const char* interface, uint32_t version )
 {
@@ -640,7 +625,7 @@ static void RegistryGlobal( void*, struct wl_registry* reg, uint32_t name, const
     else if( strcmp( interface, wl_output_interface.name ) == 0 )
     {
         auto output = (wl_output*)wl_registry_bind( reg, name, &wl_output_interface, 2 );
-        auto ptr = std::make_unique<Output>( Output { 1, output, false } );
+        auto ptr = std::make_unique<Output>( Output{ 1, output, false } );
         wl_output_add_listener( output, &outputListener, ptr.get() );
         s_output.emplace( name, std::move( ptr ) );
     }
@@ -683,9 +668,7 @@ static void RegistryGlobalRemove( void*, struct wl_registry* reg, uint32_t name 
 
 constexpr struct wl_registry_listener registryListener = {
     .global = RegistryGlobal,
-    .global_remove = RegistryGlobalRemove
-};
-
+    .global_remove = RegistryGlobalRemove };
 
 static void XdgSurfaceConfigure( void*, struct xdg_surface* surf, uint32_t serial )
 {
@@ -694,9 +677,7 @@ static void XdgSurfaceConfigure( void*, struct xdg_surface* surf, uint32_t seria
 }
 
 constexpr struct xdg_surface_listener xdgSurfaceListener = {
-    .configure = XdgSurfaceConfigure
-};
-
+    .configure = XdgSurfaceConfigure };
 
 static void XdgToplevelConfigure( void*, struct xdg_toplevel* toplevel, int32_t width, int32_t height, struct wl_array* states )
 {
@@ -704,7 +685,7 @@ static void XdgToplevelConfigure( void*, struct xdg_toplevel* toplevel, int32_t 
 
     bool max = false;
     auto data = (uint32_t*)states->data;
-    for( size_t i = 0; i < states->size / sizeof(uint32_t); i++ )
+    for( size_t i = 0; i < states->size / sizeof( uint32_t ); i++ )
     {
         if( data[i] == XDG_TOPLEVEL_STATE_MAXIMIZED )
         {
@@ -725,14 +706,13 @@ static void XdgToplevelClose( void*, struct xdg_toplevel* toplevel )
 
 constexpr struct xdg_toplevel_listener toplevelListener = {
     .configure = XdgToplevelConfigure,
-    .close = XdgToplevelClose
-};
+    .close = XdgToplevelClose };
 
 static void SurfaceEnter( void*, struct wl_surface* surface, struct wl_output* output )
 {
-    for ( auto& out : s_output )
+    for( auto& out : s_output )
     {
-        if ( out.second->obj == output )
+        if( out.second->obj == output )
         {
             out.second->entered = true;
             RecomputeScale();
@@ -743,9 +723,9 @@ static void SurfaceEnter( void*, struct wl_surface* surface, struct wl_output* o
 
 static void SurfaceLeave( void*, struct wl_surface* surface, struct wl_output* output )
 {
-    for ( auto& out : s_output )
+    for( auto& out : s_output )
     {
-        if ( out.second->obj == output )
+        if( out.second->obj == output )
         {
             out.second->entered = false;
             RecomputeScale();
@@ -781,9 +761,7 @@ static void FractionalPreferredScale( void*, struct wp_fractional_scale_v1* frac
 }
 
 constexpr struct wp_fractional_scale_v1_listener fractionalListener = {
-    .preferred_scale = FractionalPreferredScale
-};
-
+    .preferred_scale = FractionalPreferredScale };
 
 static void DataOfferOffer( void*, struct wl_data_offer* offer, const char* mimeType )
 {
@@ -811,9 +789,7 @@ static void DataOfferAction( void*, struct wl_data_offer* offer, uint32_t dndAct
 constexpr struct wl_data_offer_listener dataOfferListener = {
     .offer = DataOfferOffer,
     .source_actions = DataOfferSourceActions,
-    .action = DataOfferAction
-};
-
+    .action = DataOfferAction };
 
 static void DataDeviceDataOffer( void*, struct wl_data_device* dataDevice, struct wl_data_offer* offer )
 {
@@ -866,9 +842,7 @@ constexpr struct wl_data_device_listener dataDeviceListener = {
     .enter = DataDeviceEnter,
     .leave = DataDeviceLeave,
     .motion = DataDeviceMotion,
-    .selection = DataDeviceSelection
-};
-
+    .selection = DataDeviceSelection };
 
 void DataSourceTarget( void*, struct wl_data_source* dataSource, const char* mimeType )
 {
@@ -901,9 +875,7 @@ void DataSourceCancelled( void*, struct wl_data_source* dataSource )
 constexpr struct wl_data_source_listener dataSourceListener = {
     .target = DataSourceTarget,
     .send = DataSourceSend,
-    .cancelled = DataSourceCancelled
-};
-
+    .cancelled = DataSourceCancelled };
 
 static void SetupCursor()
 {
@@ -961,7 +933,7 @@ static const char* GetClipboard( ImGuiContext* )
     return s_clipboardIncoming.c_str();
 }
 
-Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void(float)>& scaleChanged, const std::function<int(void)>& isBusy, RunQueue* mainThreadTasks )
+Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks )
 {
     s_redraw = redraw;
     s_scaleChanged = scaleChanged;
@@ -973,16 +945,36 @@ Backend::Backend( const char* title, const std::function<void()>& redraw, const 
     s_maximized = m_winPos.maximize;
 
     s_dpy = wl_display_connect( nullptr );
-    if( !s_dpy ) { fprintf( stderr, "Cannot establish wayland display connection!\n" ); exit( 1 ); }
+    if( !s_dpy )
+    {
+        fprintf( stderr, "Cannot establish wayland display connection!\n" );
+        exit( 1 );
+    }
 
     wl_registry_add_listener( wl_display_get_registry( s_dpy ), &registryListener, nullptr );
     s_xkbCtx = xkb_context_new( XKB_CONTEXT_NO_FLAGS );
     wl_display_roundtrip( s_dpy );
 
-    if( !s_comp ) { fprintf( stderr, "No wayland compositor!\n" ); exit( 1 ); }
-    if( !s_shm ) { fprintf( stderr, "No wayland shared memory!\n" ); exit( 1 ); }
-    if( !s_wm ) { fprintf( stderr, "No wayland window manager!\n" ); exit( 1 ); }
-    if( !s_seat ) { fprintf( stderr, "No wayland seat!\n" ); exit( 1 ); }
+    if( !s_comp )
+    {
+        fprintf( stderr, "No wayland compositor!\n" );
+        exit( 1 );
+    }
+    if( !s_shm )
+    {
+        fprintf( stderr, "No wayland shared memory!\n" );
+        exit( 1 );
+    }
+    if( !s_wm )
+    {
+        fprintf( stderr, "No wayland window manager!\n" );
+        exit( 1 );
+    }
+    if( !s_seat )
+    {
+        fprintf( stderr, "No wayland seat!\n" );
+        exit( 1 );
+    }
 
     s_surf = wl_compositor_create_surface( s_comp );
     wl_surface_add_listener( s_surf, &surfaceListener, nullptr );
@@ -1005,35 +997,53 @@ Backend::Backend( const char* title, const std::function<void()>& redraw, const 
         EGL_GREEN_SIZE, 8,
         EGL_BLUE_SIZE, 8,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-        EGL_NONE
-    };
+        EGL_NONE };
 
     s_eglDpy = eglGetPlatformDisplay( EGL_PLATFORM_WAYLAND_KHR, s_dpy, nullptr );
     EGLBoolean res;
     res = eglInitialize( s_eglDpy, nullptr, nullptr );
-    if( res != EGL_TRUE ) { fprintf( stderr, "Cannot initialize EGL!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE )
+    {
+        fprintf( stderr, "Cannot initialize EGL!\n" );
+        exit( 1 );
+    }
 
     EGLint count;
     EGLConfig eglConfig;
     res = eglChooseConfig( s_eglDpy, eglConfigAttrib, &eglConfig, 1, &count );
-    if( res != EGL_TRUE || count != 1 ) { fprintf( stderr, "No suitable EGL config found!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE || count != 1 )
+    {
+        fprintf( stderr, "No suitable EGL config found!\n" );
+        exit( 1 );
+    }
 
     res = eglBindAPI( EGL_OPENGL_API );
-    if( res != EGL_TRUE ) { fprintf( stderr, "Cannot use OpenGL through EGL!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE )
+    {
+        fprintf( stderr, "Cannot use OpenGL through EGL!\n" );
+        exit( 1 );
+    }
 
     s_eglSurf = eglCreatePlatformWindowSurface( s_eglDpy, eglConfig, s_eglWin, nullptr );
 
     constexpr EGLint eglCtxAttrib[] = {
         EGL_CONTEXT_MAJOR_VERSION, 3,
         EGL_CONTEXT_MINOR_VERSION, 2,
-        EGL_CONTEXT_OPENGL_PROFILE_MASK,  EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
-        EGL_NONE
-    };
+        EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+        EGL_NONE };
 
     s_eglCtx = eglCreateContext( s_eglDpy, eglConfig, EGL_NO_CONTEXT, eglCtxAttrib );
-    if( !s_eglCtx ) { fprintf( stderr, "Cannot create OpenGL 3.2 Core Profile context!\n" ); exit( 1 ); }
+    if( !s_eglCtx )
+    {
+        fprintf( stderr, "Cannot create OpenGL 3.2 Core Profile context!\n" );
+        exit( 1 );
+    }
     res = eglMakeCurrent( s_eglDpy, s_eglSurf, s_eglSurf, s_eglCtx );
-    if( res != EGL_TRUE ) { fprintf( stderr, "Cannot make EGL context current!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE )
+    {
+        fprintf( stderr, "Cannot make EGL context current!\n" );
+        exit( 1 );
+    }
 
     ImGui_ImplOpenGL3_Init( "#version 150" );
 
@@ -1137,7 +1147,6 @@ void Backend::Run()
     }
 }
 
-
 static void TokenDone( void*, xdg_activation_token_v1* token, const char* str )
 {
     xdg_activation_v1_activate( s_activation, str, s_surf );
@@ -1146,9 +1155,7 @@ static void TokenDone( void*, xdg_activation_token_v1* token, const char* str )
 }
 
 constexpr struct xdg_activation_token_v1_listener tokenListener = {
-    .done = TokenDone
-}; 
-
+    .done = TokenDone };
 
 void Backend::Attention()
 {
@@ -1335,7 +1342,7 @@ void Backend::SetIcon( uint8_t* data, int w, int h )
 
     auto rgb = new uint32_t[w * h];
     auto bgr = (uint32_t*)data;
-    for( int i=0; i<w*h; i++ )
+    for( int i = 0; i < w * h; i++ )
     {
         rgb[i] = ( bgr[i] & 0xff00ff00 ) | ( ( bgr[i] & 0xff ) << 16 ) | ( ( bgr[i] >> 16 ) & 0xff );
     }

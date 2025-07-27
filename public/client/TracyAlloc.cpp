@@ -2,10 +2,10 @@
 
 #ifdef TRACY_USE_RPMALLOC
 
-#include <atomic>
+#  include <atomic>
 
-#include "../common/TracyForceInline.hpp"
-#include "../common/TracyYield.hpp"
+#  include "../common/TracyForceInline.hpp"
+#  include "../common/TracyYield.hpp"
 
 namespace tracy
 {
@@ -20,7 +20,11 @@ tracy_no_inline static void InitRpmallocPlumbing()
     if( !done )
     {
         int expected = 0;
-        while( !RpInitLock.compare_exchange_weak( expected, 1, std::memory_order_release, std::memory_order_relaxed ) ) { expected = 0; YieldThread(); }
+        while( !RpInitLock.compare_exchange_weak( expected, 1, std::memory_order_release, std::memory_order_relaxed ) )
+        {
+            expected = 0;
+            YieldThread();
+        }
         const auto done = RpInitDone.load( std::memory_order_acquire );
         if( !done )
         {

@@ -8,7 +8,7 @@
 
 extern "C" int dlclose( void* hnd )
 {
-#ifdef TRACY_VERBOSE
+#    ifdef TRACY_VERBOSE
     struct link_map* lm;
     if( dlinfo( hnd, RTLD_DI_LINKMAP, &lm ) == 0 )
     {
@@ -18,7 +18,7 @@ extern "C" int dlclose( void* hnd )
     {
         TracyDebug( "Overriding dlclose for unknown object (%s)\n", dlerror() );
     }
-#endif
+#    endif
     return 0;
 }
 

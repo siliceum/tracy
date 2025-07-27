@@ -1,8 +1,8 @@
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTexture.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -14,7 +14,11 @@ void View::DrawMessages()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1200 * scale, 600 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Messages", &m_showMessages );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     if( msgs.empty() )
     {
@@ -130,7 +134,7 @@ void View::DrawMessages()
         m_msgList.clear();
         if( m_messageFilter.IsActive() )
         {
-            for( size_t i=0; i<msgs.size(); i++ )
+            for( size_t i = 0; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -147,7 +151,7 @@ void View::DrawMessages()
         }
         else
         {
-            for( size_t i=0; i<msgs.size(); i++ )
+            for( size_t i = 0; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -169,7 +173,7 @@ void View::DrawMessages()
         m_msgList.reserve( msgs.size() );
         if( m_messageFilter.IsActive() )
         {
-            for( size_t i=m_prevMessages; i<msgs.size(); i++ )
+            for( size_t i = m_prevMessages; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -186,7 +190,7 @@ void View::DrawMessages()
         }
         else
         {
-            for( size_t i=m_prevMessages; i<msgs.size(); i++ )
+            for( size_t i = m_prevMessages; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -229,7 +233,7 @@ void View::DrawMessages()
             clipper.Begin( m_msgList.size() );
             while( clipper.Step() )
             {
-                for( auto i=clipper.DisplayStart; i<clipper.DisplayEnd; i++ )
+                for( auto i = clipper.DisplayStart; i < clipper.DisplayEnd; i++ )
                 {
                     DrawMessageLine( *msgs[m_msgList[i]], hasCallstack, idx );
                 }

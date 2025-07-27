@@ -13,6 +13,12 @@
 
 #include "imgui.h"
 
+#include "../server/TracyFileWrite.hpp"
+#include "../server/TracyShortPtr.hpp"
+#include "../server/TracyTaskDispatch.hpp"
+#include "../server/TracyVector.hpp"
+#include "../server/TracyWorker.hpp"
+#include "../server/tracy_robin_hood.h"
 #include "TracyAchievements.hpp"
 #include "TracyBadVersion.hpp"
 #include "TracyBuzzAnim.hpp"
@@ -23,12 +29,6 @@
 #include "TracyUserData.hpp"
 #include "TracyUtility.hpp"
 #include "TracyViewData.hpp"
-#include "../server/TracyFileWrite.hpp"
-#include "../server/TracyTaskDispatch.hpp"
-#include "../server/TracyShortPtr.hpp"
-#include "../server/TracyWorker.hpp"
-#include "../server/tracy_robin_hood.h"
-#include "../server/TracyVector.hpp"
 
 #ifndef __EMSCRIPTEN__
 #  include "TracyLlm.hpp"
@@ -47,8 +47,7 @@ constexpr const char* GpuContextNames[] = {
     "Metal",
     "Custom",
     "CUDA",
-    "Rocprof"
-};
+    "Rocprof" };
 
 struct MemoryPage;
 class FileRead;
@@ -63,7 +62,6 @@ struct CpuCtxDraw;
 struct LockDraw;
 struct PlotDraw;
 struct FlameGraphContext;
-
 
 class View
 {
@@ -112,18 +110,22 @@ public:
         double max;
     };
 
-    using SetTitleCallback = void(*)( const char* );
-    using SetScaleCallback = void(*)( float );
-    using AttentionCallback = void(*)();
+    using SetTitleCallback = void ( * )( const char* );
+    using SetScaleCallback = void ( * )( float );
+    using AttentionCallback = void ( * )();
 
-    View( void(*cbMainThread)(const std::function<void()>&, bool), const char* addr, uint16_t port, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr );
-    View( void(*cbMainThread)(const std::function<void()>&, bool), FileRead& f, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr );
+    View( void ( *cbMainThread )( const std::function<void()>&, bool ), const char* addr, uint16_t port, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr );
+    View( void ( *cbMainThread )( const std::function<void()>&, bool ), FileRead& f, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr );
     ~View();
 
     bool Draw();
     bool WasActive() const;
 
-    void NotifyRootWindowSize( float w, float h ) { m_rootWidth = w; m_rootHeight = h; }
+    void NotifyRootWindowSize( float w, float h )
+    {
+        m_rootWidth = w;
+        m_rootHeight = h;
+    }
     void ViewSource( const char* fileName, int line );
     void ViewSource( const char* fileName, int line, const char* functionName );
     void ViewSourceCheckKeyMod( const char* fileName, int line, const char* functionName );
@@ -137,7 +139,12 @@ public:
     const char* SourceSubstitution( const char* srcFile ) const;
     bool ValidateSourceAge() const { return m_validateSourceAge; }
 
-    void ShowSampleParents( uint64_t symAddr, bool withInlines ) { m_sampleParents.symAddr = symAddr; m_sampleParents.sel = 0; m_sampleParents.withInlines = withInlines; }
+    void ShowSampleParents( uint64_t symAddr, bool withInlines )
+    {
+        m_sampleParents.symAddr = symAddr;
+        m_sampleParents.sel = 0;
+        m_sampleParents.withInlines = withInlines;
+    }
 
     ViewData& GetViewData() { return m_vd; }
     const ViewData& GetViewData() const { return m_vd; }
@@ -184,7 +191,10 @@ private:
         OpenFind
     };
 
-    enum { InvalidId = 0xFFFFFFFF };
+    enum
+    {
+        InvalidId = 0xFFFFFFFF
+    };
 
     struct MemPathData
     {
@@ -218,9 +228,9 @@ private:
             Out
         };
 
-        constexpr static auto DirectionToKeyMap = std::array<ImGuiKey, 4> { ImGuiKey_A, ImGuiKey_D, ImGuiKey_W, ImGuiKey_S };
-        constexpr static auto StartRangeMod = std::array<int, 4> { -1, 1, 1, -1 };
-        constexpr static auto EndRangeMod = std::array<int, 4> { -1, 1, -1, 1 };
+        constexpr static auto DirectionToKeyMap = std::array<ImGuiKey, 4>{ ImGuiKey_A, ImGuiKey_D, ImGuiKey_W, ImGuiKey_S };
+        constexpr static auto StartRangeMod = std::array<int, 4>{ -1, 1, 1, -1 };
+        constexpr static auto EndRangeMod = std::array<int, 4>{ -1, 1, -1, 1 };
 
         std::array<float, 4> m_scrollInertia;
     };
@@ -269,7 +279,7 @@ private:
     void DrawFindZone();
     void AccumulationModeComboBox();
     void DrawStatistics();
-    void DrawSamplesStatistics(Vector<SymList>& data, int64_t timeRange, AccumulationMode accumulationMode);
+    void DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, AccumulationMode accumulationMode );
     void DrawMemory();
     void DrawAllocList();
     void DrawCompare();
@@ -296,7 +306,7 @@ private:
     void BuildFlameGraph( const Worker& worker, std::vector<FlameGraphItem>& data, const Vector<short_ptr<ZoneEvent>>& zones, const ContextSwitch* ctx );
     void BuildFlameGraph( const Worker& worker, std::vector<FlameGraphItem>& data, const Vector<SampleData>& samples );
 
-    void ListMemData( std::vector<const MemEvent*>& vec, const std::function<void(const MemEvent*)>& DrawAddress, int64_t startTime = -1, uint64_t pool = 0 );
+    void ListMemData( std::vector<const MemEvent*>& vec, const std::function<void( const MemEvent* )>& DrawAddress, int64_t startTime = -1, uint64_t pool = 0 );
 
     unordered_flat_map<uint32_t, MemPathData> GetCallstackPaths( const MemData& mem, MemRange memRange ) const;
     unordered_flat_map<uint64_t, MemCallstackFrameTree> GetCallstackFrameTreeBottomUp( const MemData& mem ) const;
@@ -472,7 +482,7 @@ private:
     const ZoneEvent* m_zoneInfoWindow = nullptr;
     const ZoneEvent* m_zoneHighlight;
     DecayValue<int16_t> m_zoneSrcLocHighlight = 0;
-    LockHighlight m_lockHighlight { -1 };
+    LockHighlight m_lockHighlight{ -1 };
     LockHighlight m_nextLockHighlight;
     DecayValue<const MessageData*> m_msgHighlight = nullptr;
     DecayValue<uint32_t> m_lockHoverHighlight = InvalidId;
@@ -604,14 +614,14 @@ private:
     enum
     {
         FindMatchingZoneFlagDefault = 0,
-        FindMatchingZoneFlagSourceFile = (1 << 0),
-        FindMatchingZoneFlagLineNum = (1 << 1),
+        FindMatchingZoneFlagSourceFile = ( 1 << 0 ),
+        FindMatchingZoneFlagLineNum = ( 1 << 1 ),
     };
 
-    std::atomic<SaveThreadState> m_saveThreadState { SaveThreadState::Inert };
+    std::atomic<SaveThreadState> m_saveThreadState{ SaveThreadState::Inert };
     std::thread m_saveThread;
-    std::atomic<size_t> m_srcFileBytes { 0 };
-    std::atomic<size_t> m_dstFileBytes { 0 };
+    std::atomic<size_t> m_srcFileBytes{ 0 };
+    std::atomic<size_t> m_dstFileBytes{ 0 };
 
     ImTextureID m_frameTexture = 0;
     const void* m_frameTexturePtr = nullptr;
@@ -640,14 +650,32 @@ private:
 
     unordered_flat_map<const void*, bool> m_visMap;
 
-    void(*m_cbMainThread)(const std::function<void()>&, bool);
+    void ( *m_cbMainThread )( const std::function<void()>&, bool );
 
     int m_gpuIdx = 0;
 
-    struct FindZone {
-        enum : uint64_t { Unselected = std::numeric_limits<uint64_t>::max() - 1 };
-        enum class GroupBy : int { Thread, UserText, ZoneName, Callstack, Parent, NoGrouping };
-        enum class SortBy : int { Order, Count, Time, Mtpc };
+    struct FindZone
+    {
+        enum : uint64_t
+        {
+            Unselected = std::numeric_limits<uint64_t>::max() - 1
+        };
+        enum class GroupBy : int
+        {
+            Thread,
+            UserText,
+            ZoneName,
+            Callstack,
+            Parent,
+            NoGrouping
+        };
+        enum class SortBy : int
+        {
+            Order,
+            Count,
+            Time,
+            Mtpc
+        };
 
         struct Group
         {
@@ -702,7 +730,8 @@ private:
             ptrdiff_t distEnd;
         } binCache;
 
-        struct {
+        struct
+        {
             Vector<SymList> counts;
             bool scheduleUpdate = false;
             bool enabled = false;
@@ -786,7 +815,8 @@ private:
         double v1;
     };
 
-    struct {
+    struct
+    {
         bool show = false;
         bool ignoreCase = false;
         bool link = true;
@@ -818,7 +848,7 @@ private:
 
         void ResetSelection()
         {
-            for( int i=0; i<2; i++ )
+            for( int i = 0; i < 2; i++ )
             {
                 sorted[i].clear();
                 sortedNum[i] = 0;
@@ -831,7 +861,7 @@ private:
         void Reset()
         {
             ResetSelection();
-            for( int i=0; i<2; i++ )
+            for( int i = 0; i < 2; i++ )
             {
                 match[i].clear();
                 selMatch[i] = 0;
@@ -843,7 +873,8 @@ private:
         }
     } m_compare;
 
-    struct {
+    struct
+    {
         bool show = false;
         char pattern[1024] = {};
         uint64_t ptrFind = 0;
@@ -853,7 +884,8 @@ private:
         Range range;
     } m_memInfo;
 
-    struct {
+    struct
+    {
         std::vector<int64_t> data;
         const FrameData* frameSet = nullptr;
         size_t frameNum = 0;
@@ -870,14 +902,16 @@ private:
         int minBinVal = 1;
     } m_frameSortData;
 
-    struct {
+    struct
+    {
         std::pair<const ZoneEvent*, int64_t> zoneSelfTime = { nullptr, 0 };
         std::pair<const ZoneEvent*, int64_t> zoneSelfTime2 = { nullptr, 0 };
         std::pair<const GpuEvent*, int64_t> gpuSelfTime = { nullptr, 0 };
         std::pair<const GpuEvent*, int64_t> gpuSelfTime2 = { nullptr, 0 };
     } m_cache;
 
-    struct {
+    struct
+    {
         ImTextureID texture = 0;
         float timeLeft = 0;
         float speed = 1;
@@ -888,7 +922,8 @@ private:
         bool zoom = false;
     } m_playback;
 
-    struct TimeDistribution {
+    struct TimeDistribution
+    {
         bool runningTime = false;
         bool exclusiveTime = true;
         unordered_flat_map<int16_t, ZoneTimeData> data;
@@ -896,7 +931,8 @@ private:
         float fztime;
     } m_timeDist;
 
-    struct {
+    struct
+    {
         uint64_t symAddr = 0;
         int sel;
         bool withInlines = false;
@@ -931,7 +967,7 @@ private:
     {
         uint64_t count = 0;
         uint64_t lastTime = 0;
-        RangeSlim range = {false, 0, 0};
+        RangeSlim range = { false, 0, 0 };
 
         void Reset()
         {

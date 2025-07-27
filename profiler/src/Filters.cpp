@@ -6,7 +6,6 @@
 
 #include "profiler/TracyStorage.hpp"
 
-
 Filters::Filters()
     : m_fn( tracy::GetSavePath( "client.filters" ) )
 {

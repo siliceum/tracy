@@ -10,7 +10,7 @@
 
 #ifdef TRACY_HAS_SYSTEM_TRACING
 
-#include <stdint.h>
+#  include <stdint.h>
 
 namespace tracy
 {

@@ -1,19 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
-#include <emscripten/html5.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <emscripten/html5.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "Backend.hpp"
 #include "RunQueue.hpp"
 #include "profiler/TracyImGui.hpp"
 
 static std::function<void()> s_redraw;
-static std::function<void(float)> s_scaleChanged;
-static std::function<int(void)> s_isBusy;
+static std::function<void( float )> s_scaleChanged;
+static std::function<int( void )> s_isBusy;
 static RunQueue* s_mainThreadTasks;
 
 static EGLDisplay s_eglDpy;
@@ -138,7 +138,7 @@ static ImGuiKey TranslateKeyCode( const char* code )
     return ImGuiKey_None;
 }
 
-Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void(float)>& scaleChanged, const std::function<int(void)>& isBusy, RunQueue* mainThreadTasks )
+Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks )
 {
     constexpr EGLint eglConfigAttrib[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -146,34 +146,48 @@ Backend::Backend( const char* title, const std::function<void()>& redraw, const 
         EGL_GREEN_SIZE, 8,
         EGL_BLUE_SIZE, 8,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-        EGL_NONE
-    };
+        EGL_NONE };
 
     s_eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
     EGLBoolean res;
     res = eglInitialize( s_eglDpy, nullptr, nullptr );
-    if( res != EGL_TRUE ) { fprintf( stderr, "Cannot initialize EGL!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE )
+    {
+        fprintf( stderr, "Cannot initialize EGL!\n" );
+        exit( 1 );
+    }
 
     EGLint count;
     EGLConfig eglConfig;
     res = eglChooseConfig( s_eglDpy, eglConfigAttrib, &eglConfig, 1, &count );
-    if( res != EGL_TRUE || count != 1 ) { fprintf( stderr, "No suitable EGL config found!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE || count != 1 )
+    {
+        fprintf( stderr, "No suitable EGL config found!\n" );
+        exit( 1 );
+    }
 
     s_eglSurf = eglCreateWindowSurface( s_eglDpy, eglConfig, 0, nullptr );
 
     constexpr EGLint eglCtxAttrib[] = {
         EGL_CONTEXT_CLIENT_VERSION, 2,
-        EGL_NONE
-    };
+        EGL_NONE };
 
     s_eglCtx = eglCreateContext( s_eglDpy, eglConfig, EGL_NO_CONTEXT, eglCtxAttrib );
-    if( !s_eglCtx ) { fprintf( stderr, "Cannot create OpenGL 3.2 Core Profile context!\n" ); exit( 1 ); }
+    if( !s_eglCtx )
+    {
+        fprintf( stderr, "Cannot create OpenGL 3.2 Core Profile context!\n" );
+        exit( 1 );
+    }
     res = eglMakeCurrent( s_eglDpy, s_eglSurf, s_eglSurf, s_eglCtx );
-    if( res != EGL_TRUE ) { fprintf( stderr, "Cannot make EGL context current!\n" ); exit( 1 ); }
+    if( res != EGL_TRUE )
+    {
+        fprintf( stderr, "Cannot make EGL context current!\n" );
+        exit( 1 );
+    }
 
     ImGui_ImplOpenGL3_Init( "#version 100" );
 
-    EM_ASM( document.title = UTF8ToString($0), title );
+    EM_ASM( document.title = UTF8ToString( $0 ), title );
 
     s_redraw = redraw;
     s_scaleChanged = scaleChanged;
@@ -214,14 +228,14 @@ Backend::Backend( const char* title, const std::function<void()>& redraw, const 
         tracy::s_wasActive = true;
         return EM_TRUE;
     } );
-    emscripten_set_keydown_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, [] ( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
+    emscripten_set_keydown_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, []( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
         const auto code = TranslateKeyCode( e->code );
         if( code == ImGuiKey_None ) return EM_FALSE;
         ImGui::GetIO().AddKeyEvent( code, true );
         if( e->key[0] && !e->key[1] ) ImGui::GetIO().AddInputCharacter( *e->key );
         return EM_TRUE;
     } );
-    emscripten_set_keyup_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, [] ( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
+    emscripten_set_keyup_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, []( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
         const auto code = TranslateKeyCode( e->code );
         if( code == ImGuiKey_None ) return EM_FALSE;
         ImGui::GetIO().AddKeyEvent( code, false );
@@ -285,7 +299,7 @@ void Backend::NewFrame( int& w, int& h )
     const char* cursorName;
     switch( cursor )
     {
-    case ImGuiMouseCursor_None:         cursorName = "none"; break;
+    case ImGuiMouseCursor_None: cursorName = "none"; break;
     case ImGuiMouseCursor_Arrow:
         switch( s_isBusy() )
         {
@@ -295,20 +309,20 @@ void Backend::NewFrame( int& w, int& h )
         case 2: cursorName = "wait"; break;
         }
         break;
-    case ImGuiMouseCursor_TextInput:    cursorName = "text"; break;
-    case ImGuiMouseCursor_ResizeAll:    cursorName = "move"; break;
-    case ImGuiMouseCursor_ResizeNS:     cursorName = "ns-resize"; break;
-    case ImGuiMouseCursor_ResizeEW:     cursorName = "ew-resize"; break;
-    case ImGuiMouseCursor_ResizeNESW:   cursorName = "nesw-resize"; break;
-    case ImGuiMouseCursor_ResizeNWSE:   cursorName = "nwse-resize"; break;
-    case ImGuiMouseCursor_Hand:         cursorName = "pointer"; break;
-    case ImGuiMouseCursor_NotAllowed:   cursorName = "not-allowed"; break;
-    default:                            cursorName = "auto"; break;
+    case ImGuiMouseCursor_TextInput: cursorName = "text"; break;
+    case ImGuiMouseCursor_ResizeAll: cursorName = "move"; break;
+    case ImGuiMouseCursor_ResizeNS: cursorName = "ns-resize"; break;
+    case ImGuiMouseCursor_ResizeEW: cursorName = "ew-resize"; break;
+    case ImGuiMouseCursor_ResizeNESW: cursorName = "nesw-resize"; break;
+    case ImGuiMouseCursor_ResizeNWSE: cursorName = "nwse-resize"; break;
+    case ImGuiMouseCursor_Hand: cursorName = "pointer"; break;
+    case ImGuiMouseCursor_NotAllowed: cursorName = "not-allowed"; break;
+    default: cursorName = "auto"; break;
     };
     if( s_prevCursor != cursorName )
     {
         s_prevCursor = cursorName;
-        EM_ASM_INT( { document.getElementById('canvas').style.cursor = UTF8ToString($0); }, cursorName );
+        EM_ASM_INT( { document.getElementById( 'canvas' ).style.cursor = UTF8ToString( $0 ); }, cursorName );
     }
 
     uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
@@ -332,7 +346,7 @@ void Backend::SetIcon( uint8_t* data, int w, int h )
 
 void Backend::SetTitle( const char* title )
 {
-    EM_ASM( document.title = UTF8ToString($0), title );
+    EM_ASM( document.title = UTF8ToString( $0 ), title );
 }
 
 float Backend::GetDpiScale()

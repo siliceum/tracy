@@ -1,18 +1,18 @@
+#include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
 #include <math.h>
-#include <backends/imgui_impl_opengl3.h>
 #include <misc/freetype/imgui_freetype.h>
 
 #include "Fonts.hpp"
 #include "profiler/IconsFontAwesome6.h"
 #include "profiler/TracyEmbed.hpp"
 
-#include "data/FontFixed.hpp"
-#include "data/FontIcons.hpp"
-#include "data/FontNormal.hpp"
 #include "data/FontBold.hpp"
 #include "data/FontBoldItalic.hpp"
+#include "data/FontFixed.hpp"
+#include "data/FontIcons.hpp"
 #include "data/FontItalic.hpp"
+#include "data/FontNormal.hpp"
 
 FontData g_fonts;
 

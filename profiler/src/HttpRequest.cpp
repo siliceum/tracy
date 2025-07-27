@@ -10,9 +10,9 @@
 
 #if defined _WIN32
 #  include <windows.h>
-extern "C" typedef LONG (WINAPI *t_RtlGetVersion)( PRTL_OSVERSIONINFOW );
-extern "C" typedef char* (WINAPI *t_WineGetVersion)();
-extern "C" typedef char* (WINAPI *t_WineGetBuildId)();
+extern "C" typedef LONG( WINAPI* t_RtlGetVersion )( PRTL_OSVERSIONINFOW );
+extern "C" typedef char*( WINAPI* t_WineGetVersion )();
+extern "C" typedef char*( WINAPI* t_WineGetBuildId )();
 #elif defined __linux__
 #  include <sys/utsname.h>
 #elif defined __APPLE__
@@ -86,7 +86,7 @@ static const char* GetOsInfo()
     return buf;
 }
 
-void HttpRequest( const char* server, const char* resource, int port, const std::function<void(int, char*)>& cb )
+void HttpRequest( const char* server, const char* resource, int port, const std::function<void( int, char* )>& cb )
 {
     tracy::Socket sock;
     if( !sock.ConnectBlocking( server, port ) ) return;
@@ -99,7 +99,7 @@ void HttpRequest( const char* server, const char* resource, int port, const std:
     if( memcmp( response, "HTTP/1.1 200", 12 ) != 0 ) return;
     auto hdr = response + 13;
     int contentLength = 0;
-    for(;;)
+    for( ;; )
     {
         while( memcmp( hdr, CRLF, 2 ) != 0 ) hdr++;
         hdr += 2;
@@ -111,7 +111,7 @@ void HttpRequest( const char* server, const char* resource, int port, const std:
         }
     }
     assert( contentLength != 0 );
-    for(;;)
+    for( ;; )
     {
         while( memcmp( hdr, CRLF, 2 ) != 0 ) hdr++;
         hdr += 2;

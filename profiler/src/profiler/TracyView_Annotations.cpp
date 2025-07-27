@@ -1,8 +1,8 @@
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -74,7 +74,11 @@ void View::DrawAnnotationList()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 600 * scale, 300 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Annotation list", &m_showAnnotationList );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     if( ImGui::Button( ICON_FA_PLUS " Add annotation" ) )
     {

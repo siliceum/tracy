@@ -20,7 +20,7 @@ struct AchievementItem
 {
     const char* id;
     const char* name;
-    void(*description)();
+    void ( *description )();
     AchievementItem** items;
     AchievementItem** unlocks;
     bool keepOpen;

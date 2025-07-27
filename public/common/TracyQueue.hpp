@@ -414,7 +414,7 @@ enum class GpuContextType : uint8_t
 
 enum GpuContextFlags : uint8_t
 {
-    GpuContextCalibration   = 1 << 0
+    GpuContextCalibration = 1 << 0
 };
 
 struct QueueGpuNewContext
@@ -717,8 +717,7 @@ struct QueueSourceCodeMetadata
 
 struct QueueHeader
 {
-    union
-    {
+    union {
         QueueType type;
         uint8_t idx;
     };
@@ -727,8 +726,7 @@ struct QueueHeader
 struct QueueItem
 {
     QueueHeader hdr;
-    union
-    {
+    union {
         QueueThreadContext threadCtx;
         QueueZoneBegin zoneBegin;
         QueueZoneBeginLean zoneBeginLean;
@@ -820,8 +818,10 @@ struct QueueItem
 };
 #pragma pack( pop )
 
-
-enum { QueueItemSize = sizeof( QueueItem ) };
+enum
+{
+    QueueItemSize = sizeof( QueueItem )
+};
 
 static constexpr size_t QueueDataSize[] = {
     sizeof( QueueHeader ),                                  // zone text

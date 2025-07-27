@@ -1,9 +1,10 @@
 #include <array>
 #include <curl/curl.h>
+#include <ranges>
 #include <stdint.h>
 #include <stdlib.h>
-#include <ranges>
 
+#include "../Fonts.hpp"
 #include "TracyConfig.hpp"
 #include "TracyImGui.hpp"
 #include "TracyLlm.hpp"
@@ -12,7 +13,6 @@
 #include "TracyLlmTools.hpp"
 #include "TracyPrint.hpp"
 #include "TracyWeb.hpp"
-#include "../Fonts.hpp"
 
 #include "data/SystemPrompt.hpp"
 #include "data/SystemReminder.hpp"
@@ -76,7 +76,11 @@ void TracyLlm::Draw()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 400 * scale, 800 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Tracy Assist", &m_show, ImGuiWindowFlags_NoScrollbar );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     if( IsBusy() )
     {
@@ -160,7 +164,7 @@ void TracyLlm::Draw()
         ImGui::AlignTextToFramePadding();
         TextDisabledUnformatted( "API:" );
         ImGui::SameLine();
-        const auto sz = std::min( InputBufferSize-1, s_config.llmAddress.size() );
+        const auto sz = std::min( InputBufferSize - 1, s_config.llmAddress.size() );
         memcpy( m_apiInput, s_config.llmAddress.c_str(), sz );
         m_apiInput[sz] = 0;
         bool changed = ImGui::InputTextWithHint( "##api", "http://localhost:1234", m_apiInput, InputBufferSize );
@@ -173,9 +177,9 @@ void TracyLlm::Draw()
                 const char* address;
             };
             constexpr static std::array presets = {
-                Preset { "Llama.cpp", "http://localhost:8080" },
-                Preset { "LM Studio", "http://localhost:1234" },
-                Preset { "Ollama", "http://localhost:11434" },
+                Preset{ "Llama.cpp", "http://localhost:8080" },
+                Preset{ "LM Studio", "http://localhost:1234" },
+                Preset{ "Ollama", "http://localhost:11434" },
             };
             for( auto& preset : presets )
             {
@@ -355,7 +359,7 @@ void TracyLlm::Draw()
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
     if( ctxSize <= 0 )
     {
-        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+        ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.3f, 0.3f, 0.3f, 1.0f ) );
         ImGui::ProgressBar( 1, ImVec2( -1, 0 ), "" );
     }
     else
@@ -363,15 +367,15 @@ void TracyLlm::Draw()
         const auto ratio = m_usedCtx / (float)ctxSize;
         if( ratio < 0.5f )
         {
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+            ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.2f, 0.6f, 0.2f, 1.0f ) );
         }
         else if( ratio < 0.8f )
         {
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.6f, 0.6f, 0.2f, 1.0f));
+            ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.6f, 0.6f, 0.2f, 1.0f ) );
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
         }
         ImGui::ProgressBar( ratio, ImVec2( -1, 0 ), "" );
     }
@@ -469,7 +473,7 @@ void TracyLlm::Draw()
                 auto cit = it;
                 while( cit != m_chat.end() )
                 {
-                    const auto& content = (*cit)["content"].get_ref<const std::string&>();
+                    const auto& content = ( *cit )["content"].get_ref<const std::string&>();
                     const auto tokens = m_api->Tokenize( content, m_modelIdx );
                     m_usedCtx -= tokens >= 0 ? tokens : content.size() / 4;
                     ++cit;
@@ -505,7 +509,7 @@ void TracyLlm::Draw()
         auto draw = ImGui::GetWindowDrawList();
         const auto ty = ImGui::GetTextLineHeight();
         draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 0 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f        ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
         draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 2 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
         ImGui::Dummy( ImVec2( ty * 3, ty ) );
         ImGui::SameLine();
@@ -585,8 +589,7 @@ void TracyLlm::WorkerThread()
         case Task::SendMessage:
             SendMessage( lock );
             break;
-        case Task::Tokenize:
-        {
+        case Task::Tokenize: {
             lock.unlock();
             auto tokens = m_api->Tokenize( m_currentJob->param, m_modelIdx );
             if( tokens < 0 ) tokens = m_currentJob->param.size() / 4;
@@ -609,7 +612,7 @@ void TracyLlm::UpdateModels()
     auto it = std::ranges::find_if( models, []( const auto& model ) { return model.name == s_config.llmModel; } );
     if( it == models.end() )
     {
-        for( int i=0; i<models.size(); i++ )
+        for( int i = 0; i < models.size(); i++ )
         {
             if( !models[i].embeddings )
             {
@@ -626,7 +629,7 @@ void TracyLlm::UpdateModels()
     it = std::ranges::find_if( models, []( const auto& model ) { return model.name == s_config.llmEmbeddingsModel; } );
     if( it == models.end() )
     {
-        for( int i=0; i<models.size(); i++ )
+        for( int i = 0; i < models.size(); i++ )
         {
             if( models[i].embeddings )
             {
@@ -666,19 +669,17 @@ void TracyLlm::ResetChat()
 
 void TracyLlm::QueueConnect()
 {
-    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem {
+    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem{
         .task = Task::Connect,
-        .callback = [this] { UpdateModels(); }
-    } ) );
+        .callback = [this] { UpdateModels(); } } ) );
     m_cv.notify_all();
 }
 
 bool TracyLlm::QueueSendMessage()
 {
     if( !m_api->IsConnected() || m_modelIdx < 0 ) return false;
-    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem {
-        .task = Task::SendMessage
-    } ) );
+    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem{
+        .task = Task::SendMessage } ) );
     m_cv.notify_all();
     return true;
 }
@@ -692,16 +693,15 @@ void TracyLlm::AddMessage( std::string&& str, const char* role )
         return;
     }
 
-    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem {
+    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem{
         .task = Task::Tokenize,
         .callback2 = [this, str, role]( nlohmann::json json ) {
-            m_usedCtx += json["tokens"].get<int>();
-            nlohmann::json msg = {
-                { "role", role },
-                { "content", str }
-            };
-            m_chat.emplace_back( std::move( msg ) );
-        },
+        m_usedCtx += json["tokens"].get<int>();
+        nlohmann::json msg = {
+            { "role", role },
+            { "content", str } };
+        m_chat.emplace_back( std::move( msg ) );
+    },
         .param = std::move( str ),
     } ) );
     m_cv.notify_all();
@@ -900,7 +900,7 @@ bool TracyLlm::OnResponse( const nlohmann::json& json )
                     }
                     else
                     {
-                        while( end > pos && str[end-1] == '\n' ) end--;
+                        while( end > pos && str[end - 1] == '\n' ) end--;
                         const auto tool = str.substr( pos, end - pos );
                         lock.unlock();
 

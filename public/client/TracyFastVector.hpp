@@ -47,11 +47,27 @@ public:
     T* end() { return m_write; }
     const T* end() const { return m_write; }
 
-    T& front() { assert( !empty() ); return m_ptr[0]; }
-    const T& front() const { assert( !empty() ); return m_ptr[0]; }
+    T& front()
+    {
+        assert( !empty() );
+        return m_ptr[0];
+    }
+    const T& front() const
+    {
+        assert( !empty() );
+        return m_ptr[0];
+    }
 
-    T& back() { assert( !empty() ); return m_write[-1]; }
-    const T& back() const { assert( !empty() ); return m_write[-1]; }
+    T& back()
+    {
+        assert( !empty() );
+        return m_write[-1];
+    }
+    const T& back() const
+    {
+        assert( !empty() );
+        return m_write[-1];
+    }
 
     T& operator[]( size_t idx ) { return m_ptr[idx]; }
     const T& operator[]( size_t idx ) const { return m_ptr[idx]; }

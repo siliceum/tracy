@@ -1,6 +1,6 @@
-#include <imgui.h>
-#include "profiler/TracyStorage.hpp"
 #include "ImGuiContext.hpp"
+#include "profiler/TracyStorage.hpp"
+#include <imgui.h>
 
 ImGuiTracyContext::ImGuiTracyContext()
     : m_iniFilename( tracy::GetSavePath( "imgui.ini" ) )

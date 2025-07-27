@@ -64,8 +64,8 @@ private:
     std::atomic<int> m_sock;
     int m_bufLeft;
 
-    struct addrinfo *m_res;
-    struct addrinfo *m_ptr;
+    struct addrinfo* m_res;
+    struct addrinfo* m_ptr;
     int m_connSock;
 };
 
