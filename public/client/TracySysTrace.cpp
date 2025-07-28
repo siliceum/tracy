@@ -70,14 +70,14 @@ static const GUID DxgKrnlGuid  = { 0x802ec45a, 0x1e99, 0x4b83, { 0x99, 0x20, 0x8
 static const GUID ThreadV2Guid = { 0x3d6fa8d1, 0xfe05, 0x11d0, { 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c } };
 
 
+static CONTROLTRACE_ID s_traceControlId;
 static TRACEHANDLE s_traceHandle;
-static TRACEHANDLE s_traceHandle2;
 static EVENT_TRACE_PROPERTIES* s_prop;
 static DWORD s_pid;
 
 static EVENT_TRACE_PROPERTIES* s_propVsync;
-static TRACEHANDLE s_traceHandleVsync;
-static TRACEHANDLE s_traceHandleVsync2;
+static TRACEHANDLE s_traceVsyncControlId;
+static TRACEHANDLE s_traceVsyncHandle;
 Thread* s_threadVsync = nullptr;
 
 struct CSwitch
@@ -105,18 +105,35 @@ struct ReadyThread
     int8_t      reserverd;
 };
 
-struct ThreadTrace
+struct ThreadTrace // EventType{1, 2, 3, 4} Thread_V3_TypeGroup1 : Thread_V3
 {
     uint32_t processId;
     uint32_t threadId;
-    uint32_t stackBase;
-    uint32_t stackLimit;
-    uint32_t userStackBase;
-    uint32_t userStackLimit;
-    uint32_t startAddr;
-    uint32_t win32StartAddr;
-    uint32_t tebBase;
+    uintptr_t stackBase;
+    uintptr_t stackLimit;
+    uintptr_t userStackBase;
+    uintptr_t userStackLimit;
+    uintptr_t affinity;
+    uintptr_t win32StartAddr;
+    uintptr_t tebBase;
     uint32_t subProcessTag;
+    // It seems at some point those were not present in the MOF file shipped with Windows... But available, see https://github.com/microsoft/perfview/commit/57cd178369396de8420f2ad7496d22ac96884c90#diff-60e5c3c78cbdd60f262320c44161dcfd0de2eb990d6e6b4b58d7c0c53567e3deR4114
+    // This means that they are not show when using TDH, making discoverability hard.
+    // Since they are not officially documented, assume those to be optional as PerfView does.
+    uint8_t basePriority;
+    uint8_t pagePriority;
+    uint8_t ioPriority;
+    uint8_t threadFlags;
+    // The only difference between event types version 3 and 4 (at least, officially according to TDH) is the threadName.
+    // But the OS seems to still provide threadName while reporting version 3... Could be some compatibility thing?
+    wchar_t threadName[1]; // Null terminated
+};
+
+struct ThreadSetName
+{
+    uint32_t processId;
+    uint32_t threadId;
+    wchar_t threadName[1]; // Null terminated
 };
 
 struct StackWalkEvent
@@ -153,6 +170,22 @@ t_GetModuleBaseNameA _GetModuleBaseNameA = (t_GetModuleBaseNameA)GetProcAddress(
 
 static t_GetThreadDescription _GetThreadDescription = 0;
 
+void SendThreadExternalName(uint64_t threadId, const wchar_t* name)
+{
+    // TODO: should probably cache those, as we may send the same data multiple times (when thread sets name, exits or rundown)
+    char buf[1024];
+    auto ret = wcstombs(buf, name, sizeof(buf));
+    if (ret != 0)
+    {
+        TracyLfqPrepare(QueueType::ExternalNameMetadata);
+        assert(!(threadId & (1llu << 63)));
+        threadId |= (1llu << 63);
+        MemWrite(&item->externalNameMetadata.thread, threadId);
+        MemWrite(&item->externalNameMetadata.threadName, (uint64_t)CopyStringFast(buf, ret));
+        MemWrite(&item->externalNameMetadata.name, (uint64_t)0);
+        TracyLfqCommit;
+    }
+}
 
 void WINAPI EventRecordCallback( PEVENT_RECORD record )
 {
@@ -163,8 +196,8 @@ void WINAPI EventRecordCallback( PEVENT_RECORD record )
     const auto& hdr = record->EventHeader;
     switch( hdr.ProviderId.Data1 )
     {
-    case 0x3d6fa8d1:    // Thread Guid
-        if( hdr.EventDescriptor.Opcode == 36 )
+    case 0x3d6fa8d1:    // Thread Guid https://learn.microsoft.com/en-us/windows/win32/etw/thread-v2
+        if( hdr.EventDescriptor.Opcode == 36 ) // CSwitch https://learn.microsoft.com/en-us/windows/win32/etw/cswitch
         {
             const auto cswitch = (const CSwitch*)record->UserData;
 
@@ -180,7 +213,7 @@ void WINAPI EventRecordCallback( PEVENT_RECORD record )
             MemWrite( &item->contextSwitch.previousCState, cswitch->previousCState );
             TracyLfqCommit;
         }
-        else if( hdr.EventDescriptor.Opcode == 50 )
+        else if( hdr.EventDescriptor.Opcode == 50 ) // ReadyThread https://learn.microsoft.com/en-us/windows/win32/etw/readythread
         {
             const auto rt = (const ReadyThread*)record->UserData;
 
@@ -192,7 +225,7 @@ void WINAPI EventRecordCallback( PEVENT_RECORD record )
             MemWrite( &item->threadWakeup.adjustIncrement, rt->adjustIncrement );
             TracyLfqCommit;
         }
-        else if( hdr.EventDescriptor.Opcode == 1 || hdr.EventDescriptor.Opcode == 3 )
+        else if( hdr.EventDescriptor.Opcode >= 1 && hdr.EventDescriptor.Opcode <= 4 ) // Start/End/DCStart/DCEnd
         {
             const auto tt = (const ThreadTrace*)record->UserData;
 
@@ -203,6 +236,15 @@ void WINAPI EventRecordCallback( PEVENT_RECORD record )
             MemWrite( &item->tidToPid.tid, tid );
             MemWrite( &item->tidToPid.pid, pid );
             TracyLfqCommit;
+            if( hdr.EventDescriptor.Version >= 3 && record->UserDataLength > offsetof( ThreadTrace, threadName ) )
+            {
+                SendThreadExternalName(tt->threadId, tt->threadName);
+            }
+        }
+        else if( hdr.EventDescriptor.Opcode == 72 )
+        {
+            const auto tt = (const ThreadSetName*)record->UserData;
+            SendThreadExternalName(tt->threadId, tt->threadName);
         }
         break;
     case 0xdef2fe46:    // StackWalk Guid
@@ -279,7 +321,7 @@ static void SetupVsync()
     memcpy( s_propVsync, backup, psz );
     tracy_free( backup );
 
-    const auto startStatus = StartTraceA( &s_traceHandleVsync, "TracyVsync", s_propVsync );
+    const auto startStatus = StartTraceA( &s_traceVsyncControlId, "TracyVsync", s_propVsync );
     if( startStatus != ERROR_SUCCESS )
     {
         tracy_free( s_propVsync );
@@ -304,7 +346,7 @@ static void SetupVsync()
     params.FilterDescCount = 1;
 
     uint64_t mask = 0x4000000000000001;   // Microsoft_Windows_DxgKrnl_Performance | Base
-    if( EnableTraceEx2( s_traceHandleVsync, &DxgKrnlGuid, EVENT_CONTROL_CODE_ENABLE_PROVIDER, TRACE_LEVEL_INFORMATION, mask, mask, 0, &params ) != ERROR_SUCCESS )
+    if( EnableTraceEx2( s_traceVsyncControlId, &DxgKrnlGuid, EVENT_CONTROL_CODE_ENABLE_PROVIDER, TRACE_LEVEL_INFORMATION, mask, mask, 0, &params ) != ERROR_SUCCESS )
     {
         tracy_free( s_propVsync );
         return;
@@ -318,10 +360,9 @@ static void SetupVsync()
     log.ProcessTraceMode = PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_RAW_TIMESTAMP;
     log.EventRecordCallback = EventRecordCallbackVsync;
 
-    s_traceHandleVsync2 = OpenTraceA( &log );
-    if( s_traceHandleVsync2 == (TRACEHANDLE)INVALID_HANDLE_VALUE )
+    s_traceVsyncHandle = OpenTraceA( &log );
+    if( s_traceVsyncHandle == (TRACEHANDLE)INVALID_HANDLE_VALUE )
     {
-        CloseTrace( s_traceHandleVsync );
         tracy_free( s_propVsync );
         return;
     }
@@ -331,7 +372,7 @@ static void SetupVsync()
         ThreadExitHandler threadExitHandler;
         SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
         SetThreadName( "Tracy Vsync" );
-        ProcessTrace( &s_traceHandleVsync2, 1, nullptr, nullptr );
+        ProcessTrace( &s_traceVsyncHandle, 1, nullptr, nullptr );
     }, nullptr );
 #endif
 }
@@ -411,13 +452,14 @@ bool SysTraceStart( int64_t& samplingPeriod )
     {
         tracy_free( backup );
         tracy_free( s_prop );
+        s_prop = nullptr;
         return false;
     }
 
     memcpy( s_prop, backup, psz );
     tracy_free( backup );
 
-    const auto startStatus = StartTrace( &s_traceHandle, KERNEL_LOGGER_NAME, s_prop );
+    const auto startStatus = StartTrace( &s_traceControlId, KERNEL_LOGGER_NAME, s_prop );
     if( startStatus != ERROR_SUCCESS )
     {
         tracy_free( s_prop );
@@ -432,7 +474,7 @@ bool SysTraceStart( int64_t& samplingPeriod )
         stackId[0].Type = 46;
         stackId[1].EventGuid = ThreadV2Guid;
         stackId[1].Type = 36;
-        const auto stackStatus = TraceSetInformation( s_traceHandle, TraceStackTracingInfo, &stackId, sizeof( stackId ) );
+        const auto stackStatus = TraceSetInformation( s_traceControlId, TraceStackTracingInfo, &stackId, sizeof( stackId ) );
         if( stackStatus != ERROR_SUCCESS )
         {
             tracy_free( s_prop );
@@ -452,10 +494,9 @@ bool SysTraceStart( int64_t& samplingPeriod )
     log.ProcessTraceMode = PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_RAW_TIMESTAMP;
     log.EventRecordCallback = EventRecordCallback;
 
-    s_traceHandle2 = OpenTrace( &log );
-    if( s_traceHandle2 == (TRACEHANDLE)INVALID_HANDLE_VALUE )
+    s_traceHandle = OpenTrace( &log );
+    if( s_traceHandle == (TRACEHANDLE)INVALID_HANDLE_VALUE )
     {
-        CloseTrace( s_traceHandle );
         tracy_free( s_prop );
         return false;
     }
@@ -467,27 +508,42 @@ bool SysTraceStart( int64_t& samplingPeriod )
     return true;
 }
 
+std::atomic_bool s_traceProcessFinished = false;
+std::atomic_bool s_traceRundownQueried = false;
+bool SysTraceInRundown()
+{
+    return s_traceProcessFinished && s_traceRundownQueried;
+}
+void SysTraceStopForRundown()
+{
+    if( !s_traceProcessFinished && !s_traceRundownQueried && s_prop )
+    {
+        s_traceRundownQueried = true;
+        // Start by stopping the session
+        ControlTrace(0, KERNEL_LOGGER_NAME, s_prop, EVENT_TRACE_CONTROL_STOP);
+    }
+}
 void SysTraceStop()
 {
     if( s_threadVsync )
     {
-        CloseTrace( s_traceHandleVsync2 );
-        CloseTrace( s_traceHandleVsync );
+        CloseTrace( s_traceVsyncHandle );
         s_threadVsync->~Thread();
         tracy_free( s_threadVsync );
     }
 
-    CloseTrace( s_traceHandle2 );
+    // Then close the trace, do this after stopping the session to be able to get rundown events
     CloseTrace( s_traceHandle );
 }
-
 void SysTraceWorker( void* ptr )
 {
     ThreadExitHandler threadExitHandler;
+    std::atomic_bool s_traceProcessFinished = false;
+    std::atomic_bool s_traceRundownQueried = false;
     SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
     SetThreadName( "Tracy SysTrace" );
-    ProcessTrace( &s_traceHandle2, 1, 0, 0 );
-    ControlTrace( 0, KERNEL_LOGGER_NAME, s_prop, EVENT_TRACE_CONTROL_STOP );
+    HRESULT hr = ProcessTrace( &s_traceHandle, 1, 0, 0 );
+    s_traceProcessFinished = false;
     tracy_free( s_prop );
 }
 

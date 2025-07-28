@@ -1638,6 +1638,10 @@ Profiler::~Profiler()
     RemoveCrashHandler();
 
 #ifdef TRACY_HAS_SYSTEM_TRACING
+    if (s_sysTraceThread)
+    {
+        SysTraceStopForRundown();
+    }
     StopSystemTracing();
 #endif
 
@@ -2055,12 +2059,24 @@ void Profiler::Worker()
             }
 
             bool connActive = true;
-            while( m_sock->HasData() )
+            while( m_sock->HasData() 
+#ifdef TRACY_HAS_SYSTEM_TRACING
+                || SysTraceInRundown()
+#endif
+                )
             {
                 connActive = HandleServerQuery();
                 if( !connActive ) break;
             }
-            if( !connActive || ShouldExit() ) break;
+            if( !connActive ) break;
+            if( ShouldExit() )
+            {
+                if( s_sysTraceThread )
+                {
+                    SysTraceStopForRundown();
+                }
+                else break;
+            }
         }
         if( ShouldExit() ) break;
 
@@ -2692,18 +2708,19 @@ Profiler::DequeueStatus Profiler::Dequeue( moodycamel::ConsumerToken& token )
                     }
 #endif
 #ifdef TRACY_HAS_SYSTEM_TRACING
-                    case QueueType::ExternalNameMetadata:
-                    {
-                        auto thread = MemRead<uint64_t>( &item->externalNameMetadata.thread );
-                        auto name = (const char*)MemRead<uint64_t>( &item->externalNameMetadata.name );
-                        auto threadName = (const char*)MemRead<uint64_t>( &item->externalNameMetadata.threadName );
-                        SendString( thread, threadName, QueueType::ExternalThreadName );
-                        SendString( thread, name, QueueType::ExternalName );
-                        tracy_free_fast( (void*)threadName );
-                        tracy_free_fast( (void*)name );
-                        ++item;
-                        continue;
-                    }
+                case QueueType::ExternalNameMetadata: {
+                    auto thread = MemRead<uint64_t>( &item->externalNameMetadata.thread );
+                    assert( !( thread & ( 1llu << 64 ) ) );
+                    thread |= ( 1llu << 64 );
+                    auto name = (const char*)MemRead<uint64_t>( &item->externalNameMetadata.name );
+                    auto threadName = (const char*)MemRead<uint64_t>( &item->externalNameMetadata.threadName );
+                    SendString( thread, threadName, QueueType::ExternalThreadName );
+                    if( name ) SendString( thread, name, QueueType::ExternalName );
+                    tracy_free_fast( (void*)threadName );
+                    tracy_free_fast( (void*)name );
+                    ++item;
+                    continue;
+                }
 #endif
                     case QueueType::SourceCodeMetadata:
                     {

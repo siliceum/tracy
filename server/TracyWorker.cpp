@@ -3868,12 +3868,23 @@ void Worker::AddExternalName( uint64_t ptr, const char* str, size_t sz )
 
 void Worker::AddExternalThreadName( uint64_t ptr, const char* str, size_t sz )
 {
-    assert( m_pendingExternalNames > 0 );
-    m_pendingExternalNames--;
-    auto it = m_data.externalNames.find( ptr );
-    assert( it != m_data.externalNames.end() && strcmp( it->second.second, "???" ) == 0 );
-    const auto sl = StoreString( str, sz );
-    it->second.second = sl.ptr;
+    if( ptr & ( 1llu << 63 ) )
+    {
+        ptr &= ~( 1llu << 63 );
+    }
+    else
+    {
+        assert(m_pendingExternalNames > 0);
+        m_pendingExternalNames--;
+    }
+
+    const auto ret = m_data.externalNames.emplace( ptr, std::make_pair( "???", "???" ) );
+    auto& namesPair = ret.first->second;
+    if( ret.second || strcmp( namesPair.second, "???" ) == 0 )
+    {
+        const auto sl = StoreString( str, sz );
+        namesPair.second = sl.ptr;
+    }
 }
 
 void Worker::AddFrameImageData( const char* data, size_t sz )
