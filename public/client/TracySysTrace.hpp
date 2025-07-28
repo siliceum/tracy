@@ -16,6 +16,8 @@ namespace tracy
 {
 
 bool SysTraceStart( int64_t& samplingPeriod );
+void SysTraceStopForRundown();
+bool SysTraceInRundown();
 void SysTraceStop();
 void SysTraceWorker( void* ptr );
 
