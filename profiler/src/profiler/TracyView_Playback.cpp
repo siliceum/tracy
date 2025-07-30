@@ -21,7 +21,7 @@ void View::SetPlaybackFrame( uint32_t idx )
     else
     {
         const auto t0 = m_worker.GetFrameBegin( *frameSet, frameImages[idx]->frameRef );
-        const auto t1 = m_worker.GetFrameBegin( *frameSet, frameImages[idx+1]->frameRef );
+        const auto t1 = m_worker.GetFrameBegin( *frameSet, frameImages[idx + 1]->frameRef );
         m_playback.timeLeft = ( t1 - t0 ) / 1000000000.f;
     }
 }
@@ -31,13 +31,20 @@ static const char* PlaybackWindowButtons[] = {
     ICON_FA_PAUSE " Pause",
 };
 
-enum { PlaybackWindowButtonsCount = sizeof( PlaybackWindowButtons ) / sizeof( *PlaybackWindowButtons ) };
+enum
+{
+    PlaybackWindowButtonsCount = sizeof( PlaybackWindowButtons ) / sizeof( *PlaybackWindowButtons )
+};
 
 void View::DrawPlayback()
 {
     ImGui::Begin( "Playback", &m_showPlayback, ImGuiWindowFlags_AlwaysAutoResize );
     if( !m_showPlayback ) m_playback.pause = true;
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     const auto scale = GetScale();
     const auto frameSet = m_worker.GetFramesBase();
@@ -88,7 +95,8 @@ void View::DrawPlayback()
     {
         if( fi->flip )
         {
-            ImGui::Image( m_playback.texture, ImVec2( fi->w * 2 * scale, fi->h * 2 * scale ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
+            ImGui::Image( m_playback.texture, ImVec2( fi->w * 2 * scale, fi->h * 2 * scale ), ImVec2( 0, 1 ),
+                          ImVec2( 1, 0 ) );
         }
         else
         {
@@ -130,8 +138,10 @@ void View::DrawPlayback()
     }
     if( changed )
     {
-        if( tmp < 1 ) tmp = 1;
-        else if( (uint32_t)tmp > ficnt ) tmp = ficnt;
+        if( tmp < 1 )
+            tmp = 1;
+        else if( (uint32_t)tmp > ficnt )
+            tmp = ficnt;
         SetPlaybackFrame( uint32_t( tmp - 1 ) );
         m_playback.pause = true;
     }
@@ -139,7 +149,7 @@ void View::DrawPlayback()
 
     const auto th = ImGui::GetTextLineHeight();
     float bw = 0;
-    for( int i=0; i<PlaybackWindowButtonsCount; i++ )
+    for( int i = 0; i < PlaybackWindowButtonsCount; i++ )
     {
         bw = std::max( bw, ImGui::CalcTextSize( PlaybackWindowButtons[i] ).x );
     }
@@ -201,13 +211,13 @@ void View::DrawPlayback()
     ImGui::Spacing();
     ImGui::SameLine();
     char buf[64];
-    auto ptr = PrintFloat( buf, buf+62, 4.f * fi->csz / ( size_t( fi->w ) * size_t( fi->h ) / 2 ), 2 );
+    auto ptr = PrintFloat( buf, buf + 62, 4.f * fi->csz / ( size_t( fi->w ) * size_t( fi->h ) / 2 ), 2 );
     memcpy( ptr, " bpp", 5 );
     TextFocused( "Ratio:", buf );
     if( ImGui::IsItemHovered() )
     {
         ImGui::BeginTooltip();
-        ptr = PrintFloat( buf, buf+62, 100.f * fi->csz / ( size_t( fi->w ) * size_t( fi->h ) / 2 ), 2 );
+        ptr = PrintFloat( buf, buf + 62, 100.f * fi->csz / ( size_t( fi->w ) * size_t( fi->h ) / 2 ), 2 );
         memcpy( ptr, "%", 2 );
         ImGui::TextUnformatted( buf );
         ImGui::EndTooltip();

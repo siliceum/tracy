@@ -86,11 +86,13 @@ void TimelineItem::Draw( bool firstFrame, const TimelineContext& ctx, int yOffse
         DrawTextContrast( draw, wpos + ImVec2( ty, hdrOffset ), m_showFull ? color : colorInactive, label );
         if( m_showFull )
         {
-            DrawLine( draw, dpos + ImVec2( 0, hdrOffset + ty - 1 ), dpos + ImVec2( w, hdrOffset + ty - 1 ), HeaderLineColor() );
+            DrawLine( draw, dpos + ImVec2( 0, hdrOffset + ty - 1 ), dpos + ImVec2( w, hdrOffset + ty - 1 ),
+                      HeaderLineColor() );
             HeaderExtraContents( ctx, hdrOffset, labelWidth );
         }
 
-        if( ctx.hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, hdrOffset ), wpos + ImVec2( ty + labelWidth, hdrOffset + ty ) ) )
+        if( ctx.hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, hdrOffset ),
+                                                     wpos + ImVec2( ty + labelWidth, hdrOffset + ty ) ) )
         {
             HeaderTooltip( label );
 
@@ -160,9 +162,6 @@ void TimelineItem::AdjustThreadHeight( bool firstFrame, int yBegin, int yEnd )
     }
 }
 
-void TimelineItem::VisibilityCheckbox()
-{
-    SmallCheckbox( HeaderLabel(), &m_visible );
-}
+void TimelineItem::VisibilityCheckbox() { SmallCheckbox( HeaderLabel(), &m_visible ); }
 
 }

@@ -449,8 +449,7 @@ void tool_callback_tracing_callback( rocprofiler_callback_tracing_record_t recor
 
 void calibration_thread( void* ptr )
 {
-    while( !TracyIsStarted )
-        ;
+    while( !TracyIsStarted );
     ToolData* data = static_cast<ToolData*>( ptr );
     data->context_id = gpu_context_allocate( data );
     const char* user_counters = GetEnvVar( "TRACY_ROCPROF_COUNTERS" );

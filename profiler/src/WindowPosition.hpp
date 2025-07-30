@@ -5,13 +5,13 @@
 
 class WindowPosition
 {
-public:
+  public:
     WindowPosition();
     ~WindowPosition();
 
     int x, y, w, h, maximize;
 
-private:
+  private:
     void Defaults();
 
     std::string m_fn;

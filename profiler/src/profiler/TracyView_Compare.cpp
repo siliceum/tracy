@@ -3,13 +3,13 @@
 
 #include "../dtl/dtl.hpp"
 
-#include "TracyImGui.hpp"
+#include "../Fonts.hpp"
 #include "TracyFileRead.hpp"
 #include "TracyFileselector.hpp"
+#include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -17,42 +17,42 @@ namespace tracy
 extern double s_time;
 
 #ifndef TRACY_NO_STATISTICS
-    void View::FindZonesCompare()
+void View::FindZonesCompare()
+{
+    m_compare.match[0] = m_worker.GetMatchingSourceLocation( m_compare.pattern, m_compare.ignoreCase );
+    if( !m_compare.match[0].empty() )
     {
-        m_compare.match[0] = m_worker.GetMatchingSourceLocation( m_compare.pattern, m_compare.ignoreCase );
-        if( !m_compare.match[0].empty() )
+        auto it = m_compare.match[0].begin();
+        while( it != m_compare.match[0].end() )
         {
-            auto it = m_compare.match[0].begin();
-            while( it != m_compare.match[0].end() )
+            if( m_worker.GetZonesForSourceLocation( *it ).zones.empty() )
             {
-                if( m_worker.GetZonesForSourceLocation( *it ).zones.empty() )
-                {
-                    it = m_compare.match[0].erase( it );
-                }
-                else
-                {
-                    ++it;
-                }
+                it = m_compare.match[0].erase( it );
             }
-        }
-
-        m_compare.match[1] = m_compare.second->GetMatchingSourceLocation( m_compare.pattern, m_compare.ignoreCase );
-        if( !m_compare.match[1].empty() )
-        {
-            auto it = m_compare.match[1].begin();
-            while( it != m_compare.match[1].end() )
+            else
             {
-                if( m_compare.second->GetZonesForSourceLocation( *it ).zones.empty() )
-                {
-                    it = m_compare.match[1].erase( it );
-                }
-                else
-                {
-                    ++it;
-                }
+                ++it;
             }
         }
     }
+
+    m_compare.match[1] = m_compare.second->GetMatchingSourceLocation( m_compare.pattern, m_compare.ignoreCase );
+    if( !m_compare.match[1].empty() )
+    {
+        auto it = m_compare.match[1].begin();
+        while( it != m_compare.match[1].end() )
+        {
+            if( m_compare.second->GetZonesForSourceLocation( *it ).zones.empty() )
+            {
+                it = m_compare.match[1].erase( it );
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+}
 #endif
 
 bool View::FindMatchingZone( int prev0, int prev1, int flags )
@@ -130,7 +130,6 @@ bool View::FindMatchingZone( int prev0, int prev1, int flags )
                 }
                 idx++;
             }
-
         }
     }
     return found;
@@ -153,15 +152,23 @@ static void PrintDiff( const std::string& diff )
         assert( !v.empty() );
         switch( v[0] )
         {
-            case '@': TextColoredUnformatted( 0xFFFFAAAA, v.c_str() ); break;
-            case '-': TextColoredUnformatted( 0xFF6666FF, v.c_str() ); break;
-            case '+': TextColoredUnformatted( 0xFF66DD66, v.c_str() ); break;
-            default:  TextDisabledUnformatted( v.c_str() ); break;
+        case '@':
+            TextColoredUnformatted( 0xFFFFAAAA, v.c_str() );
+            break;
+        case '-':
+            TextColoredUnformatted( 0xFF6666FF, v.c_str() );
+            break;
+        case '+':
+            TextColoredUnformatted( 0xFF66DD66, v.c_str() );
+            break;
+        default:
+            TextDisabledUnformatted( v.c_str() );
+            break;
         }
     }
 }
 
-static void PrintSpeedupOrSlowdown( double time_this, double time_external, const char *metric )
+static void PrintSpeedupOrSlowdown( double time_this, double time_external, const char* metric )
 {
     const char* label;
     const char* time_diff = TimeToString( abs( time_external - time_this ) );
@@ -171,7 +178,9 @@ static void PrintSpeedupOrSlowdown( double time_this, double time_external, cons
     {
         label = "less";
         color = ImVec4( 0.1f, 0.6f, 0.1f, 1.0f );
-    } else {
+    }
+    else
+    {
         label = "more";
         color = ImVec4( 0.8f, 0.1f, 0.1f, 1.0f );
     }
@@ -186,23 +195,28 @@ static void PrintSpeedupOrSlowdown( double time_this, double time_external, cons
     ImGui::Spacing();
     ImGui::SameLine();
 
-    TextDisabledUnformatted("(");
+    TextDisabledUnformatted( "(" );
     ImGui::SameLine( 0, 0 );
-    TextColoredUnformatted( ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ), ICON_FA_LEMON );
+    TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ), ICON_FA_LEMON );
     ImGui::SameLine();
-    ImGui::TextDisabled("=  %.2f%%", factor * 100 );
+    ImGui::TextDisabled( "=  %.2f%%", factor * 100 );
     ImGui::SameLine();
-    TextColoredUnformatted( ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ), ICON_FA_GEM );
+    TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ), ICON_FA_GEM );
     ImGui::SameLine( 0, 0 );
-    TextDisabledUnformatted(")");
+    TextDisabledUnformatted( ")" );
 }
 
 void View::DrawCompare()
 {
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 590 * scale, 800 * scale ), ImGuiCond_FirstUseEver );
-    ImGui::Begin( "Compare traces", &m_compare.show, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    ImGui::Begin( "Compare traces", &m_compare.show,
+                  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 #ifdef TRACY_NO_STATISTICS
     ImGui::TextWrapped( "Collection of statistical data is disabled in this build." );
     ImGui::TextWrapped( "Rebuild without the TRACY_NO_STATISTICS macro to enable trace comparison." );
@@ -221,36 +235,44 @@ void View::DrawCompare()
         ImGui::TextUnformatted( "" );
         if( ButtonCentered( ICON_FA_FOLDER_OPEN " Open second trace" ) && !m_compare.loadThread.joinable() )
         {
-            Fileselector::OpenFile( "tracy", "Tracy Profiler trace file", [this]( const char* fn ) {
-                try
+            Fileselector::OpenFile(
+                "tracy", "Tracy Profiler trace file",
+                [this]( const char* fn )
                 {
-                    auto f = std::shared_ptr<tracy::FileRead>( tracy::FileRead::Open( fn ) );
-                    if( f )
+                    try
                     {
-                        m_compare.loadThread = std::thread( [this, f] {
-                            try
-                            {
-                                m_compare.second = std::make_unique<Worker>( *f, EventType::SourceCache );
-                                m_compare.userData = std::make_unique<UserData>( m_compare.second->GetCaptureProgram().c_str(), m_compare.second->GetCaptureTime() );
-                                m_compare.diffDirection = m_worker.GetCaptureTime() < m_compare.second->GetCaptureTime();
-                            }
-                            catch( const tracy::UnsupportedVersion& e )
-                            {
-                                m_compare.badVer.state = BadVersionState::UnsupportedVersion;
-                                m_compare.badVer.version = e.version;
-                            }
-                        } );
+                        auto f = std::shared_ptr<tracy::FileRead>( tracy::FileRead::Open( fn ) );
+                        if( f )
+                        {
+                            m_compare.loadThread = std::thread(
+                                [this, f]
+                                {
+                                    try
+                                    {
+                                        m_compare.second = std::make_unique<Worker>( *f, EventType::SourceCache );
+                                        m_compare.userData =
+                                            std::make_unique<UserData>( m_compare.second->GetCaptureProgram().c_str(),
+                                                                        m_compare.second->GetCaptureTime() );
+                                        m_compare.diffDirection =
+                                            m_worker.GetCaptureTime() < m_compare.second->GetCaptureTime();
+                                    }
+                                    catch( const tracy::UnsupportedVersion& e )
+                                    {
+                                        m_compare.badVer.state = BadVersionState::UnsupportedVersion;
+                                        m_compare.badVer.version = e.version;
+                                    }
+                                } );
+                        }
                     }
-                }
-                catch( const tracy::NotTracyDump& )
-                {
-                    m_compare.badVer.state = BadVersionState::BadFile;
-                }
-                catch( const tracy::FileReadError& )
-                {
-                    m_compare.badVer.state = BadVersionState::ReadError;
-                }
-            } );
+                    catch( const tracy::NotTracyDump& )
+                    {
+                        m_compare.badVer.state = BadVersionState::BadFile;
+                    }
+                    catch( const tracy::FileReadError& )
+                    {
+                        m_compare.badVer.state = BadVersionState::ReadError;
+                    }
+                } );
         }
         tracy::BadVersion( m_compare.badVer );
         ImGui::End();
@@ -272,7 +294,7 @@ void View::DrawCompare()
         return;
     }
 
-    TextColoredUnformatted( ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ), ICON_FA_LEMON );
+    TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_LEMON );
     ImGui::SameLine();
     TextDisabledUnformatted( "This trace:" );
     ImGui::SameLine();
@@ -288,7 +310,7 @@ void View::DrawCompare()
         ImGui::TextDisabled( "(%s)", m_worker.GetCaptureName().c_str() );
     }
 
-    TextColoredUnformatted( ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ), ICON_FA_GEM );
+    TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_GEM );
     ImGui::SameLine();
     TextDisabledUnformatted( "External trace:" );
     ImGui::SameLine();
@@ -335,11 +357,11 @@ void View::DrawCompare()
 
         TextDisabledUnformatted( "Diff direction: " );
         ImGui::SameLine();
-        TextColoredUnformatted( ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ), ICON_FA_LEMON );
+        TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_LEMON );
         ImGui::SameLine();
         ImGui::Text( " %s ", m_compare.diffDirection ? ICON_FA_ARROW_RIGHT : ICON_FA_ARROW_LEFT );
         ImGui::SameLine();
-        TextColoredUnformatted( ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ), ICON_FA_GEM );
+        TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_GEM );
         ImGui::SameLine();
         if( ImGui::SmallButton( "Switch" ) )
         {
@@ -350,8 +372,10 @@ void View::DrawCompare()
 
         ImGui::BeginChild( "##diff" );
 
-        const auto& tfc = m_compare.diffDirection ? m_worker.GetSourceFileCache() : m_compare.second->GetSourceFileCache();
-        const auto& ofc = m_compare.diffDirection ? m_compare.second->GetSourceFileCache() : m_worker.GetSourceFileCache();
+        const auto& tfc =
+            m_compare.diffDirection ? m_worker.GetSourceFileCache() : m_compare.second->GetSourceFileCache();
+        const auto& ofc =
+            m_compare.diffDirection ? m_compare.second->GetSourceFileCache() : m_worker.GetSourceFileCache();
 
         if( !m_compare.diffDone )
         {
@@ -366,11 +390,12 @@ void View::DrawCompare()
                     {
                         m_compare.thisUnique.emplace_back( tv.first );
                     }
-                    else if( tv.second.len != it->second.len || memcmp( tv.second.data, it->second.data, tv.second.len ) != 0 )
+                    else if( tv.second.len != it->second.len ||
+                             memcmp( tv.second.data, it->second.data, tv.second.len ) != 0 )
                     {
                         auto src0 = SplitLines( tv.second.data, tv.second.len );
                         auto src1 = SplitLines( it->second.data, it->second.len );
-                        dtl::Diff<std::string, std::vector<std::string>> diff { src0, src1 };
+                        dtl::Diff<std::string, std::vector<std::string>> diff{ src0, src1 };
                         diff.compose();
                         diff.composeUnifiedHunks();
                         std::ostringstream stream;
@@ -387,9 +412,13 @@ void View::DrawCompare()
                     }
                 }
 
-                pdqsort_branchless( m_compare.thisUnique.begin(), m_compare.thisUnique.end(), []( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
-                pdqsort_branchless( m_compare.secondUnique.begin(), m_compare.secondUnique.end(), []( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
-                pdqsort_branchless( m_compare.diffs.begin(), m_compare.diffs.end(), []( const auto& lhs, const auto& rhs ) { return strcmp( lhs.first, rhs.first ) < 0; } );
+                pdqsort_branchless( m_compare.thisUnique.begin(), m_compare.thisUnique.end(),
+                                    []( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
+                pdqsort_branchless( m_compare.secondUnique.begin(), m_compare.secondUnique.end(),
+                                    []( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
+                pdqsort_branchless( m_compare.diffs.begin(), m_compare.diffs.end(),
+                                    []( const auto& lhs, const auto& rhs )
+                                    { return strcmp( lhs.first, rhs.first ) < 0; } );
             }
         }
 
@@ -449,7 +478,8 @@ void View::DrawCompare()
             }
             if( !m_compare.diffs.empty() )
             {
-                const auto expand = ImGui::TreeNodeEx( ICON_FA_FILE_PEN " Changed files", ImGuiTreeNodeFlags_DefaultOpen );
+                const auto expand =
+                    ImGui::TreeNodeEx( ICON_FA_FILE_PEN " Changed files", ImGuiTreeNodeFlags_DefaultOpen );
                 ImGui::SameLine();
                 ImGui::TextDisabled( "(%s)", RealToString( m_compare.diffs.size() ) );
                 if( expand )
@@ -480,7 +510,8 @@ void View::DrawCompare()
         if( m_compare.compareMode == 0 )
         {
             ImGui::PushItemWidth( -0.01f );
-            findClicked |= ImGui::InputTextWithHint( "###compare", "Enter zone name to search for", m_compare.pattern, 1024, ImGuiInputTextFlags_EnterReturnsTrue );
+            findClicked |= ImGui::InputTextWithHint( "###compare", "Enter zone name to search for", m_compare.pattern,
+                                                     1024, ImGuiInputTextFlags_EnterReturnsTrue );
             ImGui::PopItemWidth();
 
             findClicked |= ImGui::Button( ICON_FA_MAGNIFYING_GLASS " Find" );
@@ -515,13 +546,13 @@ void View::DrawCompare()
 
                 ImGui::Separator();
                 ImGui::Columns( 2 );
-                TextColoredUnformatted( ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ), ICON_FA_LEMON );
+                TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_LEMON );
                 ImGui::SameLine();
                 ImGui::TextUnformatted( "This trace" );
                 ImGui::SameLine();
                 ImGui::TextDisabled( "(%zu)", m_compare.match[0].size() );
                 ImGui::NextColumn();
-                TextColoredUnformatted( ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ), ICON_FA_GEM );
+                TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_GEM );
                 ImGui::SameLine();
                 ImGui::TextUnformatted( "External trace" );
                 ImGui::SameLine();
@@ -539,10 +570,12 @@ void View::DrawCompare()
                     ImGui::SameLine();
                     ImGui::PushID( idx );
                     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
-                    ImGui::RadioButton( m_worker.GetString( srcloc.name.active ? srcloc.name : srcloc.function ), &m_compare.selMatch[0], idx++ );
+                    ImGui::RadioButton( m_worker.GetString( srcloc.name.active ? srcloc.name : srcloc.function ),
+                                        &m_compare.selMatch[0], idx++ );
                     ImGui::PopStyleVar();
                     ImGui::SameLine();
-                    ImGui::TextColored( ImVec4( 0.5, 0.5, 0.5, 1 ), "(%s) %s", RealToString( zones.size() ), LocationToString( m_worker.GetString( srcloc.file ), srcloc.line ) );
+                    ImGui::TextColored( ImVec4( 0.5, 0.5, 0.5, 1 ), "(%s) %s", RealToString( zones.size() ),
+                                        LocationToString( m_worker.GetString( srcloc.file ), srcloc.line ) );
                     ImGui::PopID();
                 }
                 ImGui::NextColumn();
@@ -555,10 +588,13 @@ void View::DrawCompare()
                     auto& zones = m_compare.second->GetZonesForSourceLocation( v ).zones;
                     ImGui::PushID( -1 - idx );
                     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
-                    ImGui::RadioButton( m_compare.second->GetString( srcloc.name.active ? srcloc.name : srcloc.function ), &m_compare.selMatch[1], idx++ );
+                    ImGui::RadioButton(
+                        m_compare.second->GetString( srcloc.name.active ? srcloc.name : srcloc.function ),
+                        &m_compare.selMatch[1], idx++ );
                     ImGui::PopStyleVar();
                     ImGui::SameLine();
-                    ImGui::TextColored( ImVec4( 0.5, 0.5, 0.5, 1 ), "(%s) %s", RealToString( zones.size() ), LocationToString( m_compare.second->GetString( srcloc.file ), srcloc.line ) );
+                    ImGui::TextColored( ImVec4( 0.5, 0.5, 0.5, 1 ), "(%s) %s", RealToString( zones.size() ),
+                                        LocationToString( m_compare.second->GetString( srcloc.file ), srcloc.line ) );
                     ImGui::PopID();
                 }
                 ImGui::NextColumn();
@@ -571,7 +607,8 @@ void View::DrawCompare()
 
                     if( m_compare.link )
                     {
-                        if( !FindMatchingZone( prev0, prev1, FindMatchingZoneFlagSourceFile | FindMatchingZoneFlagLineNum ) )
+                        if( !FindMatchingZone( prev0, prev1,
+                                               FindMatchingZoneFlagSourceFile | FindMatchingZoneFlagLineNum ) )
                         {
                             if( !FindMatchingZone( prev0, prev1, FindMatchingZoneFlagSourceFile ) )
                             {
@@ -606,13 +643,13 @@ void View::DrawCompare()
 
                 ImGui::Separator();
                 ImGui::Columns( 2 );
-                TextColoredUnformatted( ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ), ICON_FA_LEMON );
+                TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_LEMON );
                 ImGui::SameLine();
                 ImGui::TextUnformatted( "This trace" );
                 ImGui::SameLine();
                 ImGui::TextDisabled( "(%zu)", f0.size() );
                 ImGui::NextColumn();
-                TextColoredUnformatted( ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ), ICON_FA_GEM );
+                TextColoredUnformatted( ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ), ICON_FA_GEM );
                 ImGui::SameLine();
                 ImGui::TextUnformatted( "External trace" );
                 ImGui::SameLine();
@@ -706,7 +743,8 @@ void View::DrawCompare()
             if( m_compare.compareMode == 0 )
             {
                 auto& zoneData0 = m_worker.GetZonesForSourceLocation( m_compare.match[0][m_compare.selMatch[0]] );
-                auto& zoneData1 = m_compare.second->GetZonesForSourceLocation( m_compare.match[1][m_compare.selMatch[1]] );
+                auto& zoneData1 =
+                    m_compare.second->GetZonesForSourceLocation( m_compare.match[1][m_compare.selMatch[1]] );
                 auto& zones0 = zoneData0.zones;
                 auto& zones1 = zoneData1.zones;
                 zones0.ensure_sorted();
@@ -723,7 +761,7 @@ void View::DrawCompare()
                 sumSq1 = zoneData1.sumSq;
 
                 const size_t zsz[2] = { size0, size1 };
-                for( int k=0; k<2; k++ )
+                for( int k = 0; k < 2; k++ )
                 {
                     if( m_compare.sortedNum[k] != zsz[k] )
                     {
@@ -732,7 +770,7 @@ void View::DrawCompare()
                         vec.reserve( zsz[k] );
                         int64_t total = m_compare.total[k];
                         size_t i;
-                        for( i=m_compare.sortedNum[k]; i<zsz[k]; i++ )
+                        for( i = m_compare.sortedNum[k]; i < zsz[k]; i++ )
                         {
                             auto& zone = *zones[i].Zone();
                             const auto t = zone.End() - zone.Start();
@@ -744,7 +782,7 @@ void View::DrawCompare()
                         std::inplace_merge( vec.begin(), mid, vec.end() );
 
                         m_compare.average[k] = float( total ) / i;
-                        m_compare.median[k] = vec[i/2];
+                        m_compare.median[k] = vec[i / 2];
                         m_compare.total[k] = total;
                         m_compare.sortedNum[k] = i;
                     }
@@ -768,7 +806,7 @@ void View::DrawCompare()
                 sumSq1 = f1->sumSq;
 
                 const size_t zsz[2] = { size0, size1 };
-                for( int k=0; k<2; k++ )
+                for( int k = 0; k < 2; k++ )
                 {
                     if( m_compare.sortedNum[k] != zsz[k] )
                     {
@@ -778,7 +816,7 @@ void View::DrawCompare()
                         vec.reserve( zsz[k] );
                         int64_t total = m_compare.total[k];
                         size_t i;
-                        for( i=m_compare.sortedNum[k]; i<zsz[k]; i++ )
+                        for( i = m_compare.sortedNum[k]; i < zsz[k]; i++ )
                         {
                             if( worker->GetFrameEnd( *frameSet, i ) == worker->GetLastTime() ) break;
                             const auto t = worker->GetFrameTime( *frameSet, i );
@@ -790,7 +828,7 @@ void View::DrawCompare()
                         std::inplace_merge( vec.begin(), mid, vec.end() );
 
                         m_compare.average[k] = float( total ) / i;
-                        m_compare.median[k] = vec[i/2];
+                        m_compare.median[k] = vec[i / 2];
                         m_compare.total[k] = total;
                         m_compare.sortedNum[k] = i;
                     }
@@ -819,7 +857,8 @@ void View::DrawCompare()
                 ImGui::SameLine();
                 SmallCheckbox( "Normalize values", &m_compare.normalize );
                 ImGui::SameLine();
-                DrawHelpMarker( "Normalization will rescale the total time of the external trace to match the count of this trace. This will skew reported total values!" );
+                DrawHelpMarker(
+                    "Normalization will rescale the total time of the external trace to match the count of this trace. This will skew reported total values!" );
 
                 const auto cumulateTime = m_compare.cumulateTime;
 
@@ -870,9 +909,9 @@ void View::DrawCompare()
                                 const auto tMinLog = log10( tmin );
                                 const auto zmax = ( log10( tmax ) - tMinLog ) / numBins;
                                 int64_t i;
-                                for( i=0; i<numBins; i++ )
+                                for( i = 0; i < numBins; i++ )
                                 {
-                                    const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i+1 ) * zmax ) );
+                                    const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i + 1 ) * zmax ) );
                                     auto nit0 = std::lower_bound( sBegin0, sEnd0, nextBinVal );
                                     auto nit1 = std::lower_bound( sBegin1, sEnd1, nextBinVal );
                                     const auto distance0 = std::distance( sBegin0, nit0 );
@@ -881,9 +920,9 @@ void View::DrawCompare()
                                     sBegin0 = nit0;
                                     sBegin1 = nit1;
                                 }
-                                for( int64_t j=numBins-1; j>i; j-- )
+                                for( int64_t j = numBins - 1; j > i; j-- )
                                 {
-                                    const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( j-1 ) * zmax ) );
+                                    const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( j - 1 ) * zmax ) );
                                     auto nit0 = std::lower_bound( sBegin0, sEnd0, nextBinVal );
                                     auto nit1 = std::lower_bound( sBegin1, sEnd1, nextBinVal );
                                     const auto distance0 = std::distance( nit0, sEnd0 );
@@ -897,9 +936,9 @@ void View::DrawCompare()
                             {
                                 const auto zmax = tmax - tmin;
                                 int64_t i;
-                                for( i=0; i<numBins; i++ )
+                                for( i = 0; i < numBins; i++ )
                                 {
-                                    const auto nextBinVal = tmin + ( i+1 ) * zmax / numBins;
+                                    const auto nextBinVal = tmin + ( i + 1 ) * zmax / numBins;
                                     auto nit0 = std::lower_bound( sBegin0, sEnd0, nextBinVal );
                                     auto nit1 = std::lower_bound( sBegin1, sEnd1, nextBinVal );
                                     const auto distance0 = std::distance( sBegin0, nit0 );
@@ -908,9 +947,9 @@ void View::DrawCompare()
                                     sBegin0 = nit0;
                                     sBegin1 = nit1;
                                 }
-                                for( int64_t j=numBins-1; j>i; j-- )
+                                for( int64_t j = numBins - 1; j > i; j-- )
                                 {
-                                    const auto nextBinVal = tmin + ( j-1 ) * zmax / numBins;
+                                    const auto nextBinVal = tmin + ( j - 1 ) * zmax / numBins;
                                     auto nit0 = std::lower_bound( sBegin0, sEnd0, nextBinVal );
                                     auto nit1 = std::lower_bound( sBegin1, sEnd1, nextBinVal );
                                     const auto distance0 = std::distance( nit0, sEnd0 );
@@ -922,7 +961,7 @@ void View::DrawCompare()
                             }
 
                             tmin = std::min( *sBegin0, *sBegin1 );
-                            tmax = std::max( *(sEnd0-1), *(sEnd1-1) );
+                            tmax = std::max( *( sEnd0 - 1 ), *( sEnd1 - 1 ) );
                         }
 
                         auto zit0 = sBegin0;
@@ -931,9 +970,9 @@ void View::DrawCompare()
                         {
                             const auto tMinLog = log10( tmin );
                             const auto zmax = ( log10( tmax ) - tMinLog ) / numBins;
-                            for( int64_t i=0; i<numBins; i++ )
+                            for( int64_t i = 0; i < numBins; i++ )
                             {
-                                const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i+1 ) * zmax ) );
+                                const auto nextBinVal = int64_t( pow( 10.0, tMinLog + ( i + 1 ) * zmax ) );
                                 auto nit0 = std::lower_bound( zit0, sEnd0, nextBinVal );
                                 auto nit1 = std::lower_bound( zit1, sEnd1, nextBinVal );
                                 bins[i].v0 += adj0 * std::distance( zit0, nit0 );
@@ -947,9 +986,9 @@ void View::DrawCompare()
                         else
                         {
                             const auto zmax = tmax - tmin;
-                            for( int64_t i=0; i<numBins; i++ )
+                            for( int64_t i = 0; i < numBins; i++ )
                             {
-                                const auto nextBinVal = tmin + ( i+1 ) * zmax / numBins;
+                                const auto nextBinVal = tmin + ( i + 1 ) * zmax / numBins;
                                 auto nit0 = std::lower_bound( zit0, sEnd0, nextBinVal );
                                 auto nit1 = std::lower_bound( zit1, sEnd1, nextBinVal );
                                 bins[i].v0 += adj0 * std::distance( zit0, nit0 );
@@ -965,7 +1004,7 @@ void View::DrawCompare()
                         if( cumulateTime )
                         {
                             maxVal = std::max( binTime[0].v0, binTime[0].v1 );
-                            for( int i=1; i<numBins; i++ )
+                            for( int i = 1; i < numBins; i++ )
                             {
                                 maxVal = std::max( { maxVal, binTime[i].v0, binTime[i].v1 } );
                             }
@@ -973,33 +1012,37 @@ void View::DrawCompare()
                         else
                         {
                             maxVal = std::max( bins[0].v0, bins[0].v1 );
-                            for( int i=1; i<numBins; i++ )
+                            for( int i = 1; i < numBins; i++ )
                             {
                                 maxVal = std::max( { maxVal, bins[i].v0, bins[i].v1 } );
                             }
                         }
 
-                        TextColoredUnformatted( ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ), ICON_FA_LEMON );
+                        TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ),
+                                                ICON_FA_LEMON );
                         ImGui::SameLine();
                         TextFocused( "Total time (this):", TimeToString( total0 * adj0 ) );
                         ImGui::SameLine();
                         ImGui::Spacing();
                         ImGui::SameLine();
-                        TextColoredUnformatted( ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ), ICON_FA_GEM );
+                        TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ), ICON_FA_GEM );
                         ImGui::SameLine();
                         TextFocused( "Total time (ext.):", TimeToString( total1 * adj1 ) );
                         ImGui::Indent();
                         PrintSpeedupOrSlowdown( total0 * adj0, total1 * adj1, "Total time" );
                         ImGui::Unindent();
-                        TextFocused( "Max counts:", cumulateTime ? TimeToString( maxVal ) : RealToString( floor( maxVal ) ) );
+                        TextFocused( "Max counts:",
+                                     cumulateTime ? TimeToString( maxVal ) : RealToString( floor( maxVal ) ) );
 
-                        TextColoredUnformatted( ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ), ICON_FA_LEMON );
+                        TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ),
+                                                ICON_FA_LEMON );
                         ImGui::SameLine();
                         TextFocused( "Mean time (this):", TimeToString( m_compare.average[0] ) );
                         ImGui::SameLine();
                         ImGui::Spacing();
                         ImGui::SameLine();
-                        TextColoredUnformatted( ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ), ICON_FA_LEMON );
+                        TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ),
+                                                ICON_FA_LEMON );
                         ImGui::SameLine();
                         TextFocused( "Median time (this):", TimeToString( m_compare.median[0] ) );
                         if( sorted[0].size() > 1 )
@@ -1012,20 +1055,20 @@ void View::DrawCompare()
                             ImGui::SameLine();
                             ImGui::Spacing();
                             ImGui::SameLine();
-                            TextColoredUnformatted( ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ), ICON_FA_LEMON );
+                            TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ),
+                                                    ICON_FA_LEMON );
                             ImGui::SameLine();
                             TextFocused( "\xcf\x83 (this):", TimeToString( sd ) );
                             TooltipIfHovered( "Standard deviation" );
                         }
 
-
-                        TextColoredUnformatted( ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ), ICON_FA_GEM );
+                        TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ), ICON_FA_GEM );
                         ImGui::SameLine();
                         TextFocused( "Mean time (ext.):", TimeToString( m_compare.average[1] ) );
                         ImGui::SameLine();
                         ImGui::Spacing();
                         ImGui::SameLine();
-                        TextColoredUnformatted( ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ), ICON_FA_GEM );
+                        TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ), ICON_FA_GEM );
                         ImGui::SameLine();
                         TextFocused( "Median time (ext.):", TimeToString( m_compare.median[1] ) );
                         if( sorted[1].size() > 1 )
@@ -1038,7 +1081,8 @@ void View::DrawCompare()
                             ImGui::SameLine();
                             ImGui::Spacing();
                             ImGui::SameLine();
-                            TextColoredUnformatted( ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ), ICON_FA_GEM );
+                            TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ),
+                                                    ICON_FA_GEM );
                             ImGui::SameLine();
                             TextFocused( "\xcf\x83 (ext.):", TimeToString( sd ) );
                             TooltipIfHovered( "Standard deviation" );
@@ -1048,10 +1092,13 @@ void View::DrawCompare()
                         PrintSpeedupOrSlowdown( m_compare.median[0], m_compare.median[1], "Median time" );
                         ImGui::Unindent();
 
-                        ImGui::PushStyleColor( ImGuiCol_Text, ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ) );
-                        ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ) );
-                        ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ) );
-                        ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 0xDD/255.f, 0xDD/255.f, 0x22/255.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_Text, ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_Button,
+                                               ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_ButtonHovered,
+                                               ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_ButtonActive,
+                                               ImVec4( 0xDD / 255.f, 0xDD / 255.f, 0x22 / 255.f, 1.f ) );
                         ImGui::Button( ICON_FA_LEMON );
                         ImGui::PopStyleColor( 4 );
                         ImGui::SameLine();
@@ -1060,10 +1107,13 @@ void View::DrawCompare()
                         ImGui::Spacing();
                         ImGui::SameLine();
 
-                        ImGui::PushStyleColor( ImGuiCol_Text, ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ) );
-                        ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ) );
-                        ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ) );
-                        ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 0xDD/255.f, 0x22/255.f, 0x22/255.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_Text, ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_Button,
+                                               ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_ButtonHovered,
+                                               ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ) );
+                        ImGui::PushStyleColor( ImGuiCol_ButtonActive,
+                                               ImVec4( 0xDD / 255.f, 0x22 / 255.f, 0x22 / 255.f, 1.f ) );
                         ImGui::Button( ICON_FA_GEM );
                         ImGui::PopStyleColor( 4 );
                         ImGui::SameLine();
@@ -1072,7 +1122,8 @@ void View::DrawCompare()
                         ImGui::Spacing();
                         ImGui::SameLine();
 
-                        ImGui::ColorButton( "c3", ImVec4( 0x44/255.f, 0xBB/255.f, 0xBB/255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
+                        ImGui::ColorButton( "c3", ImVec4( 0x44 / 255.f, 0xBB / 255.f, 0xBB / 255.f, 1.f ),
+                                            ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
                         ImGui::SameLine();
                         ImGui::TextUnformatted( "Overlap" );
 
@@ -1090,7 +1141,7 @@ void View::DrawCompare()
                         if( m_compare.logVal )
                         {
                             const auto hAdj = double( Height - 4 ) / log10( maxVal + 1 );
-                            for( int i=0; i<numBins; i++ )
+                            for( int i = 0; i < numBins; i++ )
                             {
                                 const auto val0 = cumulateTime ? binTime[i].v0 : bins[i].v0;
                                 const auto val1 = cumulateTime ? binTime[i].v1 : bins[i].v1;
@@ -1099,15 +1150,21 @@ void View::DrawCompare()
                                     const auto val = std::min( val0, val1 );
                                     if( val > 0 )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 ), dpos + ImVec2( 2+i, Height-3 - log10( val + 1 ) * hAdj ), 0xFFBBBB44 );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 ),
+                                                  dpos + ImVec2( 2 + i, Height - 3 - log10( val + 1 ) * hAdj ),
+                                                  0xFFBBBB44 );
                                     }
                                     if( val1 == val )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 - log10( val + 1 ) * hAdj ), dpos + ImVec2( 2+i, Height-3 - log10( val0 + 1 ) * hAdj ), 0xFF22DDDD );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 - log10( val + 1 ) * hAdj ),
+                                                  dpos + ImVec2( 2 + i, Height - 3 - log10( val0 + 1 ) * hAdj ),
+                                                  0xFF22DDDD );
                                     }
                                     else
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 - log10( val + 1 ) * hAdj ), dpos + ImVec2( 2+i, Height-3 - log10( val1 + 1 ) * hAdj ), 0xFF2222DD );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 - log10( val + 1 ) * hAdj ),
+                                                  dpos + ImVec2( 2 + i, Height - 3 - log10( val1 + 1 ) * hAdj ),
+                                                  0xFF2222DD );
                                     }
                                 }
                             }
@@ -1115,7 +1172,7 @@ void View::DrawCompare()
                         else
                         {
                             const auto hAdj = double( Height - 4 ) / maxVal;
-                            for( int i=0; i<numBins; i++ )
+                            for( int i = 0; i < numBins; i++ )
                             {
                                 const auto val0 = cumulateTime ? binTime[i].v0 : bins[i].v0;
                                 const auto val1 = cumulateTime ? binTime[i].v1 : bins[i].v1;
@@ -1124,15 +1181,18 @@ void View::DrawCompare()
                                     const auto val = std::min( val0, val1 );
                                     if( val > 0 )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 ), dpos + ImVec2( 2+i, Height-3 - val * hAdj ), 0xFFBBBB44 );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 ),
+                                                  dpos + ImVec2( 2 + i, Height - 3 - val * hAdj ), 0xFFBBBB44 );
                                     }
                                     if( val1 == val )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 - val * hAdj ), dpos + ImVec2( 2+i, Height-3 - val0 * hAdj ), 0xFF22DDDD );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 - val * hAdj ),
+                                                  dpos + ImVec2( 2 + i, Height - 3 - val0 * hAdj ), 0xFF22DDDD );
                                     }
                                     else
                                     {
-                                        DrawLine( draw, dpos + ImVec2( 2+i, Height-3 - val * hAdj ), dpos + ImVec2( 2+i, Height-3 - val1 * hAdj ), 0xFF2222DD );
+                                        DrawLine( draw, dpos + ImVec2( 2 + i, Height - 3 - val * hAdj ),
+                                                  dpos + ImVec2( 2 + i, Height - 3 - val1 * hAdj ), 0xFF2222DD );
                                     }
                                 }
                             }
@@ -1160,15 +1220,17 @@ void View::DrawCompare()
 
                             auto tt = int64_t( pow( 10, start ) );
 
-                            static const double logticks[] = { log10( 2 ), log10( 3 ), log10( 4 ), log10( 5 ), log10( 6 ), log10( 7 ), log10( 8 ), log10( 9 ) };
+                            static const double logticks[] = { log10( 2 ), log10( 3 ), log10( 4 ), log10( 5 ),
+                                                               log10( 6 ), log10( 7 ), log10( 8 ), log10( 9 ) };
 
-                            for( int i=start; i<=end; i++ )
+                            for( int i = start; i <= end; i++ )
                             {
                                 const auto x = ( i - start + offset ) * step;
 
                                 if( x >= 0 )
                                 {
-                                    DrawLine( draw, dpos + ImVec2( x, yoff ), dpos + ImVec2( x, yoff + ty05 ), 0x66FFFFFF );
+                                    DrawLine( draw, dpos + ImVec2( x, yoff ), dpos + ImVec2( x, yoff + ty05 ),
+                                              0x66FFFFFF );
                                     if( tw == 0 || x > tx + tw + ty * 1.1 )
                                     {
                                         tx = x;
@@ -1178,12 +1240,13 @@ void View::DrawCompare()
                                     }
                                 }
 
-                                for( int j=0; j<8; j++ )
+                                for( int j = 0; j < 8; j++ )
                                 {
                                     const auto xoff = x + logticks[j] * step;
                                     if( xoff >= 0 )
                                     {
-                                        DrawLine( draw, dpos + ImVec2( xoff, yoff ), dpos + ImVec2( xoff, yoff + ty025 ), 0x66FFFFFF );
+                                        DrawLine( draw, dpos + ImVec2( xoff, yoff ),
+                                                  dpos + ImVec2( xoff, yoff + ty025 ), 0x66FFFFFF );
                                     }
                                 }
 
@@ -1205,7 +1268,8 @@ void View::DrawCompare()
                             const auto sstep = step / 10.0;
                             const auto sdx = dx / 10.0;
 
-                            static const double linelen[] = { 0.5, 0.25, 0.25, 0.25, 0.25, 0.375, 0.25, 0.25, 0.25, 0.25 };
+                            static const double linelen[] = { 0.5,   0.25, 0.25, 0.25, 0.25,
+                                                              0.375, 0.25, 0.25, 0.25, 0.25 };
 
                             int64_t tt = int64_t( ceil( tmin / sstep ) * sstep );
                             const auto diff = tmin / sstep - int64_t( tmin / sstep );
@@ -1214,7 +1278,8 @@ void View::DrawCompare()
 
                             while( x < numBins )
                             {
-                                DrawLine( draw, dpos + ImVec2( xo + x, yoff ), dpos + ImVec2( xo + x, yoff + round( ty * linelen[iter] ) ), 0x66FFFFFF );
+                                DrawLine( draw, dpos + ImVec2( xo + x, yoff ),
+                                          dpos + ImVec2( xo + x, yoff + round( ty * linelen[iter] ) ), 0x66FFFFFF );
                                 if( iter == 0 && ( tw == 0 || x > tx + tw + ty * 1.1 ) )
                                 {
                                     tx = x;
@@ -1229,36 +1294,38 @@ void View::DrawCompare()
                             }
                         }
 
-                        if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 2, 2 ), wpos + ImVec2( w-2, Height + round( ty * 1.5 ) ) ) )
+                        if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 2, 2 ),
+                                                                 wpos + ImVec2( w - 2, Height + round( ty * 1.5 ) ) ) )
                         {
                             const auto ltmin = log10( tmin );
                             const auto ltmax = log10( tmax );
 
                             auto& io = ImGui::GetIO();
-                            DrawLine( draw, ImVec2( io.MousePos.x + 0.5f, dpos.y ), ImVec2( io.MousePos.x + 0.5f, dpos.y+Height-2 ), 0x33FFFFFF );
+                            DrawLine( draw, ImVec2( io.MousePos.x + 0.5f, dpos.y ),
+                                      ImVec2( io.MousePos.x + 0.5f, dpos.y + Height - 2 ), 0x33FFFFFF );
 
                             const auto bin = int64_t( io.MousePos.x - wpos.x - 2 );
                             int64_t t0, t1;
                             if( m_compare.logTime )
                             {
-                                t0 = int64_t( pow( 10, ltmin + double( bin )   / numBins * ( ltmax - ltmin ) ) );
-                                t1 = int64_t( pow( 10, ltmin + double( bin+1 ) / numBins * ( ltmax - ltmin ) ) );
+                                t0 = int64_t( pow( 10, ltmin + double( bin ) / numBins * ( ltmax - ltmin ) ) );
+                                t1 = int64_t( pow( 10, ltmin + double( bin + 1 ) / numBins * ( ltmax - ltmin ) ) );
                             }
                             else
                             {
-                                t0 = int64_t( tmin + double( bin )   / numBins * ( tmax - tmin ) );
-                                t1 = int64_t( tmin + double( bin+1 ) / numBins * ( tmax - tmin ) );
+                                t0 = int64_t( tmin + double( bin ) / numBins * ( tmax - tmin ) );
+                                t1 = int64_t( tmin + double( bin + 1 ) / numBins * ( tmax - tmin ) );
                             }
 
                             int64_t tBefore[2] = { 0, 0 };
-                            for( int i=0; i<bin; i++ )
+                            for( int i = 0; i < bin; i++ )
                             {
                                 tBefore[0] += binTime[i].v0;
                                 tBefore[1] += binTime[i].v1;
                             }
 
                             int64_t tAfter[2] = { 0, 0 };
-                            for( int i=bin+1; i<numBins; i++ )
+                            for( int i = bin + 1; i < numBins; i++ )
                             {
                                 tAfter[0] += binTime[i].v0;
                                 tAfter[1] += binTime[i].v1;
@@ -1270,7 +1337,8 @@ void View::DrawCompare()
                             ImGui::Text( "%s - %s", TimeToString( t0 ), TimeToString( t1 ) );
                             TextDisabledUnformatted( "Count:" );
                             ImGui::SameLine();
-                            ImGui::Text( "%s / %s", RealToString( floor( bins[bin].v0 ) ), RealToString( floor( bins[bin].v1 ) ) );
+                            ImGui::Text( "%s / %s", RealToString( floor( bins[bin].v0 ) ),
+                                         RealToString( floor( bins[bin].v1 ) ) );
                             TextDisabledUnformatted( "Time spent in bin:" );
                             ImGui::SameLine();
                             ImGui::Text( "%s / %s", TimeToString( binTime[bin].v0 ), TimeToString( binTime[bin].v1 ) );
@@ -1282,11 +1350,13 @@ void View::DrawCompare()
                             ImGui::Text( "%s / %s", TimeToString( tAfter[0] ), TimeToString( tAfter[1] ) );
                             TextDisabledUnformatted( "(Data is displayed as:" );
                             ImGui::SameLine();
-                            TextColoredUnformatted( ImVec4( 0xDD/511.f, 0xDD/511.f, 0x22/511.f, 1.f ), ICON_FA_LEMON );
+                            TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0xDD / 511.f, 0x22 / 511.f, 1.f ),
+                                                    ICON_FA_LEMON );
                             ImGui::SameLine();
                             TextDisabledUnformatted( "[this trace] /" );
                             ImGui::SameLine();
-                            TextColoredUnformatted( ImVec4( 0xDD/511.f, 0x22/511.f, 0x22/511.f, 1.f ), ICON_FA_GEM );
+                            TextColoredUnformatted( ImVec4( 0xDD / 511.f, 0x22 / 511.f, 0x22 / 511.f, 1.f ),
+                                                    ICON_FA_GEM );
                             ImGui::SameLine();
                             TextDisabledUnformatted( "[external trace])" );
                             ImGui::EndTooltip();

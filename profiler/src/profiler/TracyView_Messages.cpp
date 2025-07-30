@@ -1,8 +1,8 @@
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTexture.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -14,7 +14,11 @@ void View::DrawMessages()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1200 * scale, 600 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Messages", &m_showMessages );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     if( msgs.empty() )
     {
@@ -130,7 +134,7 @@ void View::DrawMessages()
         m_msgList.clear();
         if( m_messageFilter.IsActive() )
         {
-            for( size_t i=0; i<msgs.size(); i++ )
+            for( size_t i = 0; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -147,7 +151,7 @@ void View::DrawMessages()
         }
         else
         {
-            for( size_t i=0; i<msgs.size(); i++ )
+            for( size_t i = 0; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -169,7 +173,7 @@ void View::DrawMessages()
         m_msgList.reserve( msgs.size() );
         if( m_messageFilter.IsActive() )
         {
-            for( size_t i=m_prevMessages; i<msgs.size(); i++ )
+            for( size_t i = m_prevMessages; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -186,7 +190,7 @@ void View::DrawMessages()
         }
         else
         {
-            for( size_t i=m_prevMessages; i<msgs.size(); i++ )
+            for( size_t i = m_prevMessages; i < msgs.size(); i++ )
             {
                 const auto& v = msgs[i];
                 const auto tid = m_worker.DecompressThread( v->thread );
@@ -206,7 +210,9 @@ void View::DrawMessages()
     ImGui::Separator();
     ImGui::BeginChild( "##messages" );
     const int colNum = hasCallstack ? 4 : 3;
-    if( ImGui::BeginTable( "##messages", colNum, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Hideable ) )
+    if( ImGui::BeginTable( "##messages", colNum,
+                           ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY |
+                               ImGuiTableFlags_Hideable ) )
     {
         ImGui::TableSetupScrollFreeze( 0, 1 );
         ImGui::TableSetupColumn( "Time", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
@@ -229,7 +235,7 @@ void View::DrawMessages()
             clipper.Begin( m_msgList.size() );
             while( clipper.Step() )
             {
-                for( auto i=clipper.DisplayStart; i<clipper.DisplayEnd; i++ )
+                for( auto i = clipper.DisplayStart; i < clipper.DisplayEnd; i++ )
                 {
                     DrawMessageLine( *msgs[m_msgList[i]], hasCallstack, idx );
                 }
@@ -253,7 +259,8 @@ void View::DrawMessageLine( const MessageData& msg, bool hasCallstack, int& idx 
     const auto text = m_worker.GetString( msg.ref );
     const auto tid = m_worker.DecompressThread( msg.thread );
     ImGui::PushID( &msg );
-    if( ImGui::Selectable( TimeToStringExact( msg.time ), m_msgHighlight == &msg, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap ) )
+    if( ImGui::Selectable( TimeToStringExact( msg.time ), m_msgHighlight == &msg,
+                           ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap ) )
     {
         CenterAtTime( msg.time );
     }

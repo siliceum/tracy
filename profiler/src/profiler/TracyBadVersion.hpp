@@ -30,7 +30,10 @@ namespace detail
 void BadVersionImpl( BadVersionState& badVer );
 }
 
-tracy_force_inline void BadVersion( BadVersionState& badVer ) { if( badVer.state != BadVersionState::Ok ) detail::BadVersionImpl( badVer ); }
+tracy_force_inline void BadVersion( BadVersionState& badVer )
+{
+    if( badVer.state != BadVersionState::Ok ) detail::BadVersionImpl( badVer );
+}
 
 }
 

@@ -6,13 +6,13 @@
 #include <tuple>
 #include <vector>
 
-#include "tracy_robin_hood.h"
+#include "../public/common/TracyForceInline.hpp"
+#include "../public/common/TracyProtocol.hpp"
 #include "TracyCharUtil.hpp"
 #include "TracyDecayValue.hpp"
 #include "TracySourceContents.hpp"
 #include "TracySourceTokenizer.hpp"
-#include "../public/common/TracyForceInline.hpp"
-#include "../public/common/TracyProtocol.hpp"
+#include "tracy_robin_hood.h"
 
 struct ImFont;
 struct ImVec2;
@@ -26,16 +26,75 @@ struct CallstackFrameData;
 
 class SourceView
 {
-public:
+  public:
     enum class RegsX86 : uint8_t
     {
-        invalid, flags,
-        rax, rbx, rcx, rdx, rsi, rdi, rbp, rsp, r8, r9, r10, r11, r12, r13, r14, r15,
-        mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7,
-        xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7, xmm8, xmm9,
-        xmm10, xmm11, xmm12, xmm13, xmm14, xmm15, xmm16, xmm17, xmm18, xmm19,
-        xmm20, xmm21, xmm22, xmm23, xmm24, xmm25, xmm26, xmm27, xmm28, xmm29,
-        xmm30, xmm31, k0, k1, k2, k3, k4, k5, k6, k7,
+        invalid,
+        flags,
+        rax,
+        rbx,
+        rcx,
+        rdx,
+        rsi,
+        rdi,
+        rbp,
+        rsp,
+        r8,
+        r9,
+        r10,
+        r11,
+        r12,
+        r13,
+        r14,
+        r15,
+        mm0,
+        mm1,
+        mm2,
+        mm3,
+        mm4,
+        mm5,
+        mm6,
+        mm7,
+        xmm0,
+        xmm1,
+        xmm2,
+        xmm3,
+        xmm4,
+        xmm5,
+        xmm6,
+        xmm7,
+        xmm8,
+        xmm9,
+        xmm10,
+        xmm11,
+        xmm12,
+        xmm13,
+        xmm14,
+        xmm15,
+        xmm16,
+        xmm17,
+        xmm18,
+        xmm19,
+        xmm20,
+        xmm21,
+        xmm22,
+        xmm23,
+        xmm24,
+        xmm25,
+        xmm26,
+        xmm27,
+        xmm28,
+        xmm29,
+        xmm30,
+        xmm31,
+        k0,
+        k1,
+        k2,
+        k3,
+        k4,
+        k5,
+        k6,
+        k7,
         NUMBER_OF_ENTRIES
     };
 
@@ -52,7 +111,7 @@ public:
         CacheMiss
     };
 
-private:
+  private:
     struct AsmOpParams
     {
         uint8_t type;
@@ -73,10 +132,10 @@ private:
         rd
     };
 
-    static constexpr int ReadBit  = 0x100;
+    static constexpr int ReadBit = 0x100;
     static constexpr int WriteBit = 0x200;
     static constexpr int ReuseBit = 0x400;
-    static constexpr int RegMask  = 0x0FF;
+    static constexpr int RegMask = 0x0FF;
     static constexpr int FlagMask = 0xF00;
 
     enum class OpType : uint8_t
@@ -112,7 +171,10 @@ private:
         uint16_t regData[20];
     };
 
-    enum { AsmLineSize = sizeof( AsmLine ) };
+    enum
+    {
+        AsmLineSize = sizeof( AsmLine )
+    };
 
     struct JumpData
     {
@@ -162,19 +224,20 @@ private:
         uint64_t symAddr;
     };
 
-public:
+  public:
     SourceView();
 
     void SetCpuId( uint32_t cpuid );
 
     void OpenSource( const char* fileName, int line, const View& view, const Worker& worker );
-    void OpenSymbol( const char* fileName, int line, uint64_t baseAddr, uint64_t symAddr, Worker& worker, const View& view, bool updateHistory = true );
+    void OpenSymbol( const char* fileName, int line, uint64_t baseAddr, uint64_t symAddr, Worker& worker,
+                     const View& view, bool updateHistory = true );
     void Render( Worker& worker, View& view );
 
     void CalcInlineStats( bool val ) { m_calcInlineStats = val; }
     bool IsSymbolView() const { return !m_asm.empty(); }
 
-private:
+  private:
     void ParseSource( const char* fileName, const Worker& worker, const View& view );
     bool Disassemble( uint64_t symAddr, const Worker& worker );
 
@@ -186,18 +249,26 @@ private:
     void RenderSymbolSourceView( const AddrStatData& as, Worker& worker, const View& view, bool hasInlines );
     uint64_t RenderSymbolAsmView( const AddrStatData& as, Worker& worker, View& view );
 
-    void RenderLine( const Tokenizer::Line& line, int lineNum, const AddrStat& ipcnt, const AddrStatData& as, Worker* worker, const View* view );
-    void RenderAsmLine( AsmLine& line, const AddrStat& ipcnt, const AddrStatData& as, Worker& worker, uint64_t& jumpOut, int maxAddrLen, int maxAddrLenRel, View& view );
-    void RenderHwLinePart( size_t cycles, size_t retired, size_t branchRetired, size_t branchMiss, size_t cacheRef, size_t cacheMiss, size_t branchRel, size_t branchRelMax, size_t cacheRel, size_t cacheRelMax, const ImVec2& ts );
+    void RenderLine( const Tokenizer::Line& line, int lineNum, const AddrStat& ipcnt, const AddrStatData& as,
+                     Worker* worker, const View* view );
+    void RenderAsmLine( AsmLine& line, const AddrStat& ipcnt, const AddrStatData& as, Worker& worker, uint64_t& jumpOut,
+                        int maxAddrLen, int maxAddrLenRel, View& view );
+    void RenderHwLinePart( size_t cycles, size_t retired, size_t branchRetired, size_t branchMiss, size_t cacheRef,
+                           size_t cacheMiss, size_t branchRel, size_t branchRelMax, size_t cacheRel, size_t cacheRelMax,
+                           const ImVec2& ts );
 
-    void SelectLine( uint32_t line, const Worker* worker, bool updateAsmLine = true, uint64_t targetAddr = 0, bool changeAsmLine = true );
-    void SelectAsmLines( uint32_t file, uint32_t line, const Worker& worker, bool updateAsmLine = true, uint64_t targetAddr = 0, bool changeAsmLine = true );
+    void SelectLine( uint32_t line, const Worker* worker, bool updateAsmLine = true, uint64_t targetAddr = 0,
+                     bool changeAsmLine = true );
+    void SelectAsmLines( uint32_t file, uint32_t line, const Worker& worker, bool updateAsmLine = true,
+                         uint64_t targetAddr = 0, bool changeAsmLine = true );
     void SelectAsmLinesHover( uint32_t file, uint32_t line, const Worker& worker );
 
     void GatherIpHwStats( AddrStatData& as, Worker& worker, const View& view, CostType cost );
     void GatherIpStats( uint64_t baseAddr, AddrStatData& as, const Worker& worker, bool limitView, const View& view );
-    void GatherAdditionalIpStats( uint64_t baseAddr, AddrStatData& as, const Worker& worker, bool limitView, const View& view );
-    void GatherChildStats( uint64_t baseAddr, unordered_flat_map<uint64_t, uint32_t>& vec, Worker& worker, bool limitView, const View& view );
+    void GatherAdditionalIpStats( uint64_t baseAddr, AddrStatData& as, const Worker& worker, bool limitView,
+                                  const View& view );
+    void GatherChildStats( uint64_t baseAddr, unordered_flat_map<uint64_t, uint32_t>& vec, Worker& worker,
+                           bool limitView, const View& view );
 
     uint32_t CountAsmIpStats( uint64_t baseAddr, const Worker& worker, bool limitView, const View& view );
     void CountHwStats( AddrStatData& as, Worker& worker, const View& view );

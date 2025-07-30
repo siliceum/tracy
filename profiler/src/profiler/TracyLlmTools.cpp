@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <curl/curl.h>
-#include <nlohmann/json.hpp>
 #include <libbase64.h>
+#include <nlohmann/json.hpp>
 #include <pugixml.hpp>
 #include <string_view>
 #include <tidy.h>
@@ -19,10 +19,16 @@
 
 #include "data/Manual.hpp"
 
-constexpr const char* NoNetworkAccess = "Internet access is disabled by the user. You may inform the user that he can enable it in the settings, so that you can use the tools to gather information.";
+constexpr const char* NoNetworkAccess =
+    "Internet access is disabled by the user. You may inform the user that he can enable it in the settings, so that you can use the tools to gather information.";
 
-#define NetworkCheckString if( !m_netAccess ) return NoNetworkAccess
-#define NetworkCheckReply if( !m_netAccess ) return { .reply = NoNetworkAccess }
+#define NetworkCheckString                                                                                             \
+    if( !m_netAccess ) return NoNetworkAccess
+#define NetworkCheckReply                                                                                              \
+    if( !m_netAccess ) return                                                                                          \
+        {                                                                                                              \
+            .reply = NoNetworkAccess                                                                                   \
+        }
 
 namespace tracy
 {
@@ -36,10 +42,8 @@ static std::string UrlEncode( const std::string& str )
 
     for( char c : str )
     {
-        if( ( c >= 'a' && c <= 'z' ) ||
-            ( c >= 'A' && c <= 'Z' ) ||
-            ( c >= '0' && c <= '9' ) ||
-              c == '-' || c == '.' || c == '_' || c == '~' )
+        if( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= '0' && c <= '9' ) || c == '-' || c == '.' ||
+            c == '_' || c == '~' )
         {
             out += c;
         }
@@ -96,7 +100,7 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
     while( pos < sz )
     {
         std::string::size_type next = pos;
-        for(;;)
+        for( ;; )
         {
             next = manual.find( '\n', next );
             if( next == std::string_view::npos )
@@ -104,7 +108,7 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
                 next = sz;
                 break;
             }
-            if( next+1 >= sz || manual[next+1] == '\n' ) break;
+            if( next + 1 >= sz || manual[next + 1] == '\n' ) break;
             next++;
         }
         if( next != pos )
@@ -122,7 +126,7 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
 
                         while( manual[start] != '\n' ) start++;
                         while( manual[start] == '\n' ) start++;
-                        while( manual[end-1] == '\n' ) end--;
+                        while( manual[end - 1] == '\n' ) end--;
 
                         if( end > start )
                         {
@@ -131,7 +135,8 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
                             if( levels[0] != 0 )
                             {
                                 section = std::to_string( levels[0] );
-                                for( size_t i=1; i<levels.size(); i++ ) section += "." + std::to_string( levels[i] );
+                                for( size_t i = 1; i < levels.size(); i++ )
+                                    section += "." + std::to_string( levels[i] );
                             }
                             if( levels.size() == 1 )
                             {
@@ -139,16 +144,14 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
                             }
                             else
                             {
-                                title = chapterNames[levels.size()-1];
+                                title = chapterNames[levels.size() - 1];
                                 parents = chapterNames[0];
-                                for( size_t i=1; i<levels.size() - 1; i++ ) parents += " > " + chapterNames[i];
+                                for( size_t i = 1; i < levels.size() - 1; i++ ) parents += " > " + chapterNames[i];
                             }
-                            m_manualChunks.emplace_back( ManualChunk {
-                                .text = std::move( text ),
-                                .section = std::move( section ),
-                                .title = std::move( title ),
-                                .parents = std::move( parents )
-                            } );
+                            m_manualChunks.emplace_back( ManualChunk{ .text = std::move( text ),
+                                                                      .section = std::move( section ),
+                                                                      .title = std::move( title ),
+                                                                      .parents = std::move( parents ) } );
                         }
                     }
 
@@ -171,10 +174,10 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
                     if( levels[0] != 0 )
                     {
                         chunk += "Section " + std::to_string( levels[0] );
-                        for( size_t i=1; i<levels.size(); i++ ) chunk += "." + std::to_string( levels[i] );
+                        for( size_t i = 1; i < levels.size(); i++ ) chunk += "." + std::to_string( levels[i] );
                         chunk += "\n";
                     }
-                    chunk += chapterNames[levels.size()-1] + "\n\n";
+                    chunk += chapterNames[levels.size() - 1] + "\n\n";
                     chunk += std::string( line );
                     m_chunkData.emplace_back( std::move( chunk ), m_manualChunks.size() );
                 }
@@ -189,21 +192,18 @@ TracyLlmTools::TracyLlmTools( Worker& worker )
         if( levels[0] != 0 )
         {
             manualChunk += "Section " + std::to_string( levels[0] );
-            for( size_t i=1; i<levels.size(); i++ ) manualChunk += "." + std::to_string( levels[i] );
+            for( size_t i = 1; i < levels.size(); i++ ) manualChunk += "." + std::to_string( levels[i] );
             manualChunk += "\n";
         }
         manualChunk += "Navigation: " + chapterNames[0];
-        for( size_t i=1; i<levels.size(); i++ ) manualChunk += " > " + chapterNames[i];
+        for( size_t i = 1; i < levels.size(); i++ ) manualChunk += " > " + chapterNames[i];
         manualChunk += "\n\n";
         manualChunk += std::string( manual.data() + manualChunkPos, pos - manualChunkPos );
         m_manualChunks.emplace_back( std::move( manualChunk ) );
     }
 }
 
-TracyLlmTools::~TracyLlmTools()
-{
-    CancelManualEmbeddings();
-}
+TracyLlmTools::~TracyLlmTools() { CancelManualEmbeddings(); }
 
 static const std::string& GetParam( const nlohmann::json& json, const char* name )
 {
@@ -217,10 +217,11 @@ static uint32_t GetParamU32( const nlohmann::json& json, const char* name )
     return json[name].get<uint32_t>();
 }
 
-#define Param(name) GetParam( json, name )
-#define ParamU32(name) GetParamU32( json, name )
+#define Param( name ) GetParam( json, name )
+#define ParamU32( name ) GetParamU32( json, name )
 
-TracyLlmTools::ToolReply TracyLlmTools::HandleToolCalls( const nlohmann::json& json, TracyLlmApi& api, int contextSize, bool hasEmbeddingsModel )
+TracyLlmTools::ToolReply TracyLlmTools::HandleToolCalls( const nlohmann::json& json, TracyLlmApi& api, int contextSize,
+                                                         bool hasEmbeddingsModel )
 {
     m_ctxSize = contextSize;
 
@@ -296,7 +297,9 @@ void TracyLlmTools::SelectManualEmbeddings( const std::string& model )
         m_manualEmbeddings = std::make_unique<TracyLlmEmbeddings>( cache, hash );
         m_manualEmbeddingState = { .model = model, .done = true };
     }
-    catch( std::exception& ) {}
+    catch( std::exception& )
+    {
+    }
 }
 
 void TracyLlmTools::BuildManualEmbeddings( const std::string& model, TracyLlmApi& api )
@@ -370,7 +373,7 @@ void TracyLlmTools::ManualEmbeddingsWorker( TracyLlmApi& api )
         const auto bsz = std::min( batchSize, csz - i );
         std::vector<std::string> batch;
         batch.reserve( bsz );
-        for( size_t j=0; j<bsz; j++ ) batch.emplace_back( "search_document: " + m_chunkData[i+j].first );
+        for( size_t j = 0; j < bsz; j++ ) batch.emplace_back( "search_document: " + m_chunkData[i + j].first );
 
         nlohmann::json req;
         req["input"] = std::move( batch );
@@ -385,11 +388,11 @@ void TracyLlmTools::ManualEmbeddingsWorker( TracyLlmApi& api )
         }
 
         auto& data = response["data"];
-        for( size_t j=0; j<bsz; j++ )
+        for( size_t j = 0; j < bsz; j++ )
         {
             embeddings.clear();
             for( auto& item : data[j]["embedding"] ) embeddings.emplace_back( item.get<float>() );
-            m_manualEmbeddings->Add( m_chunkData[i+j].second, embeddings );
+            m_manualEmbeddings->Add( m_chunkData[i + j].second, embeddings );
         }
 
         i += bsz;
@@ -416,7 +419,7 @@ void TracyLlmTools::CancelManualEmbeddings()
 
 int TracyLlmTools::CalcMaxSize() const
 {
-    if( m_ctxSize <= 0 ) return 32*1024;
+    if( m_ctxSize <= 0 ) return 32 * 1024;
 
     // Limit the size of the response to avoid exceeding the context size
     // Assume average token size is 4 bytes. Make space for 3 articles to be retrieved.
@@ -433,9 +436,9 @@ std::string TracyLlmTools::TrimString( std::string&& str ) const
     if( ( str[maxSize] & 0xC0 ) == 0xC0 )
     {
         // Remove the current UTF-8 character
-        while( maxSize > 0 && ( str[maxSize-1] & 0xC0 ) == 0xC0 ) maxSize--;
+        while( maxSize > 0 && ( str[maxSize - 1] & 0xC0 ) == 0xC0 ) maxSize--;
         // Finally, remove the first byte of a UTF-8 multi-byte sequence
-        //assert( ( str[maxSize-1] & 0xC0 ) == 0x80 );
+        // assert( ( str[maxSize-1] & 0xC0 ) == 0x80 );
         if( maxSize > 0 ) maxSize--;
     }
     return str.substr( 0, maxSize );
@@ -444,7 +447,7 @@ std::string TracyLlmTools::TrimString( std::string&& str ) const
 static size_t WriteFn( void* _data, size_t size, size_t num, void* ptr )
 {
     const auto data = (unsigned char*)_data;
-    const auto sz = size*num;
+    const auto sz = size * num;
     auto& v = *(std::string*)ptr;
     v.append( (const char*)data, sz );
     return sz;
@@ -500,7 +503,8 @@ TracyLlmTools::ToolReply TracyLlmTools::SearchWikipedia( std::string query, cons
     NetworkCheckReply;
 
     std::ranges::replace( query, ' ', '+' );
-    const auto response = FetchWebPage( "https://" + lang + ".wikipedia.org/w/rest.php/v1/search/page?q=" + UrlEncode( query ) + "&limit=1" );
+    const auto response = FetchWebPage(
+        "https://" + lang + ".wikipedia.org/w/rest.php/v1/search/page?q=" + UrlEncode( query ) + "&limit=1" );
 
     auto json = nlohmann::json::parse( response );
     if( !json.contains( "pages" ) ) return { .reply = "No results found" };
@@ -534,7 +538,7 @@ TracyLlmTools::ToolReply TracyLlmTools::SearchWikipedia( std::string query, cons
             if( !imgData.empty() && imgData[0] != '<' && strncmp( imgData.c_str(), "Error:", 6 ) != 0 )
             {
                 size_t b64sz = ( ( 4 * imgData.size() / 3 ) + 3 ) & ~3;
-                char* b64 = new char[b64sz+1];
+                char* b64 = new char[b64sz + 1];
                 b64[b64sz] = 0;
                 size_t outSz;
                 base64_encode( (const char*)imgData.data(), imgData.size(), b64, &outSz, 0 );
@@ -563,7 +567,8 @@ std::string TracyLlmTools::GetDictionary( std::string word, const std::string& l
     NetworkCheckString;
 
     std::ranges::replace( word, ' ', '+' );
-    const auto response = FetchWebPage( "https://" + lang + ".wiktionary.org/w/rest.php/v1/search/page?q=" + UrlEncode( word ) + "&limit=1" );
+    const auto response = FetchWebPage(
+        "https://" + lang + ".wiktionary.org/w/rest.php/v1/search/page?q=" + UrlEncode( word ) + "&limit=1" );
 
     auto json = nlohmann::json::parse( response );
     if( !json.contains( "pages" ) ) return "No results found";
@@ -595,7 +600,9 @@ std::string TracyLlmTools::SearchWeb( std::string query )
 
     if( !s_config.llmSearchApiKey.empty() && !s_config.llmSearchIdentifier.empty() )
     {
-        const auto response = FetchWebPage( "https://customsearch.googleapis.com/customsearch/v1?key=" + s_config.llmSearchApiKey + "&cx=" + s_config.llmSearchIdentifier + "&q=" + query );
+        const auto response =
+            FetchWebPage( "https://customsearch.googleapis.com/customsearch/v1?key=" + s_config.llmSearchApiKey +
+                          "&cx=" + s_config.llmSearchIdentifier + "&q=" + query );
         try
         {
             auto json = nlohmann::json::parse( response );
@@ -614,7 +621,9 @@ std::string TracyLlmTools::SearchWeb( std::string query )
                 return results.dump( 2, ' ', false, nlohmann::json::error_handler_t::replace );
             }
         }
-        catch( const nlohmann::json::exception& e ) {}
+        catch( const nlohmann::json::exception& e )
+        {
+        }
     }
 
     const auto response = FetchWebPage( "https://lite.duckduckgo.com/lite?q=" + query );
@@ -699,7 +708,10 @@ static void RemoveEmptyTags( pugi::xml_node node )
         if( child.type() == pugi::xml_node_type::node_element )
         {
             RemoveEmptyTags( child );
-            if( !child.first_child() && child.text().empty() ) { node.remove_child( child ); }
+            if( !child.first_child() && child.text().empty() )
+            {
+                node.remove_child( child );
+            }
         }
         child = next;
     }
@@ -707,7 +719,10 @@ static void RemoveEmptyTags( pugi::xml_node node )
 
 struct xml_writer : public pugi::xml_writer
 {
-    explicit xml_writer( std::string& str ) : str( str ) {}
+    explicit xml_writer( std::string& str )
+        : str( str )
+    {
+    }
     void write( const void* data, size_t size ) override { str.append( (const char*)data, size ); }
     std::string& str;
 };
@@ -782,7 +797,8 @@ std::string TracyLlmTools::GetWebpage( const std::string& url )
     body.node().print( writer, nullptr, pugi::format_raw | pugi::format_no_declaration | pugi::format_no_escapes );
 
     RemoveNewline( response );
-    auto it = std::ranges::unique( response, []( char a, char b ) { return ( a == ' ' || a == '\t' ) && ( b == ' ' || b == '\t' ); } );
+    auto it = std::ranges::unique( response, []( char a, char b )
+                                   { return ( a == ' ' || a == '\t' ) && ( b == ' ' || b == '\t' ); } );
     response.erase( it.begin(), it.end() );
 
     response = TrimString( std::move( response ) );
@@ -793,8 +809,10 @@ std::string TracyLlmTools::GetWebpage( const std::string& url )
 
 std::string TracyLlmTools::SearchManual( const std::string& query, TracyLlmApi& api, bool hasEmbeddingsModel )
 {
-    if( !hasEmbeddingsModel ) return "Searching the user manual requires vector embeddings model to be selected. You must inform the user that he should download such a model using their LLM provider software, so you can use this tool.";
-    if( !m_manualEmbeddingState.done ) return "User manual embedding vectors are not calculated. You must inform the user that he should click the \"Learn manual\" button, so you can use this tool.";
+    if( !hasEmbeddingsModel )
+        return "Searching the user manual requires vector embeddings model to be selected. You must inform the user that he should download such a model using their LLM provider software, so you can use this tool.";
+    if( !m_manualEmbeddingState.done )
+        return "User manual embedding vectors are not calculated. You must inform the user that he should click the \"Learn manual\" button, so you can use this tool.";
 
     constexpr size_t MaxSearchResults = 20;
     constexpr size_t MaxOutputChunks = 10;
@@ -821,7 +839,8 @@ std::string TracyLlmTools::SearchManual( const std::string& query, TracyLlmApi& 
     for( auto& item : results )
     {
         const auto chunk = m_manualEmbeddings->Get( item.idx );
-        if( std::ranges::find_if( chunks, [chunk]( const auto& v ) { return v.first == chunk; } ) == chunks.end() ) chunks.emplace_back( chunk, item.distance );
+        if( std::ranges::find_if( chunks, [chunk]( const auto& v ) { return v.first == chunk; } ) == chunks.end() )
+            chunks.emplace_back( chunk, item.distance );
     }
     if( chunks.size() > MaxOutputChunks ) chunks.resize( MaxOutputChunks );
 
@@ -858,14 +877,16 @@ std::string TracyLlmTools::SourceFile( const std::string& file, uint32_t line ) 
     if( data.data == nullptr ) return "Error: Source file not available.";
 
     auto lines = SplitLines( data.data, data.len );
-    if( line > lines.size() ) return "Error: Source file line " + std::to_string( line ) + " is out of range. The file has only " + std::to_string( lines.size() ) + " lines.";
+    if( line > lines.size() )
+        return "Error: Source file line " + std::to_string( line ) + " is out of range. The file has only " +
+               std::to_string( lines.size() ) + " lines.";
 
     line--;
 
     const auto maxSize = CalcMaxSize();
     int size = lines[line].size() + 1;
     uint32_t minLine = line;
-    uint32_t maxLine = line+1;
+    uint32_t maxLine = line + 1;
 
     while( minLine > 0 || maxLine < lines.size() )
     {
@@ -883,17 +904,11 @@ std::string TracyLlmTools::SourceFile( const std::string& file, uint32_t line ) 
         }
     }
 
-    nlohmann::json json = {
-        { "file", file },
-        { "contents", nlohmann::json::array() }
-    };
+    nlohmann::json json = { { "file", file }, { "contents", nlohmann::json::array() } };
 
     for( uint32_t i = minLine; i < maxLine; i++ )
     {
-        nlohmann::json lineJson = {
-            { "line", i + 1 },
-            { "text", lines[i] }
-        };
+        nlohmann::json lineJson = { { "line", i + 1 }, { "text", lines[i] } };
         json["contents"].emplace_back( std::move( lineJson ) );
     }
 

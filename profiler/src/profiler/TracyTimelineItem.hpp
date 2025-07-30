@@ -16,7 +16,7 @@ class Worker;
 
 class TimelineItem
 {
-public:
+  public:
     TimelineItem( View& view, Worker& worker, const void* key, bool wantPreprocess );
     virtual ~TimelineItem() = default;
 
@@ -37,7 +37,7 @@ public:
 
     const void* GetKey() const { return m_key; }
 
-protected:
+  protected:
     virtual uint32_t HeaderColor() const = 0;
     virtual uint32_t HeaderColorInactive() const = 0;
     virtual uint32_t HeaderLineColor() const = 0;
@@ -59,7 +59,7 @@ protected:
     bool m_visible;
     bool m_showFull;
 
-private:
+  private:
     void AdjustThreadHeight( bool firstFrame, int yBegin, int yEnd );
 
     int m_height;
@@ -67,7 +67,7 @@ private:
 
     const void* m_key;
 
-protected:
+  protected:
     View& m_view;
     Worker& m_worker;
 };

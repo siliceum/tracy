@@ -22,12 +22,36 @@ uint32_t GetHsvColor( uint64_t hue, int value )
 
     switch( reg )
     {
-    case 0:  r = v; g = t; b = p; break;
-    case 1:  r = q; g = v; b = p; break;
-    case 2:  r = p; g = v; b = t; break;
-    case 3:  r = p; g = q; b = v; break;
-    case 4:  r = t; g = p; b = v; break;
-    default: r = v; g = p; b = q; break;
+    case 0:
+        r = v;
+        g = t;
+        b = p;
+        break;
+    case 1:
+        r = q;
+        g = v;
+        b = p;
+        break;
+    case 2:
+        r = p;
+        g = v;
+        b = t;
+        break;
+    case 3:
+        r = p;
+        g = q;
+        b = v;
+        break;
+    case 4:
+        r = t;
+        g = p;
+        b = v;
+        break;
+    default:
+        r = v;
+        g = p;
+        b = q;
+        break;
     }
 
     return 0xFF000000 | ( r << 16 ) | ( g << 8 ) | b;

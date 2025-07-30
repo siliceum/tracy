@@ -8,7 +8,7 @@
 namespace tracy
 {
 
-template<typename T>
+template <typename T>
 tracy_force_inline T MemRead( const void* ptr )
 {
     T val;
@@ -16,7 +16,7 @@ tracy_force_inline T MemRead( const void* ptr )
     return val;
 }
 
-template<typename T>
+template <typename T>
 tracy_force_inline void MemWrite( void* ptr, T val )
 {
     memcpy( ptr, &val, sizeof( T ) );

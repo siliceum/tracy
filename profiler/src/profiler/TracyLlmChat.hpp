@@ -10,7 +10,7 @@ namespace tracy
 
 class TracyLlmChat
 {
-public:
+  public:
     static constexpr const char* ForgetMsg = "<tool_output>\n...";
 
     enum class TurnRole
@@ -35,7 +35,7 @@ public:
 
     bool Turn( TurnRole role, const std::string& content );
 
-private:
+  private:
     void NormalScope();
     void ThinkScope();
 

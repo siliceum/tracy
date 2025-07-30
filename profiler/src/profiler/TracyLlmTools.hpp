@@ -1,9 +1,9 @@
 #ifndef __TRACYLLMTOOLS_HPP__
 #define __TRACYLLMTOOLS_HPP__
 
-#include <nlohmann/json.hpp>
 #include <memory>
 #include <mutex>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -21,7 +21,7 @@ class Worker;
 
 class TracyLlmTools
 {
-public:
+  public:
     struct ToolReply
     {
         std::string reply;
@@ -57,7 +57,7 @@ public:
 
     bool m_netAccess = true;
 
-private:
+  private:
     [[nodiscard]] int CalcMaxSize() const;
     [[nodiscard]] std::string TrimString( std::string&& str ) const;
 

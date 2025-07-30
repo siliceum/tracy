@@ -20,7 +20,7 @@ struct AchievementItem
 {
     const char* id;
     const char* name;
-    void(*description)();
+    void ( *description )();
     AchievementItem** items;
     AchievementItem** unlocks;
     bool keepOpen;
@@ -48,7 +48,7 @@ class AchievementsMgr
         data::AchievementCategory* category;
     };
 
-public:
+  public:
     AchievementsMgr();
     ~AchievementsMgr();
 
@@ -62,7 +62,7 @@ public:
     bool NeedsAttention() const;
     bool CategoryNeedsAttention( const char* id ) const;
 
-private:
+  private:
     void FillMap( data::AchievementItem** items, data::AchievementCategory* category );
     void Save();
 

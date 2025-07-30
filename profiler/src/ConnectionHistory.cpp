@@ -7,7 +7,6 @@
 #include "../../server/tracy_pdqsort.h"
 #include "profiler/TracyStorage.hpp"
 
-
 ConnectionHistory::ConnectionHistory()
     : m_fn( tracy::GetSavePath( "connection.history" ) )
 {
@@ -16,7 +15,7 @@ ConnectionHistory::ConnectionHistory()
 
     uint64_t sz;
     if( fread( &sz, 1, sizeof( sz ), f ) != sizeof( sz ) ) goto err;
-    for( uint64_t i=0; i<sz; i++ )
+    for( uint64_t i = 0; i < sz; i++ )
     {
         uint64_t ssz, cnt;
         if( fread( &ssz, 1, sizeof( ssz ), f ) != sizeof( ssz ) ) goto err;
@@ -24,7 +23,7 @@ ConnectionHistory::ConnectionHistory()
         char tmp[1024];
         if( fread( tmp, 1, ssz, f ) != ssz ) goto err;
         if( fread( &cnt, 1, sizeof( cnt ), f ) != sizeof( cnt ) ) goto err;
-        m_connHistMap.emplace( std::string( tmp, tmp+ssz ), cnt );
+        m_connHistMap.emplace( std::string( tmp, tmp + ssz ), cnt );
     }
     fclose( f );
 
@@ -61,7 +60,8 @@ void ConnectionHistory::Rebuild()
     {
         vec.emplace_back( it );
     }
-    tracy::pdqsort_branchless( vec.begin(), vec.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second > rhs->second; } );
+    tracy::pdqsort_branchless( vec.begin(), vec.end(),
+                               []( const auto& lhs, const auto& rhs ) { return lhs->second > rhs->second; } );
     std::swap( m_connHistVec, vec );
 }
 

@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <random>
 
+#include "../Fonts.hpp"
 #include "TracyFilesystem.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
@@ -9,7 +10,6 @@
 #include "TracyUtility.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -17,7 +17,11 @@ namespace tracy
 void View::DrawOptions()
 {
     ImGui::Begin( "Options", &m_showOptions, ImGuiWindowFlags_AlwaysAutoResize );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     const auto scale = GetScale();
     bool val = m_vd.drawEmptyLabels;
@@ -36,7 +40,7 @@ void View::DrawOptions()
         m_vd.frameTarget = tmp;
     }
     ImGui::SameLine();
-    TextDisabledUnformatted( TimeToString( 1000*1000*1000 / tmp ) );
+    TextDisabledUnformatted( TimeToString( 1000 * 1000 * 1000 / tmp ) );
     ImGui::PopStyleVar();
     ImGui::PushFont( g_fonts.normal, FontSmall );
     SmallColorBox( 0xFF2222DD );
@@ -92,7 +96,8 @@ void View::DrawOptions()
         const auto expand = ImGui::TreeNode( "GPU zones" );
         ImGui::SameLine();
         size_t visibleGpu = 0;
-        for( const auto& gd : gpuData ) if( m_tc.GetItem( gd ).IsVisible() ) visibleGpu++;
+        for( const auto& gd : gpuData )
+            if( m_tc.GetItem( gd ).IsVisible() ) visibleGpu++;
         if( visibleGpu == gpuData.size() )
         {
             ImGui::TextDisabled( "(%zu)", gpuData.size() );
@@ -103,7 +108,7 @@ void View::DrawOptions()
         }
         if( expand )
         {
-            for( size_t i=0; i<gpuData.size(); i++ )
+            for( size_t i = 0; i < gpuData.size(); i++ )
             {
                 const auto& timeline = gpuData[i]->threadData.begin()->second.timeline;
                 m_tc.GetItem( gpuData[i] ).VisibilityCheckbox();
@@ -141,8 +146,8 @@ void View::DrawOptions()
                             size_t lastidx = 0;
                             if( timeline.is_magic() )
                             {
-                                auto& tl = *((Vector<GpuEvent>*)&timeline);
-                                for( size_t j=tl.size()-1; j > 0; j-- )
+                                auto& tl = *( (Vector<GpuEvent>*)&timeline );
+                                for( size_t j = tl.size() - 1; j > 0; j-- )
                                 {
                                     if( tl[j].GpuEnd() >= 0 )
                                     {
@@ -153,7 +158,7 @@ void View::DrawOptions()
                             }
                             else
                             {
-                                for( size_t j=timeline.size()-1; j > 0; j-- )
+                                for( size_t j = timeline.size() - 1; j > 0; j-- )
                                 {
                                     if( timeline[j]->GpuEnd() >= 0 )
                                     {
@@ -163,7 +168,10 @@ void View::DrawOptions()
                                 }
                             }
 
-                            enum { NumSlopes = 10000 };
+                            enum
+                            {
+                                NumSlopes = 10000
+                            };
                             std::random_device rd;
                             std::default_random_engine gen( rd() );
                             std::uniform_int_distribution<size_t> dist( 0, lastidx - 1 );
@@ -171,17 +179,18 @@ void View::DrawOptions()
                             size_t idx = 0;
                             if( timeline.is_magic() )
                             {
-                                auto& tl = *((Vector<GpuEvent>*)&timeline);
+                                auto& tl = *( (Vector<GpuEvent>*)&timeline );
                                 do
                                 {
                                     const auto p0 = dist( gen );
                                     const auto p1 = dist( gen );
                                     if( p0 != p1 )
                                     {
-                                        slopes[idx++] = float( 1.0 - double( tl[p1].GpuStart() - tl[p0].GpuStart() ) / double( tl[p1].CpuStart() - tl[p0].CpuStart() ) );
+                                        slopes[idx++] =
+                                            float( 1.0 - double( tl[p1].GpuStart() - tl[p0].GpuStart() ) /
+                                                             double( tl[p1].CpuStart() - tl[p0].CpuStart() ) );
                                     }
-                                }
-                                while( idx < NumSlopes );
+                                } while( idx < NumSlopes );
                             }
                             else
                             {
@@ -191,13 +200,14 @@ void View::DrawOptions()
                                     const auto p1 = dist( gen );
                                     if( p0 != p1 )
                                     {
-                                        slopes[idx++] = float( 1.0 - double( timeline[p1]->GpuStart() - timeline[p0]->GpuStart() ) / double( timeline[p1]->CpuStart() - timeline[p0]->CpuStart() ) );
+                                        slopes[idx++] = float(
+                                            1.0 - double( timeline[p1]->GpuStart() - timeline[p0]->GpuStart() ) /
+                                                      double( timeline[p1]->CpuStart() - timeline[p0]->CpuStart() ) );
                                     }
-                                }
-                                while( idx < NumSlopes );
+                                } while( idx < NumSlopes );
                             }
-                            pdqsort_branchless( slopes, slopes+NumSlopes );
-                            drift = int( 1000000000 * -slopes[NumSlopes/2] );
+                            pdqsort_branchless( slopes, slopes + NumSlopes );
+                            drift = int( 1000000000 * -slopes[NumSlopes / 2] );
                         }
                     }
                     ImGui::TreePop();
@@ -289,7 +299,8 @@ void View::DrawOptions()
         const auto expand = ImGui::TreeNode( "Locks" );
         ImGui::SameLine();
         size_t visibleLocks = 0;
-        for( const auto& l : m_worker.GetLockMap() ) if( Vis( l.second ) ) visibleLocks++;
+        for( const auto& l : m_worker.GetLockMap() )
+            if( Vis( l.second ) ) visibleLocks++;
         if( visibleLocks == lockCnt )
         {
             ImGui::TextDisabled( "(%zu)", lockCnt );
@@ -320,10 +331,13 @@ void View::DrawOptions()
             ImGui::SameLine();
             DrawHelpMarker( "Right click on lock name to open lock information window." );
 
-            const bool multiExpand = ImGui::TreeNodeEx( "Contended locks present in multiple threads", ImGuiTreeNodeFlags_DefaultOpen );
+            const bool multiExpand =
+                ImGui::TreeNodeEx( "Contended locks present in multiple threads", ImGuiTreeNodeFlags_DefaultOpen );
             ImGui::SameLine();
             size_t visibleMultiCntCont = 0;
-            for( const auto& l : m_worker.GetLockMap() ) if( l.second->threadList.size() != 1 && l.second->isContended && Vis( l.second ) ) visibleMultiCntCont++;
+            for( const auto& l : m_worker.GetLockMap() )
+                if( l.second->threadList.size() != 1 && l.second->isContended && Vis( l.second ) )
+                    visibleMultiCntCont++;
             if( visibleMultiCntCont == multiCntCont )
             {
                 ImGui::TextDisabled( "(%zu)", multiCntCont );
@@ -353,7 +367,8 @@ void View::DrawOptions()
 
                 for( const auto& l : m_worker.GetLockMap() )
                 {
-                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 && l.second->isContended )
+                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 &&
+                        l.second->isContended )
                     {
                         auto& sl = m_worker.GetSourceLocation( l.second->srcloc );
                         auto fileName = m_worker.GetString( sl.file );
@@ -365,7 +380,8 @@ void View::DrawOptions()
                         }
                         else
                         {
-                            sprintf( buf, "%" PRIu32 ": %s", l.first, m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
+                            sprintf( buf, "%" PRIu32 ": %s", l.first,
+                                     m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
                         }
                         SmallCheckbox( buf, &Vis( l.second ) );
                         if( ImGui::IsItemHovered() )
@@ -387,7 +403,8 @@ void View::DrawOptions()
                         {
                             ImGui::SameLine();
                         }
-                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ), LocationToString( fileName, sl.line ) );
+                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ),
+                                             LocationToString( fileName, sl.line ) );
                         if( ImGui::IsItemHovered() )
                         {
                             DrawSourceTooltip( fileName, sl.line, 1, 1 );
@@ -410,7 +427,9 @@ void View::DrawOptions()
             const bool multiUncontExpand = ImGui::TreeNodeEx( "Uncontended locks present in multiple threads", 0 );
             ImGui::SameLine();
             uint64_t visibleMultiCntUncont = 0;
-            for( const auto& l : m_worker.GetLockMap() ) if( l.second->threadList.size() != 1 && !l.second->isContended && Vis( l.second ) ) visibleMultiCntUncont++;
+            for( const auto& l : m_worker.GetLockMap() )
+                if( l.second->threadList.size() != 1 && !l.second->isContended && Vis( l.second ) )
+                    visibleMultiCntUncont++;
             if( visibleMultiCntUncont == multiCntUncont )
             {
                 ImGui::TextDisabled( "(%zu)", multiCntUncont );
@@ -440,7 +459,8 @@ void View::DrawOptions()
 
                 for( const auto& l : m_worker.GetLockMap() )
                 {
-                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 && !l.second->isContended )
+                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 &&
+                        !l.second->isContended )
                     {
                         auto& sl = m_worker.GetSourceLocation( l.second->srcloc );
                         auto fileName = m_worker.GetString( sl.file );
@@ -452,7 +472,8 @@ void View::DrawOptions()
                         }
                         else
                         {
-                            sprintf( buf, "%" PRIu32 ": %s", l.first, m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
+                            sprintf( buf, "%" PRIu32 ": %s", l.first,
+                                     m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
                         }
                         SmallCheckbox( buf, &Vis( l.second ) );
                         if( ImGui::IsItemHovered() )
@@ -474,7 +495,8 @@ void View::DrawOptions()
                         {
                             ImGui::SameLine();
                         }
-                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ), LocationToString( fileName, sl.line ) );
+                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ),
+                                             LocationToString( fileName, sl.line ) );
                         if( ImGui::IsItemHovered() )
                         {
                             DrawSourceTooltip( fileName, sl.line, 1, 1 );
@@ -497,7 +519,8 @@ void View::DrawOptions()
             const auto singleExpand = ImGui::TreeNodeEx( "Locks present in a single thread", 0 );
             ImGui::SameLine();
             uint64_t visibleSingleCnt = 0;
-            for( const auto& l : m_worker.GetLockMap() ) if( l.second->threadList.size() == 1 && Vis( l.second ) ) visibleSingleCnt++;
+            for( const auto& l : m_worker.GetLockMap() )
+                if( l.second->threadList.size() == 1 && Vis( l.second ) ) visibleSingleCnt++;
             if( visibleSingleCnt == singleCnt )
             {
                 ImGui::TextDisabled( "(%zu)", singleCnt );
@@ -539,7 +562,8 @@ void View::DrawOptions()
                         }
                         else
                         {
-                            sprintf( buf, "%" PRIu32 ": %s", l.first, m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
+                            sprintf( buf, "%" PRIu32 ": %s", l.first,
+                                     m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
                         }
                         SmallCheckbox( buf, &Vis( l.second ) );
                         if( ImGui::IsItemHovered() )
@@ -561,7 +585,8 @@ void View::DrawOptions()
                         {
                             ImGui::SameLine();
                         }
-                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ), LocationToString( fileName, sl.line ) );
+                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ),
+                                             LocationToString( fileName, sl.line ) );
                         if( ImGui::IsItemHovered() )
                         {
                             DrawSourceTooltip( fileName, sl.line, 1, 1 );
@@ -594,13 +619,14 @@ void View::DrawOptions()
 
         ImGui::SameLine();
         int pH = m_vd.plotHeight;
-        ImGui::SliderInt("Plot heights", &pH, 30, 200);
+        ImGui::SliderInt( "Plot heights", &pH, 30, 200 );
         m_vd.plotHeight = pH;
 
         const auto expand = ImGui::TreeNode( "Plots" );
         ImGui::SameLine();
         size_t visiblePlots = 0;
-        for( const auto& p : m_worker.GetPlots() ) if( m_tc.GetItem( p ).IsVisible() ) visiblePlots++;
+        for( const auto& p : m_worker.GetPlots() )
+            if( m_tc.GetItem( p ).IsVisible() ) visiblePlots++;
         if( visiblePlots == m_worker.GetPlots().size() )
         {
             ImGui::TextDisabled( "(%zu)", m_worker.GetPlots().size() );
@@ -644,7 +670,8 @@ void View::DrawOptions()
     auto expand = ImGui::TreeNode( ICON_FA_SHUFFLE " Visible threads:" );
     ImGui::SameLine();
     size_t visibleThreads = 0;
-    for( const auto& t : m_threadOrder ) if( m_tc.GetItem( t ).IsVisible() ) visibleThreads++;
+    for( const auto& t : m_threadOrder )
+        if( m_tc.GetItem( t ).IsVisible() ) visibleThreads++;
     if( visibleThreads == m_threadOrder.size() )
     {
         ImGui::TextDisabled( "(%zu)", m_threadOrder.size() );
@@ -676,10 +703,13 @@ void View::DrawOptions()
         ImGui::SameLine();
         if( ImGui::SmallButton( "Sort" ) )
         {
-            pdqsort_branchless( m_threadOrder.begin(), m_threadOrder.end(), [this] ( const auto& lhs, const auto& rhs ) {
-                if( lhs->groupHint != rhs->groupHint ) return lhs->groupHint < rhs->groupHint;
-                return strcmp( m_worker.GetThreadName( lhs->id ), m_worker.GetThreadName( rhs->id ) ) < 0;
-            } );
+            pdqsort_branchless( m_threadOrder.begin(), m_threadOrder.end(),
+                                [this]( const auto& lhs, const auto& rhs )
+                                {
+                                    if( lhs->groupHint != rhs->groupHint ) return lhs->groupHint < rhs->groupHint;
+                                    return strcmp( m_worker.GetThreadName( lhs->id ),
+                                                   m_worker.GetThreadName( rhs->id ) ) < 0;
+                                } );
         }
 
         const auto wposx = ImGui::GetCursorScreenPos().x;
@@ -696,7 +726,7 @@ void View::DrawOptions()
             m_tc.GetItem( t ).VisibilityCheckbox();
             if( ImGui::BeginDragDropSource( ImGuiDragDropFlags_SourceNoHoldToOpenOthers ) )
             {
-                ImGui::SetDragDropPayload( "ThreadOrder", &idx, sizeof(int) );
+                ImGui::SetDragDropPayload( "ThreadOrder", &idx, sizeof( int ) );
                 ImGui::TextUnformatted( ICON_FA_SHUFFLE );
                 ImGui::SameLine();
                 SmallColorBox( threadColor );
@@ -744,13 +774,16 @@ void View::DrawOptions()
 
             int target = -1;
             int source;
-            for( size_t i=0; i<m_threadDnd.size(); i++ )
+            for( size_t i = 0; i < m_threadDnd.size(); i++ )
             {
-                if( ImGui::BeginDragDropTargetCustom( ImRect( wposx, m_threadDnd[i] - half, wposx + w, m_threadDnd[i] + half ), i+1 ) )
+                if( ImGui::BeginDragDropTargetCustom(
+                        ImRect( wposx, m_threadDnd[i] - half, wposx + w, m_threadDnd[i] + half ), i + 1 ) )
                 {
                     auto draw = ImGui::GetWindowDrawList();
-                    draw->AddLine( ImVec2( wposx, m_threadDnd[i] ), ImVec2( wposx + w, m_threadDnd[i] ), ImGui::GetColorU32(ImGuiCol_DragDropTarget), 2.f );
-                    if( auto payload = ImGui::AcceptDragDropPayload( "ThreadOrder", ImGuiDragDropFlags_AcceptNoDrawDefaultRect ) )
+                    draw->AddLine( ImVec2( wposx, m_threadDnd[i] ), ImVec2( wposx + w, m_threadDnd[i] ),
+                                   ImGui::GetColorU32( ImGuiCol_DragDropTarget ), 2.f );
+                    if( auto payload =
+                            ImGui::AcceptDragDropPayload( "ThreadOrder", ImGuiDragDropFlags_AcceptNoDrawDefaultRect ) )
                     {
                         target = (int)i;
                         source = *(int*)payload->Data;
@@ -784,7 +817,8 @@ void View::DrawOptions()
         expand = ImGui::TreeNode( ICON_FA_IMAGES " Visible frame sets:" );
         ImGui::SameLine();
         uint64_t visibleFrames = 0;
-        for( const auto& fd : m_worker.GetFrames() ) if( Vis( fd ) ) visibleFrames++;
+        for( const auto& fd : m_worker.GetFrames() )
+            if( Vis( fd ) ) visibleFrames++;
         if( visibleFrames == m_worker.GetFrames().size() )
         {
             ImGui::TextDisabled( "(%zu)", m_worker.GetFrames().size() );
@@ -819,7 +853,8 @@ void View::DrawOptions()
                 SmallCheckbox( GetFrameSetName( *fd ), &Vis( fd ) );
                 ImGui::PopID();
                 ImGui::SameLine();
-                ImGui::TextDisabled( "%s %sframes", RealToString( fd->frames.size() ), fd->continuous ? "" : "discontinuous " );
+                ImGui::TextDisabled( "%s %sframes", RealToString( fd->frames.size() ),
+                                     fd->continuous ? "" : "discontinuous " );
             }
             ImGui::TreePop();
         }

@@ -15,10 +15,7 @@ SourceContents::SourceContents()
 {
 }
 
-SourceContents::~SourceContents()
-{
-    delete[] m_dataBuf;
-}
+SourceContents::~SourceContents() { delete[] m_dataBuf; }
 
 void SourceContents::Parse( const char* fileName, const Worker& worker, const View& view )
 {
@@ -84,11 +81,11 @@ void SourceContents::Parse( const char* source, size_t len )
 void SourceContents::Tokenize( const char* txt, size_t sz )
 {
     Tokenizer tokenizer;
-    for(;;)
+    for( ;; )
     {
         auto end = txt;
         while( *end != '\n' && *end != '\r' && end - m_data < sz ) end++;
-        m_lines.emplace_back( Tokenizer::Line { txt, end, tokenizer.Tokenize( txt, end ) } );
+        m_lines.emplace_back( Tokenizer::Line{ txt, end, tokenizer.Tokenize( txt, end ) } );
         if( end - m_data == sz ) break;
         if( *end == '\n' )
         {

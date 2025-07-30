@@ -1,11 +1,11 @@
 #include "TracyFileselector.hpp"
 
 #ifndef TRACY_NO_FILESELECTOR
-#  ifdef __EMSCRIPTEN__
-#    include <emscripten.h>
-#  else
-#    include <nfd.h>
-#  endif
+#    ifdef __EMSCRIPTEN__
+#        include <emscripten.h>
+#    else
+#        include <nfd.h>
+#    endif
 #endif
 
 namespace tracy::Fileselector
@@ -41,7 +41,7 @@ bool HasFailed()
 }
 
 #ifdef __EMSCRIPTEN__
-static std::function<void(const char*)> s_openFileCallback;
+static std::function<void( const char* )> s_openFileCallback;
 
 extern "C" int nativeOpenFile()
 {
@@ -50,31 +50,35 @@ extern "C" int nativeOpenFile()
 }
 #endif
 
-static bool OpenFileImpl( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+static bool OpenFileImpl( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
 #ifndef TRACY_NO_FILESELECTOR
-#  ifdef __EMSCRIPTEN__
+#    ifdef __EMSCRIPTEN__
     s_openFileCallback = callback;
-    EM_ASM( {
-        var input = document.createElement( 'input' );
-        input.type = 'file';
-        input.accept = UTF8ToString( $0 );
-        input.onchange = (e) => {
-            var file = e.target.files[0];
-            var reader = new FileReader();
-            reader.readAsArrayBuffer( file );
-            reader.onload = () => {
-                var buf = reader.result;
-                var view = new Uint8Array( buf );
-                FS.createDataFile( '/', 'upload.tracy', view, true, true );
-                Module.ccall( 'nativeOpenFile', 'number', [], [] );
-                FS.unlink( '/upload.tracy' );
+    EM_ASM(
+        {
+            var input = document.createElement( 'input' );
+            input.type = 'file';
+            input.accept = UTF8ToString( $0 );
+            input.onchange = ( e ) = >
+            {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+                reader.readAsArrayBuffer( file );
+                reader.onload = () = >
+                {
+                    var buf = reader.result;
+                    var view = new Uint8Array( buf );
+                    FS.createDataFile( '/', 'upload.tracy', view, true, true );
+                    Module.ccall( 'nativeOpenFile', 'number', [], [] );
+                    FS.unlink( '/upload.tracy' );
+                };
             };
-        };
-        input.click();
-    }, ext );
+            input.click();
+        },
+        ext );
     return true;
-#  else
+#    else
     nfdu8filteritem_t filter = { desc, ext };
     nfdu8char_t* fn;
     const auto res = NFD_OpenDialogU8( &fn, &filter, 1, nullptr );
@@ -88,12 +92,12 @@ static bool OpenFileImpl( const char* ext, const char* desc, const std::function
     {
         return res != NFD_ERROR;
     }
-#  endif
+#    endif
 #endif
     return false;
 }
 
-static bool SaveFileImpl( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+static bool SaveFileImpl( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
 #if !defined TRACY_NO_FILESELECTOR && !defined __EMSCRIPTEN__
     nfdu8filteritem_t filter = { desc, ext };
@@ -113,12 +117,12 @@ static bool SaveFileImpl( const char* ext, const char* desc, const std::function
     return false;
 }
 
-void OpenFile( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+void OpenFile( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
     if( !OpenFileImpl( ext, desc, callback ) ) s_hasFailed = true;
 }
 
-void SaveFile( const char* ext, const char* desc, const std::function<void(const char*)>& callback )
+void SaveFile( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
     if( !SaveFileImpl( ext, desc, callback ) ) s_hasFailed = true;
 }

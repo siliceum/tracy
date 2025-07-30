@@ -16,7 +16,7 @@ struct ViewData;
 
 class UserData
 {
-public:
+  public:
     UserData();
     UserData( const char* program, uint64_t time );
 
@@ -38,7 +38,7 @@ public:
 
     const char* GetConfigLocation() const;
 
-private:
+  private:
     FILE* OpenFile( const char* filename, bool write );
     void Remove( const char* filename );
 

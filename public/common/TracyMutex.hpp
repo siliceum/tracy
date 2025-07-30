@@ -3,7 +3,7 @@
 
 #if defined _MSC_VER
 
-#  include <shared_mutex>
+#    include <shared_mutex>
 
 namespace tracy
 {
@@ -12,7 +12,7 @@ using TracyMutex = std::shared_mutex;
 
 #else
 
-#include <mutex>
+#    include <mutex>
 
 namespace tracy
 {

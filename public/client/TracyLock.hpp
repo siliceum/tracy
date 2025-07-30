@@ -4,8 +4,8 @@
 #include <atomic>
 #include <limits>
 
-#include "../common/TracySystem.hpp"
 #include "../common/TracyAlign.hpp"
+#include "../common/TracySystem.hpp"
 #include "TracyProfiler.hpp"
 
 namespace tracy
@@ -13,7 +13,7 @@ namespace tracy
 
 class LockableCtx
 {
-public:
+  public:
     tracy_force_inline LockableCtx( const SourceLocationData* srcloc )
         : m_id( GetLockCounter().fetch_add( 1, std::memory_order_relaxed ) )
 #ifdef TRACY_ON_DEMAND
@@ -21,7 +21,7 @@ public:
         , m_active( false )
 #endif
     {
-        assert( m_id != (std::numeric_limits<uint32_t>::max)() );
+        assert( m_id != ( std::numeric_limits<uint32_t>::max )() );
 
         auto item = Profiler::QueueSerial();
         MemWrite( &item->hdr.type, QueueType::LockAnnounce );
@@ -154,7 +154,7 @@ public:
 
     tracy_force_inline void CustomName( const char* name, size_t size )
     {
-        assert( size < (std::numeric_limits<uint16_t>::max)() );
+        assert( size < ( std::numeric_limits<uint16_t>::max )() );
         auto ptr = (char*)tracy_malloc( size );
         memcpy( ptr, name, size );
         auto item = Profiler::QueueSerial();
@@ -168,7 +168,7 @@ public:
         Profiler::QueueSerialFinish();
     }
 
-private:
+  private:
     uint32_t m_id;
 
 #ifdef TRACY_ON_DEMAND
@@ -177,10 +177,10 @@ private:
 #endif
 };
 
-template<class T>
+template <class T>
 class Lockable
 {
-public:
+  public:
     tracy_force_inline Lockable( const SourceLocationData* srcloc )
         : m_ctx( srcloc )
     {
@@ -209,26 +209,19 @@ public:
         return acquired;
     }
 
-    tracy_force_inline void Mark( const SourceLocationData* srcloc )
-    {
-        m_ctx.Mark( srcloc );
-    }
+    tracy_force_inline void Mark( const SourceLocationData* srcloc ) { m_ctx.Mark( srcloc ); }
 
-    tracy_force_inline void CustomName( const char* name, size_t size )
-    {
-        m_ctx.CustomName( name, size );
-    }
+    tracy_force_inline void CustomName( const char* name, size_t size ) { m_ctx.CustomName( name, size ); }
 
     T m_lockable;
 
-private:
+  private:
     LockableCtx m_ctx;
 };
 
-
 class SharedLockableCtx
 {
-public:
+  public:
     tracy_force_inline SharedLockableCtx( const SourceLocationData* srcloc )
         : m_id( GetLockCounter().fetch_add( 1, std::memory_order_relaxed ) )
 #ifdef TRACY_ON_DEMAND
@@ -236,7 +229,7 @@ public:
         , m_active( false )
 #endif
     {
-        assert( m_id != (std::numeric_limits<uint32_t>::max)() );
+        assert( m_id != ( std::numeric_limits<uint32_t>::max )() );
 
         auto item = Profiler::QueueSerial();
         MemWrite( &item->hdr.type, QueueType::LockAnnounce );
@@ -451,7 +444,7 @@ public:
 
     tracy_force_inline void CustomName( const char* name, size_t size )
     {
-        assert( size < (std::numeric_limits<uint16_t>::max)() );
+        assert( size < ( std::numeric_limits<uint16_t>::max )() );
         auto ptr = (char*)tracy_malloc( size );
         memcpy( ptr, name, size );
         auto item = Profiler::QueueSerial();
@@ -465,7 +458,7 @@ public:
         Profiler::QueueSerialFinish();
     }
 
-private:
+  private:
     uint32_t m_id;
 
 #ifdef TRACY_ON_DEMAND
@@ -474,10 +467,10 @@ private:
 #endif
 };
 
-template<class T>
+template <class T>
 class SharedLockable
 {
-public:
+  public:
     tracy_force_inline SharedLockable( const SourceLocationData* srcloc )
         : m_ctx( srcloc )
     {
@@ -526,22 +519,15 @@ public:
         return acquired;
     }
 
-    tracy_force_inline void Mark( const SourceLocationData* srcloc )
-    {
-        m_ctx.Mark( srcloc );
-    }
+    tracy_force_inline void Mark( const SourceLocationData* srcloc ) { m_ctx.Mark( srcloc ); }
 
-    tracy_force_inline void CustomName( const char* name, size_t size )
-    {
-        m_ctx.CustomName( name, size );
-    }
+    tracy_force_inline void CustomName( const char* name, size_t size ) { m_ctx.CustomName( name, size ); }
 
     T m_lockable;
 
-private:
+  private:
     SharedLockableCtx m_ctx;
 };
-
 
 }
 

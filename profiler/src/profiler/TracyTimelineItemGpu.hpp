@@ -9,12 +9,12 @@ namespace tracy
 
 class TimelineItemGpu final : public TimelineItem
 {
-public:
+  public:
     TimelineItemGpu( View& view, Worker& worker, GpuCtxData* gpu );
 
     int GetIdx() const { return m_idx; }
 
-protected:
+  protected:
     uint32_t HeaderColor() const override { return 0xFFFFAAAA; }
     uint32_t HeaderColorInactive() const override { return 0xFF886666; }
     uint32_t HeaderLineColor() const override { return 0x33FFFFFF; }
@@ -30,7 +30,7 @@ protected:
 
     bool IsEmpty() const override;
 
-private:
+  private:
     GpuCtxData* m_gpu;
     int m_idx;
 };

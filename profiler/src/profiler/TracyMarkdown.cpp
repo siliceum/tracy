@@ -1,15 +1,15 @@
 #include <array>
 #include <md4c.h>
-#include <string>
 #include <string.h>
+#include <string>
 #include <vector>
 
+#include "../Fonts.hpp"
+#include "TracyImGui.hpp"
 #include "TracyMarkdown.hpp"
 #include "TracyMouse.hpp"
-#include "TracyImGui.hpp"
 #include "TracySourceContents.hpp"
 #include "TracyWeb.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -22,7 +22,7 @@ class MarkdownContext
         int num;
     };
 
-public:
+  public:
     int EnterBlock( MD_BLOCKTYPE type, void* detail )
     {
         switch( type )
@@ -37,18 +37,13 @@ public:
             break;
         case MD_BLOCK_UL:
             Separate();
-            lists.emplace_back( List {
-                .tight = ((MD_BLOCK_UL_DETAIL*)detail)->is_tight != 0,
-                .num = -1
-            } );
+            lists.emplace_back( List{ .tight = ( (MD_BLOCK_UL_DETAIL*)detail )->is_tight != 0, .num = -1 } );
             ImGui::Indent();
             break;
         case MD_BLOCK_OL:
             Separate();
-            lists.emplace_back( List {
-                .tight = ((MD_BLOCK_OL_DETAIL*)detail)->is_tight != 0,
-                .num = (int)((MD_BLOCK_OL_DETAIL*)detail)->start
-            } );
+            lists.emplace_back( List{ .tight = ( (MD_BLOCK_OL_DETAIL*)detail )->is_tight != 0,
+                                      .num = (int)( (MD_BLOCK_OL_DETAIL*)detail )->start } );
             ImGui::Indent();
             break;
         case MD_BLOCK_LI:
@@ -74,7 +69,7 @@ public:
             break;
         case MD_BLOCK_H:
             Separate();
-            header = ((MD_BLOCK_H_DETAIL*)detail)->level;
+            header = ( (MD_BLOCK_H_DETAIL*)detail )->level;
             glue = false;
             break;
         case MD_BLOCK_CODE:
@@ -83,7 +78,8 @@ public:
             sprintf( tmp, "##code%d", idx++ );
             Separate();
             ImGui::PushStyleColor( ImGuiCol_FrameBg, ImVec4( 0, 0, 0, 0.2f ) );
-            ImGui::BeginChild( tmp, ImVec2( 0, 0 ), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
+            ImGui::BeginChild( tmp, ImVec2( 0, 0 ),
+                               ImGuiChildFlags_FrameStyle | ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
             codeBlock = true;
         }
         default:
@@ -146,7 +142,7 @@ public:
             bold++;
             break;
         case MD_SPAN_A:
-            link = std::string( ((MD_SPAN_A_DETAIL*)detail)->href.text, ((MD_SPAN_A_DETAIL*)detail)->href.size );
+            link = std::string( ( (MD_SPAN_A_DETAIL*)detail )->href.text, ( (MD_SPAN_A_DETAIL*)detail )->href.size );
             break;
         default:
             break;
@@ -175,16 +171,7 @@ public:
 
     int Text( MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size )
     {
-        constexpr std::array FontSizes = {
-            1.f,
-            2.05f,
-            1.9f,
-            1.75f,
-            1.6f,
-            1.45f,
-            1.3f,
-            1.15f
-        };
+        constexpr std::array FontSizes = { 1.f, 2.05f, 1.9f, 1.75f, 1.6f, 1.45f, 1.3f, 1.15f };
 
         switch( type )
         {
@@ -262,11 +249,13 @@ public:
         return 0;
     }
 
-private:
+  private:
     void Glue()
     {
-        if( glue ) ImGui::SameLine( 0, 0 );
-        else glue = true;
+        if( glue )
+            ImGui::SameLine( 0, 0 );
+        else
+            glue = true;
     }
 
     void Separate()
@@ -291,23 +280,24 @@ private:
     std::string link;
 };
 
-
 Markdown::Markdown()
     : m_parser( new MD_PARSER() )
 {
     memset( m_parser, 0, sizeof( MD_PARSER ) );
     m_parser->flags = MD_FLAG_COLLAPSEWHITESPACE | MD_FLAG_PERMISSIVEAUTOLINKS | MD_FLAG_NOHTML;
-    m_parser->enter_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int { return ((MarkdownContext*)ud)->EnterBlock( type, detail ); };
-    m_parser->leave_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int { return ((MarkdownContext*)ud)->LeaveBlock( type, detail ); };
-    m_parser->enter_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int { return ((MarkdownContext*)ud)->EnterSpan( type, detail ); };
-    m_parser->leave_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int { return ((MarkdownContext*)ud)->LeaveSpan( type, detail ); };
-    m_parser->text = []( MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* ud ) -> int { return ((MarkdownContext*)ud)->Text( type, text, size ); };
+    m_parser->enter_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int
+    { return ( (MarkdownContext*)ud )->EnterBlock( type, detail ); };
+    m_parser->leave_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int
+    { return ( (MarkdownContext*)ud )->LeaveBlock( type, detail ); };
+    m_parser->enter_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int
+    { return ( (MarkdownContext*)ud )->EnterSpan( type, detail ); };
+    m_parser->leave_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int
+    { return ( (MarkdownContext*)ud )->LeaveSpan( type, detail ); };
+    m_parser->text = []( MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* ud ) -> int
+    { return ( (MarkdownContext*)ud )->Text( type, text, size ); };
 }
 
-Markdown::~Markdown()
-{
-    delete m_parser;
-}
+Markdown::~Markdown() { delete m_parser; }
 
 void Markdown::Print( const char* str, size_t size )
 {

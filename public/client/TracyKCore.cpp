@@ -1,19 +1,19 @@
 #ifdef __linux__
 
-#include <algorithm>
-#include <assert.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <unistd.h>
+#    include <algorithm>
+#    include <assert.h>
+#    include <fcntl.h>
+#    include <limits.h>
+#    include <unistd.h>
 
-#include "TracyDebug.hpp"
-#include "TracyKCore.hpp"
-#include "../common/TracyAlloc.hpp"
+#    include "../common/TracyAlloc.hpp"
+#    include "TracyDebug.hpp"
+#    include "TracyKCore.hpp"
 
-#if !defined(__GLIBC__) && !defined(__WORDSIZE)
+#    if !defined( __GLIBC__ ) && !defined( __WORDSIZE )
 // include __WORDSIZE headers for musl
-#  include <bits/reg.h>
-#endif
+#        include <bits/reg.h>
+#    endif
 
 namespace tracy
 {
@@ -22,15 +22,15 @@ using elf_half = uint16_t;
 using elf_word = uint32_t;
 using elf_sword = int32_t;
 
-#if __WORDSIZE == 32
-    using elf_addr = uint32_t;
-    using elf_off = uint32_t;
-    using elf_xword = uint32_t;
-#else
-    using elf_addr = uint64_t;
-    using elf_off = uint64_t;
-    using elf_xword = uint64_t;
-#endif
+#    if __WORDSIZE == 32
+using elf_addr = uint32_t;
+using elf_off = uint32_t;
+using elf_xword = uint32_t;
+#    else
+using elf_addr = uint64_t;
+using elf_off = uint64_t;
+using elf_xword = uint64_t;
+#    endif
 
 struct elf_ehdr
 {
@@ -59,7 +59,7 @@ struct elf_phdr
     elf_addr p_paddr;
     elf_xword p_filesz;
     elf_xword p_memsz;
-    uint64_t p_align;   // include 32-bit-only flags field for 32-bit compatibility
+    uint64_t p_align; // include 32-bit-only flags field for 32-bit compatibility
 };
 
 KCore::KCore()
@@ -73,7 +73,7 @@ KCore::KCore()
 
     assert( ehdr.e_phentsize == sizeof( elf_phdr ) );
 
-    for( elf_half i=0; i<ehdr.e_phnum; i++ )
+    for( elf_half i = 0; i < ehdr.e_phnum; i++ )
     {
         elf_phdr phdr;
         if( lseek( m_fd, ehdr.e_phoff + i * ehdr.e_phentsize, SEEK_SET ) == -1 ) goto err;
@@ -86,7 +86,8 @@ KCore::KCore()
         ptr->offset = phdr.p_offset;
     }
 
-    std::sort( m_offsets.begin(), m_offsets.end(), []( const Offset& lhs, const Offset& rhs ) { return lhs.start < rhs.start; } );
+    std::sort( m_offsets.begin(), m_offsets.end(),
+               []( const Offset& lhs, const Offset& rhs ) { return lhs.start < rhs.start; } );
     TracyDebug( "KCore: %zu segments found\n", m_offsets.size() );
     return;
 
@@ -103,7 +104,8 @@ KCore::~KCore()
 void* KCore::Retrieve( uint64_t addr, uint64_t size ) const
 {
     if( m_fd == -1 ) return nullptr;
-    auto it = std::lower_bound( m_offsets.begin(), m_offsets.end(), addr, []( const Offset& lhs, uint64_t rhs ) { return lhs.start + lhs.size < rhs; } );
+    auto it = std::lower_bound( m_offsets.begin(), m_offsets.end(), addr,
+                                []( const Offset& lhs, uint64_t rhs ) { return lhs.start + lhs.size < rhs; } );
     if( it == m_offsets.end() ) return nullptr;
     if( addr + size > it->start + it->size ) return nullptr;
     if( lseek( m_fd, it->offset + addr - it->start, SEEK_SET ) == -1 ) return nullptr;

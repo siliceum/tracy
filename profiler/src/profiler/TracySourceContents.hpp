@@ -1,8 +1,8 @@
 #ifndef __TRACYSOURCECONTENTS_HPP__
 #define __TRACYSOURCECONTENTS_HPP__
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <vector>
 
 #include "TracySourceTokenizer.hpp"
@@ -15,7 +15,7 @@ class Worker;
 
 class SourceContents
 {
-public:
+  public:
     SourceContents();
     ~SourceContents();
 
@@ -32,7 +32,7 @@ public:
     const char* data() const { return m_data; }
     size_t data_size() const { return m_dataSize; }
 
-private:
+  private:
     void Tokenize( const char* txt, size_t sz );
 
     const char* m_file;

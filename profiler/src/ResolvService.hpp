@@ -15,16 +15,16 @@ class ResolvService
     struct QueueItem
     {
         uint32_t ip;
-        std::function<void(std::string&&)> callback;
+        std::function<void( std::string&& )> callback;
     };
 
-public:
+  public:
     ResolvService( uint16_t port );
     ~ResolvService();
 
-    void Query( uint32_t ip, const std::function<void(std::string&&)>& callback );
+    void Query( uint32_t ip, const std::function<void( std::string&& )>& callback );
 
-private:
+  private:
     void Worker();
 
     std::atomic<bool> m_exit;

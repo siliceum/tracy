@@ -1,12 +1,12 @@
 #ifdef _WIN32
-#  include <ws2tcpip.h>
+#    include <ws2tcpip.h>
 #else
-#  ifdef __FreeBSD__
-#    include <netinet/in.h>
-#  endif
-#  include <arpa/inet.h>
-#  include <sys/socket.h>
-#  include <netdb.h>
+#    ifdef __FreeBSD__
+#        include <netinet/in.h>
+#    endif
+#    include <arpa/inet.h>
+#    include <netdb.h>
+#    include <sys/socket.h>
 #endif
 
 #include "ResolvService.hpp"
@@ -29,11 +29,11 @@ ResolvService::~ResolvService()
 #endif
 }
 
-void ResolvService::Query( uint32_t ip, const std::function<void(std::string&&)>& callback )
+void ResolvService::Query( uint32_t ip, const std::function<void( std::string&& )>& callback )
 {
 #ifndef __EMSCRIPTEN__
     std::lock_guard<std::mutex> lock( m_lock );
-    m_queue.emplace_back( QueueItem { ip, callback } );
+    m_queue.emplace_back( QueueItem{ ip, callback } );
     m_cv.notify_one();
 #endif
 }
@@ -46,7 +46,7 @@ void ResolvService::Worker()
 
     char buf[128];
 
-    for(;;)
+    for( ;; )
     {
         std::unique_lock<std::mutex> lock( m_lock );
         m_cv.wait( lock, [this] { return !m_queue.empty() || m_exit.load( std::memory_order_relaxed ); } );

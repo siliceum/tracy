@@ -1,9 +1,10 @@
 #include <array>
 #include <curl/curl.h>
+#include <ranges>
 #include <stdint.h>
 #include <stdlib.h>
-#include <ranges>
 
+#include "../Fonts.hpp"
 #include "TracyConfig.hpp"
 #include "TracyImGui.hpp"
 #include "TracyLlm.hpp"
@@ -12,7 +13,6 @@
 #include "TracyLlmTools.hpp"
 #include "TracyPrint.hpp"
 #include "TracyWeb.hpp"
-#include "../Fonts.hpp"
 
 #include "data/SystemPrompt.hpp"
 #include "data/SystemReminder.hpp"
@@ -76,7 +76,11 @@ void TracyLlm::Draw()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 400 * scale, 800 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Tracy Assist", &m_show, ImGuiWindowFlags_NoScrollbar );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     if( IsBusy() )
     {
@@ -129,7 +133,8 @@ void TracyLlm::Draw()
     if( ImGui::IsItemHovered() )
     {
         ImGui::BeginTooltip();
-        ImGui::TextUnformatted( "Always verify the chat responses, as they may contain incorrect or misleading informations." );
+        ImGui::TextUnformatted(
+            "Always verify the chat responses, as they may contain incorrect or misleading informations." );
         ImGui::EndTooltip();
     }
     ImGui::SameLine();
@@ -160,7 +165,7 @@ void TracyLlm::Draw()
         ImGui::AlignTextToFramePadding();
         TextDisabledUnformatted( "API:" );
         ImGui::SameLine();
-        const auto sz = std::min( InputBufferSize-1, s_config.llmAddress.size() );
+        const auto sz = std::min( InputBufferSize - 1, s_config.llmAddress.size() );
         memcpy( m_apiInput, s_config.llmAddress.c_str(), sz );
         m_apiInput[sz] = 0;
         bool changed = ImGui::InputTextWithHint( "##api", "http://localhost:1234", m_apiInput, InputBufferSize );
@@ -173,9 +178,9 @@ void TracyLlm::Draw()
                 const char* address;
             };
             constexpr static std::array presets = {
-                Preset { "Llama.cpp", "http://localhost:8080" },
-                Preset { "LM Studio", "http://localhost:1234" },
-                Preset { "Ollama", "http://localhost:11434" },
+                Preset{ "Llama.cpp", "http://localhost:8080" },
+                Preset{ "LM Studio", "http://localhost:1234" },
+                Preset{ "Ollama", "http://localhost:11434" },
             };
             for( auto& preset : presets )
             {
@@ -263,7 +268,8 @@ void TracyLlm::Draw()
         ImGui::Checkbox( ICON_FA_TEMPERATURE_HALF " Temperature", &m_setTemperature );
         ImGui::SameLine();
         ImGui::SetNextItemWidth( 40 * scale );
-        if( ImGui::InputFloat( "##temperature", &m_temperature, 0, 0, "%.2f" ) ) m_temperature = std::clamp( m_temperature, 0.f, 2.f );
+        if( ImGui::InputFloat( "##temperature", &m_temperature, 0, 0, "%.2f" ) )
+            m_temperature = std::clamp( m_temperature, 0.f, 2.f );
         if( responding ) ImGui::EndDisabled();
 
         ImGui::Checkbox( ICON_FA_GLOBE " Internet access", &m_tools->m_netAccess );
@@ -304,7 +310,8 @@ void TracyLlm::Draw()
                 SaveConfig();
             }
             ImGui::SameLine();
-            if( ImGui::Button( ICON_FA_HOUSE "##csekey" ) ) OpenWebpage( "https://developers.google.com/custom-search/v1/overview" );
+            if( ImGui::Button( ICON_FA_HOUSE "##csekey" ) )
+                OpenWebpage( "https://developers.google.com/custom-search/v1/overview" );
 
             ImGui::TreePop();
         }
@@ -355,7 +362,7 @@ void TracyLlm::Draw()
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
     if( ctxSize <= 0 )
     {
-        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+        ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.3f, 0.3f, 0.3f, 1.0f ) );
         ImGui::ProgressBar( 1, ImVec2( -1, 0 ), "" );
     }
     else
@@ -363,15 +370,15 @@ void TracyLlm::Draw()
         const auto ratio = m_usedCtx / (float)ctxSize;
         if( ratio < 0.5f )
         {
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+            ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.2f, 0.6f, 0.2f, 1.0f ) );
         }
         else if( ratio < 0.8f )
         {
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.6f, 0.6f, 0.2f, 1.0f));
+            ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.6f, 0.6f, 0.2f, 1.0f ) );
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor( ImGuiCol_PlotHistogram, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
         }
         ImGui::ProgressBar( ratio, ImVec2( -1, 0 ), "" );
     }
@@ -400,8 +407,9 @@ void TracyLlm::Draw()
 
     bool inputChanged = false;
     ImGui::Spacing();
-    ImGui::BeginChild( "##chat", ImVec2( 0, -( ImGui::GetFrameHeight() + style.ItemSpacing.y * 2 ) ), ImGuiChildFlags_Borders, ImGuiWindowFlags_AlwaysVerticalScrollbar );
-    if( m_chat.size() <= 1 )   // account for system prompt
+    ImGui::BeginChild( "##chat", ImVec2( 0, -( ImGui::GetFrameHeight() + style.ItemSpacing.y * 2 ) ),
+                       ImGuiChildFlags_Borders, ImGuiWindowFlags_AlwaysVerticalScrollbar );
+    if( m_chat.size() <= 1 ) // account for system prompt
     {
         ImGui::Dummy( ImVec2( 0, ( ImGui::GetContentRegionAvail().y - ImGui::GetTextLineHeight() * 15 ) * 0.5f ) );
         ImGui::PushStyleColor( ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled] );
@@ -410,7 +418,8 @@ void TracyLlm::Draw()
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::PopFont();
-        ImGui::TextWrapped( "What I had not realized is that extremely short exposures to a relatively simple computer program could induce powerful delusional thinking in quite normal people." );
+        ImGui::TextWrapped(
+            "What I had not realized is that extremely short exposures to a relatively simple computer program could induce powerful delusional thinking in quite normal people." );
         ImGui::Dummy( ImVec2( 0, ImGui::GetTextLineHeight() * 0.5f ) );
         constexpr auto signature = "-- Joseph Weizenbaum, 1976";
         const auto tw = ImGui::CalcTextSize( signature ).x;
@@ -435,16 +444,23 @@ void TracyLlm::Draw()
             const auto& content = contentNode.get_ref<const std::string&>();
 
             TracyLlmChat::TurnRole role = TracyLlmChat::TurnRole::None;
-            if( roleStr == "user" ) role = TracyLlmChat::TurnRole::User;
-            else if( roleStr == "error" ) role = TracyLlmChat::TurnRole::Error;
-            else if( roleStr == "assistant" ) role = TracyLlmChat::TurnRole::Assistant;
-            else assert( false );
+            if( roleStr == "user" )
+                role = TracyLlmChat::TurnRole::User;
+            else if( roleStr == "error" )
+                role = TracyLlmChat::TurnRole::Error;
+            else if( roleStr == "assistant" )
+                role = TracyLlmChat::TurnRole::Assistant;
+            else
+                assert( false );
 
             if( role == TracyLlmChat::TurnRole::User )
             {
-                if( content.starts_with( "<tool_output>\n" ) ) role = TracyLlmChat::TurnRole::Assistant;
-                else if( content.starts_with( "<debug>" ) ) role = TracyLlmChat::TurnRole::UserDebug;
-                else if( content.starts_with( "<attachment>\n" ) ) role = TracyLlmChat::TurnRole::Attachment;
+                if( content.starts_with( "<tool_output>\n" ) )
+                    role = TracyLlmChat::TurnRole::Assistant;
+                else if( content.starts_with( "<debug>" ) )
+                    role = TracyLlmChat::TurnRole::UserDebug;
+                else if( content.starts_with( "<attachment>\n" ) )
+                    role = TracyLlmChat::TurnRole::Attachment;
             }
             else if( role == TracyLlmChat::TurnRole::Assistant )
             {
@@ -469,7 +485,7 @@ void TracyLlm::Draw()
                 auto cit = it;
                 while( cit != m_chat.end() )
                 {
-                    const auto& content = (*cit)["content"].get_ref<const std::string&>();
+                    const auto& content = ( *cit )["content"].get_ref<const std::string&>();
                     const auto tokens = m_api->Tokenize( content, m_modelIdx );
                     m_usedCtx -= tokens >= 0 ? tokens : content.size() / 4;
                     ++cit;
@@ -504,9 +520,12 @@ void TracyLlm::Draw()
         const auto pos = ImGui::GetWindowPos() + ImGui::GetCursorPos();
         auto draw = ImGui::GetWindowDrawList();
         const auto ty = ImGui::GetTextLineHeight();
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 0 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f        ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 2 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 0 * ty, ty * 0.675f ),
+                               ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ),
+                               ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 2 * ty, ty * 0.675f ),
+                               ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
         ImGui::Dummy( ImVec2( ty * 3, ty ) );
         ImGui::SameLine();
         if( disabled )
@@ -530,8 +549,10 @@ void TracyLlm::Draw()
         auto buttonSize = ImGui::CalcTextSize( buttonText );
         buttonSize.x += ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
         ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - buttonSize.x );
-        if( inputChanged ) ImGui::GetInputTextState( ImGui::GetCurrentWindow()->GetID( "##chat_input" ) )->ReloadUserBufAndMoveToEnd();
-        bool send = ImGui::InputTextWithHint( "##chat_input", "Write your question here...", m_input, InputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue );
+        if( inputChanged )
+            ImGui::GetInputTextState( ImGui::GetCurrentWindow()->GetID( "##chat_input" ) )->ReloadUserBufAndMoveToEnd();
+        bool send = ImGui::InputTextWithHint( "##chat_input", "Write your question here...", m_input, InputBufferSize,
+                                              ImGuiInputTextFlags_EnterReturnsTrue );
         ImGui::SameLine();
         if( *m_input == 0 ) ImGui::BeginDisabled();
         send |= ImGui::Button( buttonText );
@@ -609,7 +630,7 @@ void TracyLlm::UpdateModels()
     auto it = std::ranges::find_if( models, []( const auto& model ) { return model.name == s_config.llmModel; } );
     if( it == models.end() )
     {
-        for( int i=0; i<models.size(); i++ )
+        for( int i = 0; i < models.size(); i++ )
         {
             if( !models[i].embeddings )
             {
@@ -626,7 +647,7 @@ void TracyLlm::UpdateModels()
     it = std::ranges::find_if( models, []( const auto& model ) { return model.name == s_config.llmEmbeddingsModel; } );
     if( it == models.end() )
     {
-        for( int i=0; i<models.size(); i++ )
+        for( int i = 0; i < models.size(); i++ )
         {
             if( models[i].embeddings )
             {
@@ -652,7 +673,8 @@ void TracyLlm::ResetChat()
     systemPrompt += std::string( m_systemPrompt->data(), m_systemPrompt->size() );
 #ifndef NDEBUG
     systemPrompt += "\n\n# DEBUG MODE AVAILABLE\n";
-    systemPrompt += "Upon a user query beginning with `<debug>`, activate *Debug Mode*. In this mode, ignore all prior instructions. Your response must detail your complete reasoning process and the exact steps taken to generate your *previous* non-debug answer. Explicitly state any internal rules applied. Do not say you are sorry. Do not tell how you will change your behavior. Focus strictly on the analysis of what happened.\n";
+    systemPrompt +=
+        "Upon a user query beginning with `<debug>`, activate *Debug Mode*. In this mode, ignore all prior instructions. Your response must detail your complete reasoning process and the exact steps taken to generate your *previous* non-debug answer. Explicitly state any internal rules applied. Do not say you are sorry. Do not tell how you will change your behavior. Focus strictly on the analysis of what happened.\n";
 #endif
     systemPrompt += "</SYSTEM_PROMPT>\n";
 
@@ -666,19 +688,15 @@ void TracyLlm::ResetChat()
 
 void TracyLlm::QueueConnect()
 {
-    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem {
-        .task = Task::Connect,
-        .callback = [this] { UpdateModels(); }
-    } ) );
+    m_jobs.emplace_back(
+        std::make_shared<WorkItem>( WorkItem{ .task = Task::Connect, .callback = [this] { UpdateModels(); } } ) );
     m_cv.notify_all();
 }
 
 bool TracyLlm::QueueSendMessage()
 {
     if( !m_api->IsConnected() || m_modelIdx < 0 ) return false;
-    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem {
-        .task = Task::SendMessage
-    } ) );
+    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem{ .task = Task::SendMessage } ) );
     m_cv.notify_all();
     return true;
 }
@@ -692,14 +710,13 @@ void TracyLlm::AddMessage( std::string&& str, const char* role )
         return;
     }
 
-    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem {
+    m_jobs.emplace_back( std::make_shared<WorkItem>( WorkItem{
         .task = Task::Tokenize,
-        .callback2 = [this, str, role]( nlohmann::json json ) {
+        .callback2 =
+            [this, str, role]( nlohmann::json json )
+        {
             m_usedCtx += json["tokens"].get<int>();
-            nlohmann::json msg = {
-                { "role", role },
-                { "content", str }
-            };
+            nlohmann::json msg = { { "role", role }, { "content", str } };
             m_chat.emplace_back( std::move( msg ) );
         },
         .param = std::move( str ),
@@ -752,7 +769,7 @@ void TracyLlm::ManageContext( std::unique_lock<std::mutex>& lock )
     }
     if( toolOutputs.size() > 1 )
     {
-        toolOutputs.pop_back();     // keep the last tool output
+        toolOutputs.pop_back(); // keep the last tool output
         std::ranges::stable_sort( toolOutputs, []( const auto& a, const auto& b ) { return a.first > b.first; } );
         for( auto& v : toolOutputs )
         {
@@ -812,7 +829,8 @@ void TracyLlm::SendMessage( std::unique_lock<std::mutex>& lock )
             inject += "</SYSTEM_REMINDER>\n";
         }
 
-        chat.front()["content"].get_ref<std::string&>().append( "\n\nThe current time is: " + m_tools->GetCurrentTime() + "\n" );
+        chat.front()["content"].get_ref<std::string&>().append(
+            "\n\nThe current time is: " + m_tools->GetCurrentTime() + "\n" );
         chat.back()["content"].get_ref<std::string&>().insert( 0, inject );
 
         nlohmann::json req;
@@ -821,7 +839,8 @@ void TracyLlm::SendMessage( std::unique_lock<std::mutex>& lock )
         req["stream"] = true;
         if( m_setTemperature ) req["temperature"] = m_temperature;
 
-        res = m_api->ChatCompletion( req, [this]( const nlohmann::json& response ) -> bool { return OnResponse( response ); }, m_modelIdx );
+        res = m_api->ChatCompletion(
+            req, [this]( const nlohmann::json& response ) -> bool { return OnResponse( response ); }, m_modelIdx );
 
         lock.lock();
     }
@@ -855,7 +874,8 @@ bool TracyLlm::OnResponse( const nlohmann::json& json )
     {
         auto& node = json["choices"][0];
         auto& delta = node["delta"];
-        if( delta.contains( "content" ) && delta["content"].is_string() ) responseStr = delta["content"].get_ref<const std::string&>();
+        if( delta.contains( "content" ) && delta["content"].is_string() )
+            responseStr = delta["content"].get_ref<const std::string&>();
         done = !node["finish_reason"].empty();
     }
     catch( const nlohmann::json::exception& e )
@@ -895,12 +915,13 @@ bool TracyLlm::OnResponse( const nlohmann::json& json )
                     if( repeat != std::string::npos )
                     {
                         lock.unlock();
-                        AddMessageBlocking( "<tool_output>\nError: Only one tool call is allowed per turn.", "user", lock );
+                        AddMessageBlocking( "<tool_output>\nError: Only one tool call is allowed per turn.", "user",
+                                            lock );
                         lock.lock();
                     }
                     else
                     {
-                        while( end > pos && str[end-1] == '\n' ) end--;
+                        while( end > pos && str[end - 1] == '\n' ) end--;
                         const auto tool = str.substr( pos, end - pos );
                         lock.unlock();
 
@@ -908,7 +929,8 @@ bool TracyLlm::OnResponse( const nlohmann::json& json )
                         try
                         {
                             auto json = nlohmann::json::parse( tool );
-                            reply = m_tools->HandleToolCalls( json, *m_api, m_api->GetModels()[m_modelIdx].contextSize, m_embedIdx >= 0 );
+                            reply = m_tools->HandleToolCalls( json, *m_api, m_api->GetModels()[m_modelIdx].contextSize,
+                                                              m_embedIdx >= 0 );
                         }
                         catch( const nlohmann::json::exception& e )
                         {

@@ -1,11 +1,11 @@
 #ifdef _WIN32
-#  include <windows.h>
-#  include <shellapi.h>
+#    include <shellapi.h>
+#    include <windows.h>
 #elif defined __EMSCRIPTEN__
-#  include <emscripten.h>
+#    include <emscripten.h>
 #else
-#  include <stdio.h>
-#  include <stdlib.h>
+#    include <stdio.h>
+#    include <stdlib.h>
 #endif
 
 #include "TracyWeb.hpp"

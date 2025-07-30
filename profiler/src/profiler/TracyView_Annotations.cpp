@@ -1,8 +1,8 @@
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -16,7 +16,8 @@ void View::AddAnnotation( int64_t start, int64_t end )
     ann->color = 0x888888;
     m_selectedAnnotation = ann.get();
     m_annotations.emplace_back( std::move( ann ) );
-    pdqsort_branchless( m_annotations.begin(), m_annotations.end(), []( const auto& lhs, const auto& rhs ) { return lhs->range.min < rhs->range.min; } );
+    pdqsort_branchless( m_annotations.begin(), m_annotations.end(),
+                        []( const auto& lhs, const auto& rhs ) { return lhs->range.min < rhs->range.min; } );
 }
 
 void View::DrawSelectedAnnotation()
@@ -63,7 +64,8 @@ void View::DrawSelectedAnnotation()
         ImGui::Separator();
         TextFocused( "Annotation begin:", TimeToStringExact( m_selectedAnnotation->range.min ) );
         TextFocused( "Annotation end:", TimeToStringExact( m_selectedAnnotation->range.max ) );
-        TextFocused( "Annotation length:", TimeToString( m_selectedAnnotation->range.max - m_selectedAnnotation->range.min ) );
+        TextFocused( "Annotation length:",
+                     TimeToString( m_selectedAnnotation->range.max - m_selectedAnnotation->range.min ) );
     }
     ImGui::End();
     if( !show ) m_selectedAnnotation = nullptr;
@@ -74,7 +76,11 @@ void View::DrawAnnotationList()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 600 * scale, 300 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Annotation list", &m_showAnnotationList );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 
     if( ImGui::Button( ICON_FA_PLUS " Add annotation" ) )
     {
@@ -143,7 +149,8 @@ void View::DrawAnnotationList()
         ImGui::SameLine();
         ImGui::Spacing();
         ImGui::SameLine();
-        ImGui::TextDisabled( "%s - %s (%s)", TimeToStringExact( ann->range.min ), TimeToStringExact( ann->range.max ), TimeToString( ann->range.max - ann->range.min ) );
+        ImGui::TextDisabled( "%s - %s (%s)", TimeToStringExact( ann->range.min ), TimeToStringExact( ann->range.max ),
+                             TimeToString( ann->range.max - ann->range.min ) );
         ImGui::PopID();
         idx++;
     }

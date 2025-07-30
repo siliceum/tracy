@@ -11,7 +11,8 @@
 namespace tracy
 {
 
-bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vector<uint32_t>& plotDraw, int& offset, bool rightEnd )
+bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vector<uint32_t>& plotDraw, int& offset,
+                     bool rightEnd )
 {
     auto draw = ImGui::GetWindowDrawList();
     const auto& wpos = ctx.wpos;
@@ -32,7 +33,7 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
         auto pvit = m_plotView.find( &plot );
         if( pvit == m_plotView.end() )
         {
-            pvit = m_plotView.emplace( &plot, PlotView { min, max } ).first;
+            pvit = m_plotView.emplace( &plot, PlotView{ min, max } ).first;
         }
         auto& pv = pvit->second;
         if( pv.min != min || pv.max != max )
@@ -85,16 +86,20 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
                 {
                     if( plot.fill )
                     {
-                        draw->AddRectFilled( dpos + ImVec2( px, offset + PlotHeight ), dpos + ImVec2( x, offset + py ), fill );
+                        draw->AddRectFilled( dpos + ImVec2( px, offset + PlotHeight ), dpos + ImVec2( x, offset + py ),
+                                             fill );
                     }
-                    const ImVec2 data[3] = { dpos + ImVec2( px, offset + py ), dpos + ImVec2( x, offset + py ), dpos + ImVec2( x, offset + y ) };
+                    const ImVec2 data[3] = { dpos + ImVec2( px, offset + py ), dpos + ImVec2( x, offset + py ),
+                                             dpos + ImVec2( x, offset + y ) };
                     draw->AddPolyline( data, 3, color, 0, 1.0f );
                 }
                 else
                 {
                     if( plot.fill )
                     {
-                        draw->AddQuadFilled( dpos + ImVec2( px, offset + PlotHeight ), dpos + ImVec2( px, offset + py ), dpos + ImVec2( x, offset + y ), dpos + ImVec2( x, offset + PlotHeight ), fill );
+                        draw->AddQuadFilled( dpos + ImVec2( px, offset + PlotHeight ), dpos + ImVec2( px, offset + py ),
+                                             dpos + ImVec2( x, offset + y ), dpos + ImVec2( x, offset + PlotHeight ),
+                                             fill );
                     }
                     DrawLine( draw, dpos + ImVec2( px, offset + py ), dpos + ImVec2( x, offset + y ), color );
                 }
@@ -104,11 +109,13 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
             {
                 if( i0 == 0 )
                 {
-                    DrawPlotPoint( wpos, x, y, offset, color, hover, false, v0, 0, plot.type, plot.format, PlotHeight, plot.name );
+                    DrawPlotPoint( wpos, x, y, offset, color, hover, false, v0, 0, plot.type, plot.format, PlotHeight,
+                                   plot.name );
                 }
                 else
                 {
-                    DrawPlotPoint( wpos, x, y, offset, color, hover, true, v0, vec[i0-1].val, plot.type, plot.format, PlotHeight, plot.name );
+                    DrawPlotPoint( wpos, x, y, offset, color, hover, true, v0, vec[i0 - 1].val, plot.type, plot.format,
+                                   PlotHeight, plot.name );
                 }
                 px = x;
                 py = y;
@@ -130,7 +137,7 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
                 {
                     DrawLine( draw, dpos + ImVec2( x, ymin ), dpos + ImVec2( x, ymax ), color );
 
-                    for( int i=0; i<cnt; i++ )
+                    for( int i = 0; i < cnt; i++ )
                     {
                         const auto is = i0 + i;
                         const auto& vs = vec[is];
@@ -150,7 +157,8 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
                         DrawLine( draw, dpos + ImVec2( x, ymin ), dpos + ImVec2( x, ymax ), color, 3 );
                     }
 
-                    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( x - 2, offset ), wpos + ImVec2( x + 2, offset + PlotHeight ) ) )
+                    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( x - 2, offset ),
+                                                             wpos + ImVec2( x + 2, offset + PlotHeight ) ) )
                     {
                         constexpr int NumSamples = 256;
                         ImGui::BeginTooltip();
@@ -164,7 +172,8 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
                             TextDisabledUnformatted( "Estimated range:" );
                         }
                         ImGui::SameLine();
-                        ImGui::Text( "%s - %s", FormatPlotValue( vmin, plot.format ), FormatPlotValue( vmax, plot.format ) );
+                        ImGui::Text( "%s - %s", FormatPlotValue( vmin, plot.format ),
+                                     FormatPlotValue( vmax, plot.format ) );
                         ImGui::SameLine();
                         ImGui::TextDisabled( "(%s)", FormatPlotValue( vmax - vmin, plot.format ) );
                         ImGui::EndTooltip();
@@ -196,7 +205,8 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
 
                 if( plot.fill )
                 {
-                    draw->AddRectFilled( dpos + ImVec2( x0, offset + PlotHeight ), dpos + ImVec2( x1, offset + y ), fill );
+                    draw->AddRectFilled( dpos + ImVec2( x0, offset + PlotHeight ), dpos + ImVec2( x1, offset + y ),
+                                         fill );
                 }
             }
         }
@@ -223,10 +233,12 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
 
                 const auto px0 = ( tStart - m_vd.zvStart ) * pxns;
                 const auto px1 = std::max( px0 + std::max( 1.0, pxns * 0.5 ), ( tEnd - m_vd.zvStart ) * pxns );
-                draw->AddRectFilled( ImVec2( wpos.x + px0, yPos ), ImVec2( wpos.x + px1, yPos + PlotHeight ), 0x2288DD88 );
+                draw->AddRectFilled( ImVec2( wpos.x + px0, yPos ), ImVec2( wpos.x + px1, yPos + PlotHeight ),
+                                     0x2288DD88 );
                 draw->AddRect( ImVec2( wpos.x + px0, yPos ), ImVec2( wpos.x + px1, yPos + PlotHeight ), 0x4488DD88 );
             }
-            if( m_memoryAllocHover >= 0 && m_memoryAllocHoverPool == plot.name && ( m_memoryAllocInfoPool != plot.name || m_memoryAllocHover != m_memoryAllocInfoWindow ) )
+            if( m_memoryAllocHover >= 0 && m_memoryAllocHoverPool == plot.name &&
+                ( m_memoryAllocInfoPool != plot.name || m_memoryAllocHover != m_memoryAllocInfoWindow ) )
             {
                 const auto& ev = mem.data[m_memoryAllocHover];
 
@@ -235,7 +247,8 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
 
                 const auto px0 = ( tStart - m_vd.zvStart ) * pxns;
                 const auto px1 = std::max( px0 + std::max( 1.0, pxns * 0.5 ), ( tEnd - m_vd.zvStart ) * pxns );
-                draw->AddRectFilled( ImVec2( wpos.x + px0, yPos ), ImVec2( wpos.x + px1, yPos + PlotHeight ), 0x228888DD );
+                draw->AddRectFilled( ImVec2( wpos.x + px0, yPos ), ImVec2( wpos.x + px1, yPos + PlotHeight ),
+                                     0x228888DD );
                 draw->AddRect( ImVec2( wpos.x + px0, yPos ), ImVec2( wpos.x + px1, yPos + PlotHeight ), 0x448888DD );
 
                 if( m_memoryAllocHoverWait > 0 )
@@ -256,12 +269,14 @@ bool View::DrawPlot( const TimelineContext& ctx, PlotData& plot, const std::vect
     return true;
 }
 
-void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint32_t color, bool hover, double val, PlotValueFormatting format, float PlotHeight )
+void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint32_t color, bool hover, double val,
+                          PlotValueFormatting format, float PlotHeight )
 {
     auto draw = ImGui::GetWindowDrawList();
     draw->AddRect( wpos + ImVec2( x - 1.5f, offset + y - 1.5f ), wpos + ImVec2( x + 2.5f, offset + y + 2.5f ), color );
 
-    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( x - 2, offset ), wpos + ImVec2( x + 2, offset + PlotHeight ) ) )
+    if( hover &&
+        ImGui::IsMouseHoveringRect( wpos + ImVec2( x - 2, offset ), wpos + ImVec2( x + 2, offset + PlotHeight ) ) )
     {
         ImGui::BeginTooltip();
         TextFocused( "Value:", FormatPlotValue( val, format ) );
@@ -269,12 +284,15 @@ void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint
     }
 }
 
-void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint32_t color, bool hover, bool hasPrev, const PlotItem& item, double prev, PlotType type, PlotValueFormatting format, float PlotHeight, uint64_t name )
+void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint32_t color, bool hover, bool hasPrev,
+                          const PlotItem& item, double prev, PlotType type, PlotValueFormatting format,
+                          float PlotHeight, uint64_t name )
 {
     auto draw = ImGui::GetWindowDrawList();
     draw->AddRect( wpos + ImVec2( x - 1.5f, offset + y - 1.5f ), wpos + ImVec2( x + 2.5f, offset + y + 2.5f ), color );
 
-    if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( x - 2, offset ), wpos + ImVec2( x + 2, offset + PlotHeight ) ) )
+    if( hover &&
+        ImGui::IsMouseHoveringRect( wpos + ImVec2( x - 2, offset ), wpos + ImVec2( x + 2, offset + PlotHeight ) ) )
     {
         ImGui::BeginTooltip();
         TextFocused( "Time:", TimeToStringExact( item.time.Val() ) );
@@ -308,7 +326,9 @@ void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint
                 const MemEvent* ev = nullptr;
                 if( change > 0 )
                 {
-                    auto it = std::lower_bound( mem.data.begin(), mem.data.end(), item.time.Val(), [] ( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+                    auto it =
+                        std::lower_bound( mem.data.begin(), mem.data.end(), item.time.Val(),
+                                          []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
                     if( it != mem.data.end() && it->TimeAlloc() == item.time.Val() )
                     {
                         ev = it;
@@ -317,7 +337,9 @@ void View::DrawPlotPoint( const ImVec2& wpos, float x, float y, int offset, uint
                 else
                 {
                     const auto& data = mem.data;
-                    auto it = std::lower_bound( mem.frees.begin(), mem.frees.end(), item.time.Val(), [&data] ( const auto& lhs, const auto& rhs ) { return data[lhs].TimeFree() < rhs; } );
+                    auto it = std::lower_bound( mem.frees.begin(), mem.frees.end(), item.time.Val(),
+                                                [&data]( const auto& lhs, const auto& rhs )
+                                                { return data[lhs].TimeFree() < rhs; } );
                     if( it != mem.frees.end() && data[*it].TimeFree() == item.time.Val() )
                     {
                         ev = &data[*it];

@@ -17,7 +17,6 @@ namespace tracy
 constexpr float MinVisSize = 3;
 constexpr float MinCtxSize = 4;
 
-
 TimelineItemThread::TimelineItemThread( View& view, Worker& worker, const ThreadData* thread )
     : TimelineItem( view, worker, thread, true )
     , m_thread( thread )
@@ -33,10 +32,8 @@ TimelineItemThread::TimelineItemThread( View& view, Worker& worker, const Thread
 bool TimelineItemThread::IsEmpty() const
 {
     auto& crash = m_worker.GetCrashEvent();
-    return crash.thread != m_thread->id &&
-        m_thread->timeline.empty() &&
-        m_thread->messages.empty() &&
-        m_thread->ghostZones.empty();
+    return crash.thread != m_thread->id && m_thread->timeline.empty() && m_thread->messages.empty() &&
+           m_thread->ghostZones.empty();
 }
 
 uint32_t TimelineItemThread::HeaderColor() const
@@ -55,15 +52,9 @@ uint32_t TimelineItemThread::HeaderColorInactive() const
     return 0xFF888888;
 }
 
-uint32_t TimelineItemThread::HeaderLineColor() const
-{
-    return 0x33FFFFFF;
-}
+uint32_t TimelineItemThread::HeaderLineColor() const { return 0x33FFFFFF; }
 
-const char* TimelineItemThread::HeaderLabel() const
-{
-    return m_worker.GetThreadName( m_thread->id );
-}
+const char* TimelineItemThread::HeaderLabel() const { return m_worker.GetThreadName( m_thread->id ); }
 
 int64_t TimelineItemThread::RangeBegin() const
 {
@@ -77,7 +68,7 @@ int64_t TimelineItemThread::RangeBegin() const
     {
         if( m_thread->timeline.is_magic() )
         {
-            auto& tl = *((Vector<ZoneEvent>*)&m_thread->timeline);
+            auto& tl = *( (Vector<ZoneEvent>*)&m_thread->timeline );
             first = std::min( first, tl.front().Start() );
         }
         else
@@ -116,7 +107,7 @@ int64_t TimelineItemThread::RangeEnd() const
     {
         if( m_thread->timeline.is_magic() )
         {
-            auto& tl = *((Vector<ZoneEvent>*)&m_thread->timeline);
+            auto& tl = *( (Vector<ZoneEvent>*)&m_thread->timeline );
             last = std::max( last, m_worker.GetZoneEnd( tl.back() ) );
         }
         else
@@ -248,7 +239,9 @@ void TimelineItemThread::HeaderExtraContents( const TimelineContext& ctx, int of
         draw->AddText( ctx.wpos + ImVec2( 1.5f * ty + labelWidth, offset ), color, ICON_FA_GHOST );
         float ghostSz = ImGui::CalcTextSize( ICON_FA_GHOST ).x;
 
-        if( ctx.hover && ImGui::IsMouseHoveringRect( ctx.wpos + ImVec2( 1.5f * ty + labelWidth, offset ), ctx.wpos + ImVec2( 1.5f * ty + labelWidth + ghostSz, offset + ty ) ) )
+        if( ctx.hover &&
+            ImGui::IsMouseHoveringRect( ctx.wpos + ImVec2( 1.5f * ty + labelWidth, offset ),
+                                        ctx.wpos + ImVec2( 1.5f * ty + labelWidth + ghostSz, offset + ty ) ) )
         {
             if( IsMouseClicked( 0 ) )
             {
@@ -261,7 +254,8 @@ void TimelineItemThread::HeaderExtraContents( const TimelineContext& ctx, int of
 
 bool TimelineItemThread::DrawContents( const TimelineContext& ctx, int& offset )
 {
-    m_view.DrawThread( ctx, *m_thread, m_draw, m_ctxDraw, m_samplesDraw, m_lockDraw, offset, m_depth, m_hasCtxSwitch, m_hasSamples );
+    m_view.DrawThread( ctx, *m_thread, m_draw, m_ctxDraw, m_samplesDraw, m_lockDraw, offset, m_depth, m_hasCtxSwitch,
+                       m_hasSamples );
     if( m_depth == 0 && !m_hasMessages )
     {
         auto& crash = m_worker.GetCrashEvent();
@@ -288,7 +282,7 @@ void TimelineItemThread::DrawExtraPopupItems()
     {
         m_view.SelectThread( m_thread->id );
     }
- }
+}
 
 void TimelineItemThread::DrawFinished()
 {
@@ -307,18 +301,21 @@ void TimelineItemThread::Preprocess( const TimelineContext& ctx, TaskDispatch& t
     assert( m_msgDraw.empty() );
     assert( m_lockDraw.empty() );
 
-    td.Queue( [this, &ctx, visible] {
+    td.Queue(
+        [this, &ctx, visible]
+        {
 #ifndef TRACY_NO_STATISTICS
-        if( m_worker.AreGhostZonesReady() && ( m_ghost || ( m_view.GetViewData().ghostZones && m_thread->timeline.empty() ) ) )
-        {
-            m_depth = PreprocessGhostLevel( ctx, m_thread->ghostZones, 0, visible );
-        }
-        else
+            if( m_worker.AreGhostZonesReady() &&
+                ( m_ghost || ( m_view.GetViewData().ghostZones && m_thread->timeline.empty() ) ) )
+            {
+                m_depth = PreprocessGhostLevel( ctx, m_thread->ghostZones, 0, visible );
+            }
+            else
 #endif
-        {
-            m_depth = PreprocessZoneLevel( ctx, m_thread->timeline, 0, visible, 0 );
-        }
-    } );
+            {
+                m_depth = PreprocessZoneLevel( ctx, m_thread->timeline, 0, visible, 0 );
+            }
+        } );
 
     const auto& vd = m_view.GetViewData();
 
@@ -330,24 +327,19 @@ void TimelineItemThread::Preprocess( const TimelineContext& ctx, TaskDispatch& t
         {
             // There is no yPos passed here to enable more granular visibility check,
             // as context switch shadows will usually be projected down onto zones.
-            td.Queue( [this, &ctx, ctxSwitch, visible] {
-                PreprocessContextSwitches( ctx, *ctxSwitch, visible );
-            } );
+            td.Queue( [this, &ctx, ctxSwitch, visible] { PreprocessContextSwitches( ctx, *ctxSwitch, visible ); } );
         }
     }
 
     m_hasSamples = false;
     if( vd.drawSamples && !m_thread->samples.empty() )
     {
-        td.Queue( [this, &ctx, visible, yPos] {
-            PreprocessSamples( ctx, m_thread->samples, visible, yPos );
-        } );
+        td.Queue( [this, &ctx, visible, yPos] { PreprocessSamples( ctx, m_thread->samples, visible, yPos ); } );
     }
 
     m_hasMessages = false;
-    td.Queue( [this, &ctx, visible, yPos] {
-        PreprocessMessages( ctx, m_thread->messages, m_thread->id, visible, yPos );
-    } );
+    td.Queue( [this, &ctx, visible, yPos]
+              { PreprocessMessages( ctx, m_thread->messages, m_thread->id, visible, yPos ); } );
 
     if( vd.drawLocks )
     {
@@ -360,7 +352,8 @@ void TimelineItemThread::Preprocess( const TimelineContext& ctx, TaskDispatch& t
 }
 
 #ifndef TRACY_NO_STATISTICS
-int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const Vector<GhostZone>& vec, int depth, bool visible )
+int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const Vector<GhostZone>& vec, int depth,
+                                              bool visible )
 {
     const auto nspx = ctx.nspx;
     const auto vStart = ctx.vStart;
@@ -368,12 +361,14 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
 
     const auto MinVisNs = int64_t( round( GetScale() * MinVisSize * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart - 2 * MinVisNs ), [] ( const auto& l, const auto& r ) { return l.end.Val() < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart - 2 * MinVisNs ),
+                                []( const auto& l, const auto& r ) { return l.end.Val() < r; } );
     if( it == vec.end() ) return depth;
 
-    const auto zitend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.start.Val() < r; } );
+    const auto zitend =
+        std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.start.Val() < r; } );
     if( it == zitend ) return depth;
-    if( (zitend-1)->end.Val() < vStart ) return depth;
+    if( ( zitend - 1 )->end.Val() < vStart ) return depth;
 
     int maxdepth = depth + 1;
 
@@ -386,9 +381,10 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
         {
             auto nextTime = end + MinVisNs;
             auto next = it + 1;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, zitend, nextTime, [] ( const auto& l, const auto& r ) { return l.end.Val() < r; } );
+                next = std::lower_bound( next, zitend, nextTime,
+                                         []( const auto& l, const auto& r ) { return l.end.Val() < r; } );
                 if( next == zitend ) break;
                 auto prev = next - 1;
                 const auto pt = prev->end.Val();
@@ -396,7 +392,9 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
                 if( nt - pt >= MinVisNs ) break;
                 nextTime = nt + MinVisNs;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::GhostFolded, uint16_t( depth ), (void**)&ev, (next-1)->end } );
+            if( visible )
+                m_draw.emplace_back(
+                    TimelineDraw{ TimelineDrawType::GhostFolded, uint16_t( depth ), (void**)&ev, ( next - 1 )->end } );
             it = next;
         }
         else
@@ -406,7 +404,8 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
                 const auto d = PreprocessGhostLevel( ctx, m_worker.GetGhostChildren( ev.child ), depth + 1, visible );
                 if( d > maxdepth ) maxdepth = d;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::Ghost, uint16_t( depth ), (void**)&ev } );
+            if( visible )
+                m_draw.emplace_back( TimelineDraw{ TimelineDrawType::Ghost, uint16_t( depth ), (void**)&ev } );
             ++it;
         }
     }
@@ -415,11 +414,13 @@ int TimelineItemThread::PreprocessGhostLevel( const TimelineContext& ctx, const 
 }
 #endif
 
-int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const Vector<short_ptr<ZoneEvent>>& vec, int depth, bool visible, const uint32_t inheritedColor )
+int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const Vector<short_ptr<ZoneEvent>>& vec,
+                                             int depth, bool visible, const uint32_t inheritedColor )
 {
     if( vec.is_magic() )
     {
-        return PreprocessZoneLevel<VectorAdapterDirect<ZoneEvent>>( ctx, *(Vector<ZoneEvent>*)( &vec ), depth, visible, inheritedColor );
+        return PreprocessZoneLevel<VectorAdapterDirect<ZoneEvent>>( ctx, *(Vector<ZoneEvent>*)( &vec ), depth, visible,
+                                                                    inheritedColor );
     }
     else
     {
@@ -427,8 +428,9 @@ int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V
     }
 }
 
-template<typename Adapter, typename V>
-int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V& vec, int depth, bool visible, const uint32_t inheritedColor )
+template <typename Adapter, typename V>
+int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V& vec, int depth, bool visible,
+                                             const uint32_t inheritedColor )
 {
     const auto vStart = ctx.vStart;
     const auto vEnd = ctx.vEnd;
@@ -436,37 +438,55 @@ int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V
 
     const auto MinVisNs = int64_t( round( GetScale() * MinVisSize * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), vStart, [this] ( const auto& l, const auto& r ) { Adapter a; return m_worker.GetZoneEnd( a(l) ) < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), vStart,
+                                [this]( const auto& l, const auto& r )
+                                {
+                                    Adapter a;
+                                    return m_worker.GetZoneEnd( a( l ) ) < r;
+                                } );
     if( it == vec.end() ) return depth;
 
-    const auto zitend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { Adapter a; return a(l).Start() < r; } );
+    const auto zitend = std::lower_bound( it, vec.end(), vEnd,
+                                          []( const auto& l, const auto& r )
+                                          {
+                                              Adapter a;
+                                              return a( l ).Start() < r;
+                                          } );
     if( it == zitend ) return depth;
     Adapter a;
-    if( !a(*it).IsEndValid() && m_worker.GetZoneEnd( a(*it) ) < vStart ) return depth;
-    if( m_worker.GetZoneEnd( a(*(zitend-1)) ) < vStart ) return depth;
+    if( !a( *it ).IsEndValid() && m_worker.GetZoneEnd( a( *it ) ) < vStart ) return depth;
+    if( m_worker.GetZoneEnd( a( *( zitend - 1 ) ) ) < vStart ) return depth;
 
     int maxdepth = depth + 1;
 
     while( it < zitend )
     {
-        auto& ev = a(*it);
+        auto& ev = a( *it );
         const auto end = m_worker.GetZoneEnd( ev );
         const auto zsz = end - ev.Start();
         if( zsz < MinVisNs )
         {
             auto nextTime = end + MinVisNs;
             auto next = it + 1;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, zitend, nextTime, [this] ( const auto& l, const auto& r ) { Adapter a; return m_worker.GetZoneEnd( a(l) ) < r; } );
+                next = std::lower_bound( next, zitend, nextTime,
+                                         [this]( const auto& l, const auto& r )
+                                         {
+                                             Adapter a;
+                                             return m_worker.GetZoneEnd( a( l ) ) < r;
+                                         } );
                 if( next == zitend ) break;
                 auto prev = next - 1;
-                const auto pt = m_worker.GetZoneEnd( a(*prev) );
-                const auto nt = m_worker.GetZoneEnd( a(*next) );
+                const auto pt = m_worker.GetZoneEnd( a( *prev ) );
+                const auto nt = m_worker.GetZoneEnd( a( *next ) );
                 if( nt - pt >= MinVisNs ) break;
                 nextTime = nt + MinVisNs;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::Folded, uint16_t( depth ), (void**)&ev, m_worker.GetZoneEnd( a(*(next-1)) ), uint32_t( next - it ), inheritedColor } );
+            if( visible )
+                m_draw.emplace_back( TimelineDraw{ TimelineDrawType::Folded, uint16_t( depth ), (void**)&ev,
+                                                   m_worker.GetZoneEnd( a( *( next - 1 ) ) ), uint32_t( next - it ),
+                                                   inheritedColor } );
             it = next;
         }
         else
@@ -495,10 +515,13 @@ int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V
             }
             if( hasChildren )
             {
-                const auto d = PreprocessZoneLevel( ctx, m_worker.GetZoneChildren( ev.Child() ), depth + 1, visible, childrenInherited );
+                const auto d = PreprocessZoneLevel( ctx, m_worker.GetZoneChildren( ev.Child() ), depth + 1, visible,
+                                                    childrenInherited );
                 if( d > maxdepth ) maxdepth = d;
             }
-            if( visible ) m_draw.emplace_back( TimelineDraw { TimelineDrawType::Zone, uint16_t( depth ), (void**)&ev, 0, 0, currentInherited } );
+            if( visible )
+                m_draw.emplace_back(
+                    TimelineDraw{ TimelineDrawType::Zone, uint16_t( depth ), (void**)&ev, 0, 0, currentInherited } );
             ++it;
         }
     }
@@ -506,18 +529,21 @@ int TimelineItemThread::PreprocessZoneLevel( const TimelineContext& ctx, const V
     return maxdepth;
 }
 
-void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, const ContextSwitch& ctxSwitch, bool visible )
+void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, const ContextSwitch& ctxSwitch,
+                                                    bool visible )
 {
     const auto nspx = ctx.nspx;
     const auto vStart = ctx.vStart;
     const auto vEnd = ctx.vEnd;
 
     auto& vec = ctxSwitch.v;
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart ), [] ( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
+    auto it =
+        std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, vStart ),
+                          []( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
     if( it == vec.end() ) return;
     if( it != vec.begin() ) --it;
 
-    auto citend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.Start() < r; } );
+    auto citend = std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.Start() < r; } );
     if( it == citend ) return;
     if( citend != vec.end() ) ++citend;
 
@@ -540,18 +566,21 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
             uint32_t waitStack = 0;
             if( !sampleData.empty() )
             {
-                auto sdit = std::lower_bound( sampleData.begin(), sampleData.end(), ev.Start(), [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+                auto sdit = std::lower_bound( sampleData.begin(), sampleData.end(), ev.Start(),
+                                              []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
                 bool found = sdit != sampleData.end() && sdit->time.Val() == ev.Start();
                 if( !found && it != vec.begin() )
                 {
                     auto eit = it;
                     --eit;
-                    sdit = std::lower_bound( sampleData.begin(), sampleData.end(), eit->End(), [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+                    sdit = std::lower_bound( sampleData.begin(), sampleData.end(), eit->End(),
+                                             []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
                     found = sdit != sampleData.end() && sdit->time.Val() == eit->End();
                 }
                 if( found ) waitStack = sdit->callstack.Val();
             }
-            m_ctxDraw.emplace_back( ContextSwitchDraw { ContextSwitchDrawType::Waiting, uint32_t( it - vec.begin() ), waitStack } );
+            m_ctxDraw.emplace_back(
+                ContextSwitchDraw{ ContextSwitchDrawType::Waiting, uint32_t( it - vec.begin() ), waitStack } );
         }
 
         const auto end = ev.IsEndValid() ? ev.End() : ev.Start();
@@ -560,9 +589,10 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
         {
             auto nextTime = end + MinCtxNs;
             auto next = it + 1;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, citend, nextTime, [] ( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
+                next = std::lower_bound( next, citend, nextTime, []( const auto& l, const auto& r )
+                                         { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
                 if( next == citend ) break;
                 auto prev = next - 1;
                 const auto pt = prev->IsEndValid() ? prev->End() : prev->Start();
@@ -570,18 +600,20 @@ void TimelineItemThread::PreprocessContextSwitches( const TimelineContext& ctx, 
                 if( nt - pt >= MinCtxNs ) break;
                 nextTime = nt + MinCtxNs;
             }
-            m_ctxDraw.emplace_back( ContextSwitchDraw { ContextSwitchDrawType::Folded, uint32_t( it - vec.begin() ), uint32_t( next - it ) } );
+            m_ctxDraw.emplace_back( ContextSwitchDraw{ ContextSwitchDrawType::Folded, uint32_t( it - vec.begin() ),
+                                                       uint32_t( next - it ) } );
             it = next;
         }
         else
         {
-            m_ctxDraw.emplace_back( ContextSwitchDraw { ContextSwitchDrawType::Running, uint32_t( it - vec.begin() ) } );
+            m_ctxDraw.emplace_back( ContextSwitchDraw{ ContextSwitchDrawType::Running, uint32_t( it - vec.begin() ) } );
             ++it;
         }
     }
 }
 
-void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Vector<SampleData>& vec, bool visible, int yPos )
+void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Vector<SampleData>& vec, bool visible,
+                                            int yPos )
 {
     const auto vStart = ctx.vStart;
     const auto vEnd = ctx.vEnd;
@@ -593,9 +625,11 @@ void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Ve
     const auto MinVis = 5 * GetScale();
     const auto MinVisNs = int64_t( round( MinVis * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), vStart - MinVisNs, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), vStart - MinVisNs,
+                                []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
     if( it == vec.end() ) return;
-    const auto itend = std::lower_bound( it, vec.end(), vEnd, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+    const auto itend =
+        std::lower_bound( it, vec.end(), vEnd, []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
     if( it == itend ) return;
 
     m_hasSamples = true;
@@ -614,9 +648,10 @@ void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Ve
         {
             const auto t0 = it->time.Val();
             auto nextTime = t0 + MinVisNs;
-            for(;;)
+            for( ;; )
             {
-                next = std::lower_bound( next, itend, nextTime, [] ( const auto& l, const auto& r ) { return l.time.Val() < r; } );
+                next = std::lower_bound( next, itend, nextTime,
+                                         []( const auto& l, const auto& r ) { return l.time.Val() < r; } );
                 if( next == itend ) break;
                 auto prev = next - 1;
                 const auto pt = prev->time.Val();
@@ -625,12 +660,13 @@ void TimelineItemThread::PreprocessSamples( const TimelineContext& ctx, const Ve
                 nextTime = nt + MinVisNs;
             }
         }
-        m_samplesDraw.emplace_back( SamplesDraw { uint32_t( next - it - 1 ), uint32_t( it - vec.begin() ) } );
+        m_samplesDraw.emplace_back( SamplesDraw{ uint32_t( next - it - 1 ), uint32_t( it - vec.begin() ) } );
         it = next;
     }
 }
 
-void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const Vector<short_ptr<MessageData>>& vec, uint64_t tid, bool visible, int yPos )
+void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const Vector<short_ptr<MessageData>>& vec,
+                                             uint64_t tid, bool visible, int yPos )
 {
     const auto vStart = ctx.vStart;
     const auto vEnd = ctx.vEnd;
@@ -638,9 +674,11 @@ void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const V
 
     const auto MinVisNs = int64_t( round( GetScale() * MinVisSize * nspx ) );
 
-    auto it = std::lower_bound( vec.begin(), vec.end(), vStart, [] ( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), vStart,
+                                []( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
     if( it == vec.end() ) return;
-    auto end = std::lower_bound( it, vec.end(), vEnd+1, [] ( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
+    auto end =
+        std::lower_bound( it, vec.end(), vEnd + 1, []( const auto& lhs, const auto& rhs ) { return lhs->time < rhs; } );
     if( it == end ) return;
 
     m_hasMessages = true;
@@ -652,9 +690,10 @@ void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const V
 
     while( it < end )
     {
-        const auto msgTime = (*it)->time;
+        const auto msgTime = ( *it )->time;
         const auto nextTime = msgTime + MinVisNs;
-        const auto next = std::upper_bound( it, vec.end(), nextTime, [] ( const auto& lhs, const auto& rhs ) { return lhs < rhs->time; } );
+        const auto next = std::upper_bound( it, vec.end(), nextTime,
+                                            []( const auto& lhs, const auto& rhs ) { return lhs < rhs->time; } );
         const auto num = next - it;
         bool hilite;
         if( num == 1 )
@@ -666,19 +705,21 @@ void TimelineItemThread::PreprocessMessages( const TimelineContext& ctx, const V
             if( hMsg && hThread == tid )
             {
                 const auto hTime = hMsg->time;
-                hilite = (*it)->time <= hTime && ( next == vec.end() || (*next)->time > hTime );
+                hilite = ( *it )->time <= hTime && ( next == vec.end() || ( *next )->time > hTime );
             }
             else
             {
                 hilite = false;
             }
         }
-        m_msgDraw.emplace_back( MessagesDraw { *it, hilite, uint32_t( num ) } );
+        m_msgDraw.emplace_back( MessagesDraw{ *it, hilite, uint32_t( num ) } );
         it = next;
     }
 }
 
-static Vector<LockEventPtr>::const_iterator GetNextLockEvent( const Vector<LockEventPtr>::const_iterator& it, const Vector<LockEventPtr>::const_iterator& end, LockState::Type& nextState, uint64_t threadBit )
+static Vector<LockEventPtr>::const_iterator GetNextLockEvent( const Vector<LockEventPtr>::const_iterator& it,
+                                                              const Vector<LockEventPtr>::const_iterator& end,
+                                                              LockState::Type& nextState, uint64_t threadBit )
 {
     auto next = it;
     next++;
@@ -692,7 +733,8 @@ static Vector<LockEventPtr>::const_iterator GetNextLockEvent( const Vector<LockE
             {
                 if( GetThreadBit( next->lockingThread ) == threadBit )
                 {
-                    nextState = AreOtherWaiting( next->waitList, threadBit ) ? LockState::HasBlockingLock : LockState::HasLock;
+                    nextState =
+                        AreOtherWaiting( next->waitList, threadBit ) ? LockState::HasBlockingLock : LockState::HasLock;
                     break;
                 }
                 else if( IsThreadWaiting( next->waitList, threadBit ) )
@@ -747,7 +789,8 @@ static Vector<LockEventPtr>::const_iterator GetNextLockEvent( const Vector<LockE
         {
             if( GetThreadBit( next->lockingThread ) == threadBit )
             {
-                nextState = AreOtherWaiting( next->waitList, threadBit ) ? LockState::HasBlockingLock : LockState::HasLock;
+                nextState =
+                    AreOtherWaiting( next->waitList, threadBit ) ? LockState::HasBlockingLock : LockState::HasLock;
                 break;
             }
             if( next->lockingThread != it->lockingThread )
@@ -774,7 +817,9 @@ static LockState::Type CombineLockState( LockState::Type state, LockState::Type 
     return std::max( state, next );
 }
 
-static Vector<LockEventPtr>::const_iterator GetNextLockEventShared( const Vector<LockEventPtr>::const_iterator& it, const Vector<LockEventPtr>::const_iterator& end, LockState::Type& nextState, uint64_t threadBit )
+static Vector<LockEventPtr>::const_iterator GetNextLockEventShared( const Vector<LockEventPtr>::const_iterator& it,
+                                                                    const Vector<LockEventPtr>::const_iterator& end,
+                                                                    LockState::Type& nextState, uint64_t threadBit )
 {
     const auto itptr = (const LockEventShared*)(const LockEvent*)it->ptr;
     auto next = it;
@@ -835,7 +880,8 @@ static Vector<LockEventPtr>::const_iterator GetNextLockEventShared( const Vector
                 nextState = LockState::HasBlockingLock;
                 break;
             }
-            if( next->waitList != it->waitList || ptr->waitShared != itptr->waitShared || next->lockCount != it->lockCount || ptr->sharedList != itptr->sharedList )
+            if( next->waitList != it->waitList || ptr->waitShared != itptr->waitShared ||
+                next->lockCount != it->lockCount || ptr->sharedList != itptr->sharedList )
             {
                 break;
             }
@@ -851,7 +897,8 @@ static Vector<LockEventPtr>::const_iterator GetNextLockEventShared( const Vector
                 nextState = LockState::Nothing;
                 break;
             }
-            if( next->waitList != it->waitList || ptr->waitShared != itptr->waitShared || next->lockCount != it->lockCount || ptr->sharedList != itptr->sharedList )
+            if( next->waitList != it->waitList || ptr->waitShared != itptr->waitShared ||
+                next->lockCount != it->lockCount || ptr->sharedList != itptr->sharedList )
             {
                 break;
             }
@@ -892,7 +939,9 @@ static Vector<LockEventPtr>::const_iterator GetNextLockEventShared( const Vector
     return next;
 }
 
-void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unordered_flat_map<uint32_t, LockMap*>& locks, uint32_t tid, TaskDispatch& td, bool visible )
+void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx,
+                                          const unordered_flat_map<uint32_t, LockMap*>& locks, uint32_t tid,
+                                          TaskDispatch& td, bool visible )
 {
     const auto vStart = ctx.vStart;
     const auto vEnd = ctx.vEnd;
@@ -908,7 +957,9 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
         const auto& lockmap = *v.second;
         if( !lockmap.valid ) continue;
         if( !m_view.Vis( &lockmap ) ) continue;
-        if( vd.onlyContendedLocks && lockInfoWindow != v.first && ( lockmap.threadList.size() == 1 || !lockmap.isContended ) ) continue;
+        if( vd.onlyContendedLocks && lockInfoWindow != v.first &&
+            ( lockmap.threadList.size() == 1 || !lockmap.isContended ) )
+            continue;
 
         auto it = lockmap.threadMap.find( tid );
         if( it == lockmap.threadMap.end() ) continue;
@@ -919,127 +970,137 @@ void TimelineItemThread::PreprocessLocks( const TimelineContext& ctx, const unor
         {
             if( lockInfoWindow == v.first )
             {
-                m_lockDraw.emplace_back( std::make_unique<LockDraw>( LockDraw { v.first, true, it->second } ) );
+                m_lockDraw.emplace_back( std::make_unique<LockDraw>( LockDraw{ v.first, true, it->second } ) );
             }
             continue;
         }
 
-        auto drawData = std::make_unique<LockDraw>( LockDraw { v.first, false, it->second } );
+        auto drawData = std::make_unique<LockDraw>( LockDraw{ v.first, false, it->second } );
         auto drawPtr = drawData.get();
         m_lockDraw.emplace_back( std::move( drawData ) );
 
-        td.Queue( [this, it, &lockmap, &ctx, &range, &vd, visible, drawPtr, MinVisNs] {
-            const auto vStart = ctx.vStart;
-            const auto vEnd = ctx.vEnd;
-
-            auto GetNextLockFunc = lockmap.type == LockType::Lockable ? GetNextLockEvent : GetNextLockEventShared;
-            const auto thread = it->second;
-            const auto threadBit = GetThreadBit( thread );
-            const auto& tl = lockmap.timeline;
-
-            auto vbegin = std::lower_bound( tl.begin(), tl.end(), std::max( range.start, vStart ), [] ( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
-            const auto vend = std::lower_bound( vbegin, tl.end(), std::min( range.end, vEnd ), [] ( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
-
-            if( vbegin > tl.begin() ) vbegin--;
-
-            LockState::Type state = LockState::Nothing;
-            if( lockmap.type == LockType::Lockable )
+        td.Queue(
+            [this, it, &lockmap, &ctx, &range, &vd, visible, drawPtr, MinVisNs]
             {
-                if( vbegin->lockCount != 0 )
+                const auto vStart = ctx.vStart;
+                const auto vEnd = ctx.vEnd;
+
+                auto GetNextLockFunc = lockmap.type == LockType::Lockable ? GetNextLockEvent : GetNextLockEventShared;
+                const auto thread = it->second;
+                const auto threadBit = GetThreadBit( thread );
+                const auto& tl = lockmap.timeline;
+
+                auto vbegin = std::lower_bound( tl.begin(), tl.end(), std::max( range.start, vStart ),
+                                                []( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
+                const auto vend = std::lower_bound( vbegin, tl.end(), std::min( range.end, vEnd ),
+                                                    []( const auto& l, const auto& r ) { return l.ptr->Time() < r; } );
+
+                if( vbegin > tl.begin() ) vbegin--;
+
+                LockState::Type state = LockState::Nothing;
+                if( lockmap.type == LockType::Lockable )
                 {
-                    if( vbegin->lockingThread == thread )
+                    if( vbegin->lockCount != 0 )
                     {
-                        state = AreOtherWaiting( vbegin->waitList, threadBit ) ? LockState::HasBlockingLock : LockState::HasLock;
+                        if( vbegin->lockingThread == thread )
+                        {
+                            state = AreOtherWaiting( vbegin->waitList, threadBit ) ? LockState::HasBlockingLock
+                                                                                   : LockState::HasLock;
+                        }
+                        else if( IsThreadWaiting( vbegin->waitList, threadBit ) )
+                        {
+                            state = LockState::WaitLock;
+                        }
                     }
-                    else if( IsThreadWaiting( vbegin->waitList, threadBit ) )
+                }
+                else
+                {
+                    auto ptr = (const LockEventShared*)(const LockEvent*)vbegin->ptr;
+                    if( vbegin->lockCount != 0 )
+                    {
+                        if( vbegin->lockingThread == thread )
+                        {
+                            state = ( AreOtherWaiting( vbegin->waitList, threadBit ) ||
+                                      AreOtherWaiting( ptr->waitShared, threadBit ) )
+                                        ? LockState::HasBlockingLock
+                                        : LockState::HasLock;
+                        }
+                        else if( IsThreadWaiting( vbegin->waitList, threadBit ) ||
+                                 IsThreadWaiting( ptr->waitShared, threadBit ) )
+                        {
+                            state = LockState::WaitLock;
+                        }
+                    }
+                    else if( IsThreadWaiting( ptr->sharedList, threadBit ) )
+                    {
+                        state = vbegin->waitList != 0 ? LockState::HasBlockingLock : LockState::HasLock;
+                    }
+                    else if( ptr->sharedList != 0 && IsThreadWaiting( vbegin->waitList, threadBit ) )
                     {
                         state = LockState::WaitLock;
                     }
                 }
-            }
-            else
-            {
-                auto ptr = (const LockEventShared*)(const LockEvent*)vbegin->ptr;
-                if( vbegin->lockCount != 0 )
+
+                const uint8_t mask =
+                    vd.onlyContendedLocks ? ( LockState::Nothing | LockState::HasLock ) : LockState::Nothing;
+                if( !visible )
                 {
-                    if( vbegin->lockingThread == thread )
+                    while( vbegin < vend && ( state & mask ) != 0 )
                     {
-                        state = ( AreOtherWaiting( vbegin->waitList, threadBit ) || AreOtherWaiting( ptr->waitShared, threadBit ) ) ? LockState::HasBlockingLock : LockState::HasLock;
+                        vbegin = GetNextLockFunc( vbegin, vend, state, threadBit );
                     }
-                    else if( IsThreadWaiting( vbegin->waitList, threadBit ) || IsThreadWaiting( ptr->waitShared, threadBit ) )
+                    drawPtr->forceDraw = vbegin < vend;
+                    return;
+                }
+
+                auto& dst = drawPtr->data;
+                for( ;; )
+                {
+                    while( vbegin < vend && ( state & mask ) != 0 )
                     {
-                        state = LockState::WaitLock;
+                        vbegin = GetNextLockFunc( vbegin, vend, state, threadBit );
                     }
-                }
-                else if( IsThreadWaiting( ptr->sharedList, threadBit ) )
-                {
-                    state = vbegin->waitList != 0 ? LockState::HasBlockingLock : LockState::HasLock;
-                }
-                else if( ptr->sharedList != 0 && IsThreadWaiting( vbegin->waitList, threadBit ) )
-                {
-                    state = LockState::WaitLock;
-                }
-            }
+                    if( vbegin >= vend ) break;
+                    assert( ( state & mask ) == 0 );
 
-            const uint8_t mask = vd.onlyContendedLocks ? ( LockState::Nothing | LockState::HasLock ) : LockState::Nothing;
-            if( !visible )
-            {
-                while( vbegin < vend && ( state & mask ) != 0 )
-                {
-                    vbegin = GetNextLockFunc( vbegin, vend, state, threadBit );
-                }
-                drawPtr->forceDraw = vbegin < vend;
-                return;
-            }
+                    LockState::Type drawState = state;
+                    auto next = GetNextLockFunc( vbegin, vend, state, threadBit );
 
-            auto& dst = drawPtr->data;
-            for(;;)
-            {
-                while( vbegin < vend && ( state & mask ) != 0 )
-                {
-                    vbegin = GetNextLockFunc( vbegin, vend, state, threadBit );
-                }
-                if( vbegin >= vend ) break;
-                assert( ( state & mask ) == 0 );
+                    const auto tStart = vbegin->ptr->Time();
+                    int64_t t0 = tStart;
+                    int64_t t1 = next == tl.end() ? m_worker.GetLastTime() : next->ptr->Time();
+                    uint32_t condensed = 0;
 
-                LockState::Type drawState = state;
-                auto next = GetNextLockFunc( vbegin, vend, state, threadBit );
-
-                const auto tStart = vbegin->ptr->Time();
-                int64_t t0 = tStart;
-                int64_t t1 = next == tl.end() ? m_worker.GetLastTime() : next->ptr->Time();
-                uint32_t condensed = 0;
-
-                for(;;)
-                {
-                    if( next >= vend || t1 - t0 > MinVisNs ) break;
-                    auto n = next;
-                    auto ns = state;
-                    while( n < vend && ( ns & mask ) != 0 )
+                    for( ;; )
                     {
-                        n = GetNextLockFunc( n, vend, ns, threadBit );
+                        if( next >= vend || t1 - t0 > MinVisNs ) break;
+                        auto n = next;
+                        auto ns = state;
+                        while( n < vend && ( ns & mask ) != 0 )
+                        {
+                            n = GetNextLockFunc( n, vend, ns, threadBit );
+                        }
+                        if( n >= vend ) break;
+                        if( n == next )
+                        {
+                            n = GetNextLockFunc( n, vend, ns, threadBit );
+                        }
+                        drawState = CombineLockState( drawState, state );
+                        condensed++;
+                        const auto t2 = n == tl.end() ? m_worker.GetLastTime() : n->ptr->Time();
+                        if( t2 - t1 > MinVisNs ) break;
+                        if( drawState != ns && t2 - tStart > MinVisNs && ( ns & mask ) == 0 ) break;
+                        t0 = t1;
+                        t1 = t2;
+                        next = n;
+                        state = ns;
                     }
-                    if( n >= vend ) break;
-                    if( n == next )
-                    {
-                        n = GetNextLockFunc( n, vend, ns, threadBit );
-                    }
-                    drawState = CombineLockState( drawState, state );
-                    condensed++;
-                    const auto t2 = n == tl.end() ? m_worker.GetLastTime() : n->ptr->Time();
-                    if( t2 - t1 > MinVisNs ) break;
-                    if( drawState != ns && t2 - tStart > MinVisNs && ( ns & mask ) == 0 ) break;
-                    t0 = t1;
-                    t1 = t2;
-                    next = n;
-                    state = ns;
+
+                    dst.emplace_back( LockDrawItem{ t1, drawState, condensed, vbegin, next } );
+
+                    vbegin = next;
                 }
-
-                dst.emplace_back( LockDrawItem { t1, drawState, condensed, vbegin, next } );
-
-                vbegin = next;
-            }
-        } );
+            } );
     }
 }
 

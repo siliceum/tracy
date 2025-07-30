@@ -1,18 +1,18 @@
+#include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
 #include <math.h>
-#include <backends/imgui_impl_opengl3.h>
 #include <misc/freetype/imgui_freetype.h>
 
 #include "Fonts.hpp"
 #include "profiler/IconsFontAwesome6.h"
 #include "profiler/TracyEmbed.hpp"
 
-#include "data/FontFixed.hpp"
-#include "data/FontIcons.hpp"
-#include "data/FontNormal.hpp"
 #include "data/FontBold.hpp"
 #include "data/FontBoldItalic.hpp"
+#include "data/FontFixed.hpp"
+#include "data/FontIcons.hpp"
 #include "data/FontItalic.hpp"
+#include "data/FontNormal.hpp"
 
 FontData g_fonts;
 
@@ -43,19 +43,24 @@ void LoadFonts( float scale )
 
     io.Fonts->Clear();
 
-    g_fonts.normal = io.Fonts->AddFontFromMemoryTTF( (void*)fontNormal->data(), fontNormal->size(), round( 15.0f * scale ), &configBasic );
+    g_fonts.normal = io.Fonts->AddFontFromMemoryTTF( (void*)fontNormal->data(), fontNormal->size(),
+                                                     round( 15.0f * scale ), &configBasic );
     io.Fonts->AddFontFromMemoryTTF( (void*)fontIcons->data(), fontIcons->size(), round( 14.0f * scale ), &configMerge );
 
-    g_fonts.mono = io.Fonts->AddFontFromMemoryTTF( (void*)fontFixed->data(), fontFixed->size(), round( 15.0f * scale ), &configFixed );
+    g_fonts.mono = io.Fonts->AddFontFromMemoryTTF( (void*)fontFixed->data(), fontFixed->size(), round( 15.0f * scale ),
+                                                   &configFixed );
     io.Fonts->AddFontFromMemoryTTF( (void*)fontIcons->data(), fontIcons->size(), round( 14.0f * scale ), &configMerge );
 
-    g_fonts.bold = io.Fonts->AddFontFromMemoryTTF( (void*)fontBold->data(), fontBold->size(), round( 15.0f * scale ), &configBasic );
+    g_fonts.bold = io.Fonts->AddFontFromMemoryTTF( (void*)fontBold->data(), fontBold->size(), round( 15.0f * scale ),
+                                                   &configBasic );
     io.Fonts->AddFontFromMemoryTTF( (void*)fontIcons->data(), fontIcons->size(), round( 14.0f * scale ), &configMerge );
 
-    g_fonts.boldItalic = io.Fonts->AddFontFromMemoryTTF( (void*)fontBoldItalic->data(), fontBoldItalic->size(), round( 15.0f * scale ), &configBasic );
+    g_fonts.boldItalic = io.Fonts->AddFontFromMemoryTTF( (void*)fontBoldItalic->data(), fontBoldItalic->size(),
+                                                         round( 15.0f * scale ), &configBasic );
     io.Fonts->AddFontFromMemoryTTF( (void*)fontIcons->data(), fontIcons->size(), round( 14.0f * scale ), &configMerge );
 
-    g_fonts.italic = io.Fonts->AddFontFromMemoryTTF( (void*)fontItalic->data(), fontItalic->size(), round( 15.0f * scale ), &configBasic );
+    g_fonts.italic = io.Fonts->AddFontFromMemoryTTF( (void*)fontItalic->data(), fontItalic->size(),
+                                                     round( 15.0f * scale ), &configBasic );
     io.Fonts->AddFontFromMemoryTTF( (void*)fontIcons->data(), fontIcons->size(), round( 14.0f * scale ), &configMerge );
 
     FontNormal = round( scale * 15.f );

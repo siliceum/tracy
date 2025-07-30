@@ -8,14 +8,14 @@
 
 class EmbedData
 {
-public:
+  public:
     EmbedData( size_t size, size_t lz4Size, const uint8_t* data );
     ~EmbedData();
 
     [[nodiscard]] const char* data() const { return m_data; }
     [[nodiscard]] size_t size() const { return m_size; }
 
-private:
+  private:
     char* m_data;
     size_t m_size;
 };

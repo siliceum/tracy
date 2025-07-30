@@ -1,11 +1,11 @@
 #include <sstream>
 
+#include "../Fonts.hpp"
 #include "TracyFilesystem.hpp"
 #include "TracyImGui.hpp"
 #include "TracyPrint.hpp"
 #include "TracyView.hpp"
 #include "tracy_pdqsort.h"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -24,7 +24,8 @@ void View::AccumulationModeComboBox()
 {
     ImGui::TextUnformatted( "Timing" );
     ImGui::SameLine();
-    const char* accumulationModeTable = m_statMode == 1 ? "Self only\0With children\0" : "Self only\0With children\0Non-reentrant\0";
+    const char* accumulationModeTable =
+        m_statMode == 1 ? "Self only\0With children\0" : "Self only\0With children\0Non-reentrant\0";
     ImGui::SetNextItemWidth( ImGui::CalcTextSize( "Non-reentrant" ).x + ImGui::GetTextLineHeight() * 2 );
     if( m_statMode == 1 && m_statAccumulationMode == AccumulationMode::NonReentrantChildren )
     {
@@ -40,12 +41,17 @@ void View::DrawStatistics()
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1400 * scale, 600 * scale ), ImGuiCond_FirstUseEver );
     ImGui::Begin( "Statistics", &m_showStatistics, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
-    if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
+    if( ImGui::GetCurrentWindowRead()->SkipItems )
+    {
+        ImGui::End();
+        return;
+    }
 #ifdef TRACY_NO_STATISTICS
     ImGui::TextWrapped( "Collection of statistical data is disabled in this build." );
     ImGui::TextWrapped( "Rebuild without the TRACY_NO_STATISTICS macro to enable statistics view." );
 #else
-    if( !m_worker.AreSourceLocationZonesReady() && ( !m_worker.AreCallstackSamplesReady() || m_worker.GetCallstackSampleCount() == 0 ) )
+    if( !m_worker.AreSourceLocationZonesReady() &&
+        ( !m_worker.AreCallstackSamplesReady() || m_worker.GetCallstackSampleCount() == 0 ) )
     {
         const auto ty = ImGui::GetTextLineHeight();
         ImGui::PushFont( g_fonts.normal, FontBig );
@@ -93,7 +99,6 @@ void View::DrawStatistics()
     ImGui::Spacing();
     ImGui::SameLine();
 
-
     Vector<SrcLocZonesSlim> srcloc;
 
     bool copySrclocsToClipboard = false;
@@ -126,12 +131,15 @@ void View::DrawStatistics()
                     if( !filterActive )
                     {
                         auto cit = m_statCache.find( it->first );
-                        if( cit != m_statCache.end() && cit->second.range == m_statRange && cit->second.accumulationMode == m_statAccumulationMode && cit->second.sourceCount == it->second.zones.size() )
+                        if( cit != m_statCache.end() && cit->second.range == m_statRange &&
+                            cit->second.accumulationMode == m_statAccumulationMode &&
+                            cit->second.sourceCount == it->second.zones.size() )
                         {
                             if( cit->second.count != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{
+                                    it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
                             }
                         }
                         else
@@ -153,7 +161,8 @@ void View::DrawStatistics()
                                         cnt++;
                                         threads.emplace( v.Thread() );
                                     }
-                                    else if( m_statAccumulationMode == AccumulationMode::AllChildren || !IsZoneReentry( z ) )
+                                    else if( m_statAccumulationMode == AccumulationMode::AllChildren ||
+                                             !IsZoneReentry( z ) )
                                     {
                                         total += zt;
                                         cnt++;
@@ -165,9 +174,15 @@ void View::DrawStatistics()
                             if( cnt != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, threadNum, cnt, total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, threadNum, cnt, total } );
                             }
-                            m_statCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total, threadNum };
+                            m_statCache[it->first] =
+                                StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active },
+                                                 m_statAccumulationMode,
+                                                 it->second.zones.size(),
+                                                 cnt,
+                                                 total,
+                                                 threadNum };
                         }
                     }
                     else
@@ -178,11 +193,14 @@ void View::DrawStatistics()
                         if( m_statisticsFilter.PassFilter( name ) )
                         {
                             auto cit = m_statCache.find( it->first );
-                            if( cit != m_statCache.end() && cit->second.range == m_statRange && cit->second.accumulationMode == m_statAccumulationMode && cit->second.sourceCount == it->second.zones.size() )
+                            if( cit != m_statCache.end() && cit->second.range == m_statRange &&
+                                cit->second.accumulationMode == m_statAccumulationMode &&
+                                cit->second.sourceCount == it->second.zones.size() )
                             {
                                 if( cit->second.count != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
+                                    srcloc.push_back_no_space_check( SrcLocZonesSlim{
+                                        it->first, cit->second.threadNum, cit->second.count, cit->second.total } );
                                 }
                             }
                             else
@@ -204,7 +222,8 @@ void View::DrawStatistics()
                                             cnt++;
                                             threads.emplace( v.Thread() );
                                         }
-                                        else if( m_statAccumulationMode == AccumulationMode::AllChildren || !IsZoneReentry( z ) )
+                                        else if( m_statAccumulationMode == AccumulationMode::AllChildren ||
+                                                 !IsZoneReentry( z ) )
                                         {
                                             total += zt;
                                             cnt++;
@@ -215,9 +234,16 @@ void View::DrawStatistics()
                                 const auto threadNum = (uint16_t)threads.size();
                                 if( cnt != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, threadNum, cnt, total } );
+                                    srcloc.push_back_no_space_check(
+                                        SrcLocZonesSlim{ it->first, threadNum, cnt, total } );
                                 }
-                                m_statCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total, threadNum };
+                                m_statCache[it->first] =
+                                    StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active },
+                                                     m_statAccumulationMode,
+                                                     it->second.zones.size(),
+                                                     cnt,
+                                                     total,
+                                                     threadNum };
                             }
                         }
                     }
@@ -250,7 +276,8 @@ void View::DrawStatistics()
                     }
                     if( !filterActive )
                     {
-                        srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
+                        srcloc.push_back_no_space_check(
+                            SrcLocZonesSlim{ it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
                     }
                     else
                     {
@@ -258,7 +285,8 @@ void View::DrawStatistics()
                         auto name = m_worker.GetString( sl.name.active ? sl.name : sl.function );
                         if( m_statisticsFilter.PassFilter( name ) )
                         {
-                            srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
+                            srcloc.push_back_no_space_check(
+                                SrcLocZonesSlim{ it->first, (uint16_t)it->second.threadCnt.size(), count, total } );
                         }
                     }
                 }
@@ -349,12 +377,15 @@ void View::DrawStatistics()
                     if( !filterActive )
                     {
                         auto cit = m_gpuStatCache.find( it->first );
-                        if( cit != m_gpuStatCache.end() && cit->second.range == m_statRange && cit->second.accumulationMode == m_statAccumulationMode && cit->second.sourceCount == it->second.zones.size() )
+                        if( cit != m_gpuStatCache.end() && cit->second.range == m_statRange &&
+                            cit->second.accumulationMode == m_statAccumulationMode &&
+                            cit->second.sourceCount == it->second.zones.size() )
                         {
                             if( cit->second.count != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cit->second.count, cit->second.total } );
+                                srcloc.push_back_no_space_check(
+                                    SrcLocZonesSlim{ it->first, 0, cit->second.count, cit->second.total } );
                             }
                         }
                         else
@@ -376,9 +407,11 @@ void View::DrawStatistics()
                             if( cnt != 0 )
                             {
                                 slzcnt++;
-                                srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cnt, total } );
+                                srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, cnt, total } );
                             }
-                            m_gpuStatCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total };
+                            m_gpuStatCache[it->first] =
+                                StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active },
+                                                 m_statAccumulationMode, it->second.zones.size(), cnt, total };
                         }
                     }
                     else
@@ -389,11 +422,14 @@ void View::DrawStatistics()
                         if( m_statisticsFilter.PassFilter( name ) )
                         {
                             auto cit = m_gpuStatCache.find( it->first );
-                            if( cit != m_gpuStatCache.end() && cit->second.range == m_statRange && cit->second.accumulationMode == m_statAccumulationMode && cit->second.sourceCount == it->second.zones.size() )
+                            if( cit != m_gpuStatCache.end() && cit->second.range == m_statRange &&
+                                cit->second.accumulationMode == m_statAccumulationMode &&
+                                cit->second.sourceCount == it->second.zones.size() )
                             {
                                 if( cit->second.count != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cit->second.count, cit->second.total } );
+                                    srcloc.push_back_no_space_check(
+                                        SrcLocZonesSlim{ it->first, 0, cit->second.count, cit->second.total } );
                                 }
                             }
                             else
@@ -414,9 +450,11 @@ void View::DrawStatistics()
                                 }
                                 if( cnt != 0 )
                                 {
-                                    srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, cnt, total } );
+                                    srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, cnt, total } );
                                 }
-                                m_gpuStatCache[it->first] = StatisticsCache { RangeSlim { m_statRange.min, m_statRange.max, m_statRange.active }, m_statAccumulationMode, it->second.zones.size(), cnt, total };
+                                m_gpuStatCache[it->first] =
+                                    StatisticsCache{ RangeSlim{ m_statRange.min, m_statRange.max, m_statRange.active },
+                                                     m_statAccumulationMode, it->second.zones.size(), cnt, total };
                             }
                         }
                     }
@@ -434,7 +472,7 @@ void View::DrawStatistics()
                     int64_t total = it->second.total;
                     if( !filterActive )
                     {
-                        srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, count, total } );
+                        srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, count, total } );
                     }
                     else
                     {
@@ -442,7 +480,7 @@ void View::DrawStatistics()
                         auto name = m_worker.GetString( sl.name.active ? sl.name : sl.function );
                         if( m_statisticsFilter.PassFilter( name ) )
                         {
-                            srcloc.push_back_no_space_check( SrcLocZonesSlim { it->first, 0, count, total } );
+                            srcloc.push_back_no_space_check( SrcLocZonesSlim{ it->first, 0, count, total } );
                         }
                     }
                 }
@@ -496,7 +534,8 @@ void View::DrawStatistics()
             {
                 imgNames.emplace_back( m_worker.GetString( img ) );
             }
-            pdqsort_branchless( imgNames.begin(), imgNames.end(), [] ( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
+            pdqsort_branchless( imgNames.begin(), imgNames.end(),
+                                []( const auto& lhs, const auto& rhs ) { return strcmp( lhs, rhs ) < 0; } );
             for( auto& img : imgNames )
             {
                 bool sel = false;
@@ -607,15 +646,27 @@ void View::DrawStatistics()
         {
             ImGui::BeginChild( "##statistics" );
             if( ImGui::BeginTable( "##statistics", m_statMode == 0 ? 6 : 5,
-                ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY ) )
+                                   ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable |
+                                       ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV |
+                                       ImGuiTableFlags_ScrollY ) )
             {
                 ImGui::TableSetupScrollFreeze( 0, 1 );
                 ImGui::TableSetupColumn( "Name", ImGuiTableColumnFlags_NoHide );
                 ImGui::TableSetupColumn( "Location" );
-                ImGui::TableSetupColumn( "Total time", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortDescending | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
-                ImGui::TableSetupColumn( "Counts", ImGuiTableColumnFlags_PreferSortDescending | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
-                ImGui::TableSetupColumn( "MTPC", ImGuiTableColumnFlags_PreferSortDescending | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
-                if( m_statMode == 0 ) ImGui::TableSetupColumn( ICON_FA_SHUFFLE, ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortDescending | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
+                ImGui::TableSetupColumn(
+                    "Total time", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortDescending |
+                                      ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
+                ImGui::TableSetupColumn( "Counts", ImGuiTableColumnFlags_PreferSortDescending |
+                                                       ImGuiTableColumnFlags_WidthFixed |
+                                                       ImGuiTableColumnFlags_NoResize );
+                ImGui::TableSetupColumn( "MTPC", ImGuiTableColumnFlags_PreferSortDescending |
+                                                     ImGuiTableColumnFlags_WidthFixed |
+                                                     ImGuiTableColumnFlags_NoResize );
+                if( m_statMode == 0 )
+                    ImGui::TableSetupColumn( ICON_FA_SHUFFLE, ImGuiTableColumnFlags_DefaultSort |
+                                                                  ImGuiTableColumnFlags_PreferSortDescending |
+                                                                  ImGuiTableColumnFlags_WidthFixed |
+                                                                  ImGuiTableColumnFlags_NoResize );
                 ImGui::TableHeadersRow();
 
                 const auto& sortspec = *ImGui::TableGetSortSpecs()->Specs;
@@ -624,73 +675,99 @@ void View::DrawStatistics()
                 case 0:
                     if( sortspec.SortDirection == ImGuiSortDirection_Ascending )
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), [this]( const auto& lhs, const auto& rhs ) { return strcmp( m_worker.GetZoneName( m_worker.GetSourceLocation( lhs.srcloc ) ), m_worker.GetZoneName( m_worker.GetSourceLocation( rhs.srcloc ) ) ) < 0; } );
+                        pdqsort_branchless(
+                            srcloc.begin(), srcloc.end(),
+                            [this]( const auto& lhs, const auto& rhs )
+                            {
+                                return strcmp( m_worker.GetZoneName( m_worker.GetSourceLocation( lhs.srcloc ) ),
+                                               m_worker.GetZoneName( m_worker.GetSourceLocation( rhs.srcloc ) ) ) < 0;
+                            } );
                     }
                     else
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), [this]( const auto& lhs, const auto& rhs ) { return strcmp( m_worker.GetZoneName( m_worker.GetSourceLocation( lhs.srcloc ) ), m_worker.GetZoneName( m_worker.GetSourceLocation( rhs.srcloc ) ) ) > 0; } );
+                        pdqsort_branchless(
+                            srcloc.begin(), srcloc.end(),
+                            [this]( const auto& lhs, const auto& rhs )
+                            {
+                                return strcmp( m_worker.GetZoneName( m_worker.GetSourceLocation( lhs.srcloc ) ),
+                                               m_worker.GetZoneName( m_worker.GetSourceLocation( rhs.srcloc ) ) ) > 0;
+                            } );
                     }
                     break;
                 case 1:
                     if( sortspec.SortDirection == ImGuiSortDirection_Ascending )
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), [this]( const auto& lhs, const auto& rhs ) {
-                            const auto& sll = m_worker.GetSourceLocation( lhs.srcloc );
-                            const auto& slr = m_worker.GetSourceLocation( rhs.srcloc );
-                            const auto cmp = strcmp( m_worker.GetString( sll.file ), m_worker.GetString( slr.file ) );
-                            if( cmp == 0 ) return sll.line < slr.line;
-                            return cmp < 0;
-                        } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(),
+                                            [this]( const auto& lhs, const auto& rhs )
+                                            {
+                                                const auto& sll = m_worker.GetSourceLocation( lhs.srcloc );
+                                                const auto& slr = m_worker.GetSourceLocation( rhs.srcloc );
+                                                const auto cmp = strcmp( m_worker.GetString( sll.file ),
+                                                                         m_worker.GetString( slr.file ) );
+                                                if( cmp == 0 ) return sll.line < slr.line;
+                                                return cmp < 0;
+                                            } );
                     }
                     else
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), [this]( const auto& lhs, const auto& rhs ) {
-                            const auto& sll = m_worker.GetSourceLocation( lhs.srcloc );
-                            const auto& slr = m_worker.GetSourceLocation( rhs.srcloc );
-                            const auto cmp = strcmp( m_worker.GetString( sll.file ), m_worker.GetString( slr.file ) );
-                            if( cmp == 0 ) return sll.line > slr.line;
-                            return cmp > 0;
-                        } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(),
+                                            [this]( const auto& lhs, const auto& rhs )
+                                            {
+                                                const auto& sll = m_worker.GetSourceLocation( lhs.srcloc );
+                                                const auto& slr = m_worker.GetSourceLocation( rhs.srcloc );
+                                                const auto cmp = strcmp( m_worker.GetString( sll.file ),
+                                                                         m_worker.GetString( slr.file ) );
+                                                if( cmp == 0 ) return sll.line > slr.line;
+                                                return cmp > 0;
+                                            } );
                     }
                     break;
                 case 2:
                     if( sortspec.SortDirection == ImGuiSortDirection_Ascending )
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.total < rhs.total; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(),
+                                            []( const auto& lhs, const auto& rhs ) { return lhs.total < rhs.total; } );
                     }
                     else
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.total > rhs.total; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(),
+                                            []( const auto& lhs, const auto& rhs ) { return lhs.total > rhs.total; } );
                     }
                     break;
                 case 3:
                     if( sortspec.SortDirection == ImGuiSortDirection_Ascending )
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.numZones < rhs.numZones; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs )
+                                            { return lhs.numZones < rhs.numZones; } );
                     }
                     else
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.numZones > rhs.numZones; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs )
+                                            { return lhs.numZones > rhs.numZones; } );
                     }
                     break;
                 case 4:
                     if( sortspec.SortDirection == ImGuiSortDirection_Ascending )
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.total / lhs.numZones < rhs.total / rhs.numZones; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs )
+                                            { return lhs.total / lhs.numZones < rhs.total / rhs.numZones; } );
                     }
                     else
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.total / lhs.numZones > rhs.total / rhs.numZones; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs )
+                                            { return lhs.total / lhs.numZones > rhs.total / rhs.numZones; } );
                     }
                     break;
                 case 5:
                     if( sortspec.SortDirection == ImGuiSortDirection_Ascending )
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.numThreads < rhs.numThreads; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs )
+                                            { return lhs.numThreads < rhs.numThreads; } );
                     }
                     else
                     {
-                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs ) { return lhs.numThreads > rhs.numThreads; } );
+                        pdqsort_branchless( srcloc.begin(), srcloc.end(), []( const auto& lhs, const auto& rhs )
+                                            { return lhs.numThreads > rhs.numThreads; } );
                     }
                     break;
                 default:
@@ -701,7 +778,8 @@ void View::DrawStatistics()
                 std::ostringstream clipboardCSV;
                 if( copySrclocsToClipboard )
                 {
-                    clipboardCSV << "name" << ',' << "src_file" << ',' << "src_line" << ',' << "total_ns" << ',' << "counts" << "\n";
+                    clipboardCSV << "name" << ',' << "src_file" << ',' << "src_line" << ',' << "total_ns" << ','
+                                 << "counts" << "\n";
                 }
 
                 for( auto& v : srcloc )
@@ -716,7 +794,10 @@ void View::DrawStatistics()
                     ImGui::SameLine();
                     if( m_statMode == 0 )
                     {
-                        if( ImGui::Selectable( name, m_findZone.show && !m_findZone.match.empty() && m_findZone.match[m_findZone.selMatch] == v.srcloc, ImGuiSelectableFlags_SpanAllColumns ) )
+                        if( ImGui::Selectable( name,
+                                               m_findZone.show && !m_findZone.match.empty() &&
+                                                   m_findZone.match[m_findZone.selMatch] == v.srcloc,
+                                               ImGuiSelectableFlags_SpanAllColumns ) )
                         {
                             m_findZone.ShowZone( v.srcloc, name );
                         }
@@ -775,7 +856,8 @@ void View::DrawStatistics()
 
                     if( copySrclocsToClipboard )
                     {
-                        clipboardCSV << name << ',' << file << ',' << srcloc.line << ',' << v.total << ',' << v.numZones << '\n';
+                        clipboardCSV << name << ',' << file << ',' << srcloc.line << ',' << v.total << ',' << v.numZones
+                                     << '\n';
                     }
                 }
                 ImGui::EndTable();
@@ -805,7 +887,8 @@ void View::DrawStatistics()
                 {
                     const auto name = m_worker.GetString( v.second.name );
                     const auto image = m_worker.GetString( v.second.imageName );
-                    bool pass = ( m_statShowKernel || ( v.first >> 63 ) == 0 ) && m_statisticsFilter.PassFilter( name ) && m_statisticsImageFilter.PassFilter( image );
+                    bool pass = ( m_statShowKernel || ( v.first >> 63 ) == 0 ) &&
+                                m_statisticsFilter.PassFilter( name ) && m_statisticsImageFilter.PassFilter( image );
                     if( !pass && v.second.size.Val() == 0 )
                     {
                         const auto parentAddr = m_worker.GetSymbolForAddress( v.first );
@@ -815,7 +898,9 @@ void View::DrawStatistics()
                             if( pit != symMap.end() )
                             {
                                 const auto parentName = m_worker.GetString( pit->second.name );
-                                pass = ( m_statShowKernel || ( parentAddr >> 63 ) == 0 ) && m_statisticsFilter.PassFilter( parentName ) && m_statisticsImageFilter.PassFilter( image );
+                                pass = ( m_statShowKernel || ( parentAddr >> 63 ) == 0 ) &&
+                                       m_statisticsFilter.PassFilter( parentName ) &&
+                                       m_statisticsImageFilter.PassFilter( image );
                             }
                         }
                     }
@@ -824,7 +909,7 @@ void View::DrawStatistics()
                         auto it = symStat.find( v.first );
                         if( it == symStat.end() )
                         {
-                            data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                            data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                         }
                         else
                         {
@@ -833,26 +918,30 @@ void View::DrawStatistics()
                                 auto samples = m_worker.GetSamplesForSymbol( v.first );
                                 if( samples )
                                 {
-                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min,
+                                                                []( const auto& lhs, const auto& rhs )
+                                                                { return lhs.time.Val() < rhs; } );
                                     if( it != samples->end() )
                                     {
-                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max,
+                                                                     []( const auto& lhs, const auto& rhs )
+                                                                     { return lhs.time.Val() < rhs; } );
                                         const auto count = uint32_t( end - it );
-                                        data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                        data.push_back_no_space_check( SymList{ v.first, 0, count } );
                                     }
                                     else
                                     {
-                                        data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                        data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                                     }
                                 }
                                 else
                                 {
-                                    data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                    data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                                 }
                             }
                             else
                             {
-                                data.push_back_no_space_check( SymList { v.first, it->second.incl, it->second.excl } );
+                                data.push_back_no_space_check( SymList{ v.first, it->second.incl, it->second.excl } );
                             }
                         }
                     }
@@ -865,7 +954,7 @@ void View::DrawStatistics()
                     auto it = symStat.find( v.first );
                     if( it == symStat.end() )
                     {
-                        data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                        data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                     }
                     else
                     {
@@ -874,26 +963,30 @@ void View::DrawStatistics()
                             auto samples = m_worker.GetSamplesForSymbol( v.first );
                             if( samples )
                             {
-                                auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min,
+                                                            []( const auto& lhs, const auto& rhs )
+                                                            { return lhs.time.Val() < rhs; } );
                                 if( it != samples->end() )
                                 {
-                                    auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                    auto end = std::lower_bound( it, samples->end(), m_statRange.max,
+                                                                 []( const auto& lhs, const auto& rhs )
+                                                                 { return lhs.time.Val() < rhs; } );
                                     const auto count = uint32_t( end - it );
-                                    data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                    data.push_back_no_space_check( SymList{ v.first, 0, count } );
                                 }
                                 else
                                 {
-                                    data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                    data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                                 }
                             }
                             else
                             {
-                                data.push_back_no_space_check( SymList { v.first, 0, 0 } );
+                                data.push_back_no_space_check( SymList{ v.first, 0, 0 } );
                             }
                         }
                         else
                         {
-                            data.push_back_no_space_check( SymList { v.first, it->second.incl, it->second.excl } );
+                            data.push_back_no_space_check( SymList{ v.first, it->second.incl, it->second.excl } );
                         }
                     }
                 }
@@ -911,7 +1004,9 @@ void View::DrawStatistics()
                     {
                         const auto name = m_worker.GetString( sit->second.name );
                         const auto image = m_worker.GetString( sit->second.imageName );
-                        bool pass = ( m_statShowKernel || ( v.first >> 63 ) == 0 ) && m_statisticsFilter.PassFilter( name ) && m_statisticsImageFilter.PassFilter( image );
+                        bool pass = ( m_statShowKernel || ( v.first >> 63 ) == 0 ) &&
+                                    m_statisticsFilter.PassFilter( name ) &&
+                                    m_statisticsImageFilter.PassFilter( image );
                         if( !pass && sit->second.size.Val() == 0 )
                         {
                             const auto parentAddr = m_worker.GetSymbolForAddress( v.first );
@@ -921,7 +1016,9 @@ void View::DrawStatistics()
                                 if( pit != symMap.end() )
                                 {
                                     const auto parentName = m_worker.GetString( pit->second.name );
-                                    pass = ( m_statShowKernel || ( parentAddr >> 63 ) == 0 ) && m_statisticsFilter.PassFilter( parentName ) && m_statisticsImageFilter.PassFilter( image );
+                                    pass = ( m_statShowKernel || ( parentAddr >> 63 ) == 0 ) &&
+                                           m_statisticsFilter.PassFilter( parentName ) &&
+                                           m_statisticsImageFilter.PassFilter( image );
                                 }
                             }
                         }
@@ -932,18 +1029,22 @@ void View::DrawStatistics()
                                 auto samples = m_worker.GetSamplesForSymbol( v.first );
                                 if( samples )
                                 {
-                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                    auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min,
+                                                                []( const auto& lhs, const auto& rhs )
+                                                                { return lhs.time.Val() < rhs; } );
                                     if( it != samples->end() )
                                     {
-                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                        auto end = std::lower_bound( it, samples->end(), m_statRange.max,
+                                                                     []( const auto& lhs, const auto& rhs )
+                                                                     { return lhs.time.Val() < rhs; } );
                                         const auto count = uint32_t( end - it );
-                                        data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                        data.push_back_no_space_check( SymList{ v.first, 0, count } );
                                     }
                                 }
                             }
                             else
                             {
-                                data.push_back_no_space_check( SymList { v.first, v.second.incl, v.second.excl } );
+                                data.push_back_no_space_check( SymList{ v.first, v.second.incl, v.second.excl } );
                             }
                         }
                     }
@@ -958,12 +1059,16 @@ void View::DrawStatistics()
                         auto samples = m_worker.GetSamplesForSymbol( v.first );
                         if( samples )
                         {
-                            auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                            auto it = std::lower_bound( samples->begin(), samples->end(), m_statRange.min,
+                                                        []( const auto& lhs, const auto& rhs )
+                                                        { return lhs.time.Val() < rhs; } );
                             if( it != samples->end() )
                             {
-                                auto end = std::lower_bound( it, samples->end(), m_statRange.max, [] ( const auto& lhs, const auto& rhs ) { return lhs.time.Val() < rhs; } );
+                                auto end = std::lower_bound( it, samples->end(), m_statRange.max,
+                                                             []( const auto& lhs, const auto& rhs )
+                                                             { return lhs.time.Val() < rhs; } );
                                 const auto count = uint32_t( end - it );
-                                data.push_back_no_space_check( SymList { v.first, 0, count } );
+                                data.push_back_no_space_check( SymList{ v.first, 0, count } );
                             }
                         }
                     }
@@ -972,7 +1077,7 @@ void View::DrawStatistics()
                 {
                     for( auto& v : symStat )
                     {
-                        data.push_back_no_space_check( SymList { v.first, v.second.incl, v.second.excl } );
+                        data.push_back_no_space_check( SymList{ v.first, v.second.incl, v.second.excl } );
                     }
                 }
             }

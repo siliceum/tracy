@@ -6,7 +6,6 @@
 
 #include "profiler/TracyStorage.hpp"
 
-
 Filters::Filters()
     : m_fn( tracy::GetSavePath( "client.filters" ) )
 {
@@ -63,15 +62,9 @@ void Filters::Draw( float w )
     m_progFilter.Draw( "Program filter", w );
 }
 
-bool Filters::IsActive() const
-{
-    return m_addrFilter.IsActive() || m_portFilter.IsActive() || m_progFilter.IsActive();
-}
+bool Filters::IsActive() const { return m_addrFilter.IsActive() || m_portFilter.IsActive() || m_progFilter.IsActive(); }
 
-bool Filters::FailAddr( const char* addr )
-{
-    return m_addrFilter.IsActive() && !m_addrFilter.PassFilter( addr );
-}
+bool Filters::FailAddr( const char* addr ) { return m_addrFilter.IsActive() && !m_addrFilter.PassFilter( addr ); }
 
 bool Filters::FailPort( uint16_t port )
 {
@@ -81,7 +74,4 @@ bool Filters::FailPort( uint16_t port )
     return !m_portFilter.PassFilter( buf );
 }
 
-bool Filters::FailProg( const char* prog )
-{
-    return m_progFilter.IsActive() && !m_progFilter.PassFilter( prog );
-}
+bool Filters::FailProg( const char* prog ) { return m_progFilter.IsActive() && !m_progFilter.PassFilter( prog ); }

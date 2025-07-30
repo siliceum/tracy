@@ -1,6 +1,6 @@
-#include <imgui.h>
-#include "profiler/TracyStorage.hpp"
 #include "ImGuiContext.hpp"
+#include "profiler/TracyStorage.hpp"
+#include <imgui.h>
 
 ImGuiTracyContext::ImGuiTracyContext()
     : m_iniFilename( tracy::GetSavePath( "imgui.ini" ) )
@@ -14,7 +14,4 @@ ImGuiTracyContext::ImGuiTracyContext()
     io.ConfigScrollbarScrollByPage = false;
 }
 
-ImGuiTracyContext::~ImGuiTracyContext()
-{
-    ImGui::DestroyContext();
-}
+ImGuiTracyContext::~ImGuiTracyContext() { ImGui::DestroyContext(); }

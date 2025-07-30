@@ -24,7 +24,7 @@ static Mouse s_mouse = {};
 
 void MouseFrame()
 {
-    for( int i=0; i<MouseButtons; i++ )
+    for( int i = 0; i < MouseButtons; i++ )
     {
         s_mouse.mouseDown[i] = ImGui::IsMouseDown( i );
         s_mouse.mouseClicked[i] = ImGui::IsMouseClicked( i );
@@ -36,7 +36,8 @@ void MouseFrame()
         {
             if( s_mouse.mouseClicked[i] || s_mouse.mousePotentialClickRelease[i] )
             {
-                if( std::abs( s_mouse.mouseDragDelta[i].x ) < MouseDragThreshold && std::abs( s_mouse.mouseDragDelta[i].y ) < MouseDragThreshold )
+                if( std::abs( s_mouse.mouseDragDelta[i].x ) < MouseDragThreshold &&
+                    std::abs( s_mouse.mouseDragDelta[i].y ) < MouseDragThreshold )
                 {
                     s_mouse.mouseDragging[i] = false;
                 }
@@ -53,25 +54,13 @@ void MouseFrame()
     }
 }
 
-bool IsMouseDown( ImGuiMouseButton button )
-{
-    return s_mouse.mouseDown[button];
-}
+bool IsMouseDown( ImGuiMouseButton button ) { return s_mouse.mouseDown[button]; }
 
-bool IsMouseClicked( ImGuiMouseButton button )
-{
-    return s_mouse.mouseClicked[button];
-}
+bool IsMouseClicked( ImGuiMouseButton button ) { return s_mouse.mouseClicked[button]; }
 
-bool IsMouseDragging( ImGuiMouseButton button )
-{
-    return s_mouse.mouseDragging[button];
-}
+bool IsMouseDragging( ImGuiMouseButton button ) { return s_mouse.mouseDragging[button]; }
 
-ImVec2 GetMouseDragDelta( ImGuiMouseButton button )
-{
-    return s_mouse.mouseDragDelta[button];
-}
+ImVec2 GetMouseDragDelta( ImGuiMouseButton button ) { return s_mouse.mouseDragDelta[button]; }
 
 void ConsumeMouseEvents( ImGuiMouseButton button )
 {

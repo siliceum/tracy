@@ -6,17 +6,17 @@
 namespace tracy
 {
 
-template<typename T>
+template <typename T>
 class DecayValue
 {
-public:
+  public:
     DecayValue( const T& init, bool active = false )
         : m_value( init )
         , m_active( active )
     {
     }
 
-    tracy_force_inline operator const T& () const { return m_value; }
+    tracy_force_inline operator const T&() const { return m_value; }
     tracy_force_inline T operator->() const { return m_value; }
 
     tracy_force_inline DecayValue& operator=( const T& value )
@@ -38,7 +38,7 @@ public:
         }
     }
 
-private:
+  private:
     T m_value;
     bool m_active;
 };

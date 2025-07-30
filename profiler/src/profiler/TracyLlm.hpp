@@ -34,16 +34,20 @@ class TracyLlm
     {
         Task task;
         std::function<void()> callback;
-        std::function<void(nlohmann::json)> callback2;
+        std::function<void( nlohmann::json )> callback2;
         std::string param;
         bool stop;
     };
 
-public:
+  public:
     TracyLlm( Worker& worker );
     ~TracyLlm();
 
-    [[nodiscard]] bool IsBusy() const { std::lock_guard lock( m_lock ); return m_busy; }
+    [[nodiscard]] bool IsBusy() const
+    {
+        std::lock_guard lock( m_lock );
+        return m_busy;
+    }
 
     void Draw();
     void AddAttachment( std::string&& str, const char* role );
@@ -52,7 +56,7 @@ public:
 
     bool m_show = false;
 
-private:
+  private:
     void WorkerThread();
 
     void UpdateModels();

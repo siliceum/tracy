@@ -2,9 +2,9 @@
 #include <memory>
 
 #ifdef _WIN32
-#  include <stdio.h>
+#    include <stdio.h>
 #else
-#  include <unistd.h>
+#    include <unistd.h>
 #endif
 
 #include "../ini.h"
@@ -22,10 +22,22 @@ constexpr auto FileOptions = "options";
 constexpr auto FileAnnotations = "annotations";
 constexpr auto FileSourceSubstitutions = "srcsub";
 
-enum : uint32_t { VersionTimeline = 0 };
-enum : uint32_t { VersionOptions = 7 };
-enum : uint32_t { VersionAnnotations = 0 };
-enum : uint32_t { VersionSourceSubstitutions = 0 };
+enum : uint32_t
+{
+    VersionTimeline = 0
+};
+enum : uint32_t
+{
+    VersionOptions = 7
+};
+enum : uint32_t
+{
+    VersionAnnotations = 0
+};
+enum : uint32_t
+{
+    VersionSourceSubstitutions = 0
+};
 
 UserData::UserData()
     : m_preserveState( false )
@@ -87,9 +99,9 @@ void UserData::LoadState( ViewData& data )
         {
             fread( &data.zvStart, 1, sizeof( data.zvStart ), f );
             fread( &data.zvEnd, 1, sizeof( data.zvEnd ), f );
-            //fread( &data.zvHeight, 1, sizeof( data.zvHeight ), f );
+            // fread( &data.zvHeight, 1, sizeof( data.zvHeight ), f );
             fseek( f, sizeof( float ), SEEK_CUR );
-            //fread( &data.zvScroll, 1, sizeof( data.zvScroll ), f );
+            // fread( &data.zvScroll, 1, sizeof( data.zvScroll ), f );
             fseek( f, sizeof( float ), SEEK_CUR );
             fread( &data.frameScale, 1, sizeof( data.frameScale ), f );
             fread( &data.frameStart, 1, sizeof( data.frameStart ), f );
@@ -168,10 +180,10 @@ void UserData::SaveState( const ViewData& data )
         fwrite( &ver, 1, sizeof( ver ), f );
         fwrite( &data.zvStart, 1, sizeof( data.zvStart ), f );
         fwrite( &data.zvEnd, 1, sizeof( data.zvEnd ), f );
-        //fwrite( &data.zvHeight, 1, sizeof( data.zvHeight ), f );
+        // fwrite( &data.zvHeight, 1, sizeof( data.zvHeight ), f );
         float zero = 0;
         fwrite( &zero, 1, sizeof( zero ), f );
-        //fwrite( &data.zvScroll, 1, sizeof( data.zvScroll ), f );
+        // fwrite( &data.zvScroll, 1, sizeof( data.zvScroll ), f );
         fwrite( &zero, 1, sizeof( zero ), f );
         fwrite( &data.frameScale, 1, sizeof( data.frameScale ), f );
         fwrite( &data.frameStart, 1, sizeof( data.frameStart ), f );
@@ -205,10 +217,7 @@ void UserData::SaveState( const ViewData& data )
     }
 }
 
-void UserData::StateShouldBePreserved()
-{
-    m_preserveState = true;
-}
+void UserData::StateShouldBePreserved() { m_preserveState = true; }
 
 void UserData::LoadAnnotations( std::vector<std::unique_ptr<Annotation>>& data )
 {
@@ -222,7 +231,7 @@ void UserData::LoadAnnotations( std::vector<std::unique_ptr<Annotation>>& data )
         {
             uint32_t sz;
             fread( &sz, 1, sizeof( sz ), f );
-            for( uint32_t i=0; i<sz; i++ )
+            for( uint32_t i = 0; i < sz; i++ )
             {
                 auto ann = std::make_unique<Annotation>();
 
@@ -292,7 +301,7 @@ bool UserData::LoadSourceSubstitutions( std::vector<SourceRegex>& data )
         {
             uint32_t sz;
             fread( &sz, 1, sizeof( sz ), f );
-            for( uint32_t i=0; i<sz; i++ )
+            for( uint32_t i = 0; i < sz; i++ )
             {
                 std::string pattern, target;
                 uint32_t tsz;
@@ -321,7 +330,7 @@ bool UserData::LoadSourceSubstitutions( std::vector<SourceRegex>& data )
                 {
                     regexValid = false;
                 }
-                data.emplace_back( SourceRegex { std::move( pattern ), std::move( target ), std::move( regex ) } );
+                data.emplace_back( SourceRegex{ std::move( pattern ), std::move( target ), std::move( regex ) } );
             }
         }
         fclose( f );
@@ -363,7 +372,6 @@ void UserData::SaveSourceSubstitutions( const std::vector<SourceRegex>& data )
         fclose( f );
     }
 }
-
 
 FILE* UserData::OpenFile( const char* filename, bool write )
 {

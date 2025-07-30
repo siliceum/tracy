@@ -9,12 +9,10 @@ namespace tracy
 {
 
 // Short list based on GetTypes() in TracySourceTokenizer.cpp
-constexpr const char* TypesList[] = {
-    "bool ", "char ", "double ", "float ", "int ", "long ", "short ",
-    "signed ", "unsigned ", "void ", "wchar_t ", "size_t ", "int8_t ",
-    "int16_t ", "int32_t ", "int64_t ", "intptr_t ", "uint8_t ", "uint16_t ",
-    "uint32_t ", "uint64_t ", "ptrdiff_t ", nullptr
-};
+constexpr const char* TypesList[] = { "bool ",     "char ",     "double ",   "float ",     "int ",      "long ",
+                                      "short ",    "signed ",   "unsigned ", "void ",      "wchar_t ",  "size_t ",
+                                      "int8_t ",   "int16_t ",  "int32_t ",  "int64_t ",   "intptr_t ", "uint8_t ",
+                                      "uint16_t ", "uint32_t ", "uint64_t ", "ptrdiff_t ", nullptr };
 
 const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, float zsz )
 {
@@ -22,14 +20,14 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
     if( name[0] == '<' || name[0] == '[' ) return name;
     if( type == ShortenName::Always ) zsz = 0;
 
-    static char buf[64*1024];
-    char tmp[64*1024];
+    static char buf[64 * 1024];
+    char tmp[64 * 1024];
 
     auto end = name + strlen( name );
     auto ptr = name;
     auto dst = tmp;
     int cnt = 0;
-    for(;;)
+    for( ;; )
     {
         auto start = ptr;
         while( ptr < end && *ptr != '<' ) ptr++;
@@ -41,18 +39,20 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
         while( cnt > 0 )
         {
             if( ptr == end ) break;
-            if( *ptr == '<' ) cnt++;
-            else if( *ptr == '>' ) cnt--;
+            if( *ptr == '<' )
+                cnt++;
+            else if( *ptr == '>' )
+                cnt--;
             ptr++;
         }
         *dst++ = '>';
     }
 
-    end = dst-1;
+    end = dst - 1;
     ptr = tmp;
     dst = buf;
     cnt = 0;
-    for(;;)
+    for( ;; )
     {
         auto start = ptr;
         while( ptr < end && *ptr != '(' ) ptr++;
@@ -64,22 +64,24 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
         while( cnt > 0 )
         {
             if( ptr == end ) break;
-            if( *ptr == '(' ) cnt++;
-            else if( *ptr == ')' ) cnt--;
+            if( *ptr == '(' )
+                cnt++;
+            else if( *ptr == ')' )
+                cnt--;
             ptr++;
         }
         *dst++ = ')';
     }
 
-    end = dst-1;
-    if( end - buf > 6 && memcmp( end-6, " const", 6 ) == 0 )
+    end = dst - 1;
+    if( end - buf > 6 && memcmp( end - 6, " const", 6 ) == 0 )
     {
         dst[-7] = '\0';
         end -= 6;
     }
 
     ptr = buf;
-    for(;;)
+    for( ;; )
     {
         auto match = TypesList;
         while( *match )
@@ -105,7 +107,7 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
     tsz = ImGui::CalcTextSize( ptr, end );
     if( type == ShortenName::OnlyNormalize || tsz.x < zsz ) return ptr;
 
-    for(;;)
+    for( ;; )
     {
         auto p = ptr;
         while( p < end && *p != ':' ) p++;
@@ -191,7 +193,7 @@ std::vector<std::string> SplitLines( const char* data, size_t sz )
 {
     std::vector<std::string> ret;
     auto txt = data;
-    for(;;)
+    for( ;; )
     {
         auto end = txt;
         while( *end != '\n' && *end != '\r' && end - data < sz ) end++;

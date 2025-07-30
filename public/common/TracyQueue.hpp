@@ -143,7 +143,7 @@ struct QueueZoneBeginLean
 
 struct QueueZoneBegin : public QueueZoneBeginLean
 {
-    uint64_t srcloc;    // ptr
+    uint64_t srcloc; // ptr
 };
 
 struct QueueZoneBeginThread : public QueueZoneBegin
@@ -201,7 +201,7 @@ struct QueueStringTransfer
 struct QueueFrameMark
 {
     int64_t time;
-    uint64_t name;      // ptr
+    uint64_t name; // ptr
 };
 
 struct QueueFrameVsync
@@ -220,14 +220,14 @@ struct QueueFrameImage
 
 struct QueueFrameImageFat : public QueueFrameImage
 {
-    uint64_t image;     // ptr
+    uint64_t image; // ptr
 };
 
 struct QueueSourceLocation
 {
     uint64_t name;
-    uint64_t function;  // ptr
-    uint64_t file;      // ptr
+    uint64_t function; // ptr
+    uint64_t file;     // ptr
     uint32_t line;
     uint8_t b;
     uint8_t g;
@@ -236,7 +236,7 @@ struct QueueSourceLocation
 
 struct QueueZoneTextFat
 {
-    uint64_t text;      // ptr
+    uint64_t text; // ptr
     uint16_t size;
 };
 
@@ -255,14 +255,14 @@ struct QueueLockAnnounce
 {
     uint32_t id;
     int64_t time;
-    uint64_t lckloc;    // ptr
+    uint64_t lckloc; // ptr
     LockType type;
 };
 
 struct QueueFiberEnter
 {
     int64_t time;
-    uint64_t fiber;     // ptr
+    uint64_t fiber; // ptr
     uint32_t thread;
     int32_t groupHint;
 };
@@ -308,7 +308,7 @@ struct QueueLockMark
 {
     uint32_t thread;
     uint32_t id;
-    uint64_t srcloc;    // ptr
+    uint64_t srcloc; // ptr
 };
 
 struct QueueLockName
@@ -318,13 +318,13 @@ struct QueueLockName
 
 struct QueueLockNameFat : public QueueLockName
 {
-    uint64_t name;      // ptr
+    uint64_t name; // ptr
     uint16_t size;
 };
 
 struct QueuePlotDataBase
 {
-    uint64_t name;      // ptr
+    uint64_t name; // ptr
     int64_t time;
 };
 
@@ -357,7 +357,7 @@ struct QueueMessageColor : public QueueMessage
 
 struct QueueMessageLiteral : public QueueMessage
 {
-    uint64_t text;      // ptr
+    uint64_t text; // ptr
 };
 
 struct QueueMessageLiteralThread : public QueueMessageLiteral
@@ -367,7 +367,7 @@ struct QueueMessageLiteralThread : public QueueMessageLiteral
 
 struct QueueMessageColorLiteral : public QueueMessageColor
 {
-    uint64_t text;      // ptr
+    uint64_t text; // ptr
 };
 
 struct QueueMessageColorLiteralThread : public QueueMessageColorLiteral
@@ -377,7 +377,7 @@ struct QueueMessageColorLiteralThread : public QueueMessageColorLiteral
 
 struct QueueMessageFat : public QueueMessage
 {
-    uint64_t text;      // ptr
+    uint64_t text; // ptr
     uint16_t size;
 };
 
@@ -388,7 +388,7 @@ struct QueueMessageFatThread : public QueueMessageFat
 
 struct QueueMessageColorFat : public QueueMessageColor
 {
-    uint64_t text;      // ptr
+    uint64_t text; // ptr
     uint16_t size;
 };
 
@@ -414,7 +414,7 @@ enum class GpuContextType : uint8_t
 
 enum GpuContextFlags : uint8_t
 {
-    GpuContextCalibration   = 1 << 0
+    GpuContextCalibration = 1 << 0
 };
 
 struct QueueGpuNewContext
@@ -602,7 +602,7 @@ struct QueueSymbolInformationFat : public QueueSymbolInformation
 struct QueueCrashReport
 {
     int64_t time;
-    uint64_t text;      // ptr
+    uint64_t text; // ptr
 };
 
 struct QueueCrashReportThread
@@ -620,7 +620,7 @@ struct QueueSysPower
 {
     int64_t time;
     uint64_t delta;
-    uint64_t name;  // ptr
+    uint64_t name; // ptr
 };
 
 struct QueueContextSwitch
@@ -666,7 +666,7 @@ enum class PlotFormatType : uint8_t
 
 struct QueuePlotConfig
 {
-    uint64_t name;      // ptr
+    uint64_t name; // ptr
     uint8_t type;
     uint8_t step;
     uint8_t fill;
@@ -676,7 +676,7 @@ struct QueuePlotConfig
 struct QueueParamSetup
 {
     uint32_t idx;
-    uint64_t name;      // ptr
+    uint64_t name; // ptr
     uint8_t isBool;
     int32_t val;
 };
@@ -820,129 +820,110 @@ struct QueueItem
 };
 #pragma pack( pop )
 
-
-enum { QueueItemSize = sizeof( QueueItem ) };
+enum
+{
+    QueueItemSize = sizeof( QueueItem )
+};
 
 static constexpr size_t QueueDataSize[] = {
-    sizeof( QueueHeader ),                                  // zone text
-    sizeof( QueueHeader ),                                  // zone name
-    sizeof( QueueHeader ) + sizeof( QueueMessage ),
-    sizeof( QueueHeader ) + sizeof( QueueMessageColor ),
-    sizeof( QueueHeader ) + sizeof( QueueMessage ),         // callstack
-    sizeof( QueueHeader ) + sizeof( QueueMessageColor ),    // callstack
-    sizeof( QueueHeader ) + sizeof( QueueMessage ),         // app info
-    sizeof( QueueHeader ) + sizeof( QueueZoneBeginLean ),   // allocated source location
-    sizeof( QueueHeader ) + sizeof( QueueZoneBeginLean ),   // allocated source location, callstack
-    sizeof( QueueHeader ),                                  // callstack memory
-    sizeof( QueueHeader ),                                  // callstack
-    sizeof( QueueHeader ),                                  // callstack alloc
+    sizeof( QueueHeader ), // zone text
+    sizeof( QueueHeader ), // zone name
+    sizeof( QueueHeader ) + sizeof( QueueMessage ), sizeof( QueueHeader ) + sizeof( QueueMessageColor ),
+    sizeof( QueueHeader ) + sizeof( QueueMessage ),       // callstack
+    sizeof( QueueHeader ) + sizeof( QueueMessageColor ),  // callstack
+    sizeof( QueueHeader ) + sizeof( QueueMessage ),       // app info
+    sizeof( QueueHeader ) + sizeof( QueueZoneBeginLean ), // allocated source location
+    sizeof( QueueHeader ) + sizeof( QueueZoneBeginLean ), // allocated source location, callstack
+    sizeof( QueueHeader ),                                // callstack memory
+    sizeof( QueueHeader ),                                // callstack
+    sizeof( QueueHeader ),                                // callstack alloc
     sizeof( QueueHeader ) + sizeof( QueueCallstackSample ),
     sizeof( QueueHeader ) + sizeof( QueueCallstackSample ), // context switch
-    sizeof( QueueHeader ) + sizeof( QueueFrameImage ),
-    sizeof( QueueHeader ) + sizeof( QueueZoneBegin ),
-    sizeof( QueueHeader ) + sizeof( QueueZoneBegin ),       // callstack
-    sizeof( QueueHeader ) + sizeof( QueueZoneEnd ),
-    sizeof( QueueHeader ) + sizeof( QueueLockWait ),
-    sizeof( QueueHeader ) + sizeof( QueueLockObtain ),
-    sizeof( QueueHeader ) + sizeof( QueueLockRelease ),
-    sizeof( QueueHeader ) + sizeof( QueueLockWait ),        // shared
-    sizeof( QueueHeader ) + sizeof( QueueLockObtain ),      // shared
-    sizeof( QueueHeader ) + sizeof( QueueLockReleaseShared ),
-    sizeof( QueueHeader ) + sizeof( QueueLockName ),
+    sizeof( QueueHeader ) + sizeof( QueueFrameImage ), sizeof( QueueHeader ) + sizeof( QueueZoneBegin ),
+    sizeof( QueueHeader ) + sizeof( QueueZoneBegin ), // callstack
+    sizeof( QueueHeader ) + sizeof( QueueZoneEnd ), sizeof( QueueHeader ) + sizeof( QueueLockWait ),
+    sizeof( QueueHeader ) + sizeof( QueueLockObtain ), sizeof( QueueHeader ) + sizeof( QueueLockRelease ),
+    sizeof( QueueHeader ) + sizeof( QueueLockWait ),   // shared
+    sizeof( QueueHeader ) + sizeof( QueueLockObtain ), // shared
+    sizeof( QueueHeader ) + sizeof( QueueLockReleaseShared ), sizeof( QueueHeader ) + sizeof( QueueLockName ),
     sizeof( QueueHeader ) + sizeof( QueueMemAlloc ),
-    sizeof( QueueHeader ) + sizeof( QueueMemAlloc ),        // named
+    sizeof( QueueHeader ) + sizeof( QueueMemAlloc ), // named
     sizeof( QueueHeader ) + sizeof( QueueMemFree ),
-    sizeof( QueueHeader ) + sizeof( QueueMemFree ),         // named
-    sizeof( QueueHeader ) + sizeof( QueueMemAlloc ),        // callstack
-    sizeof( QueueHeader ) + sizeof( QueueMemAlloc ),        // callstack, named
-    sizeof( QueueHeader ) + sizeof( QueueMemFree ),         // callstack
-    sizeof( QueueHeader ) + sizeof( QueueMemFree ),         // callstack, named
+    sizeof( QueueHeader ) + sizeof( QueueMemFree ),  // named
+    sizeof( QueueHeader ) + sizeof( QueueMemAlloc ), // callstack
+    sizeof( QueueHeader ) + sizeof( QueueMemAlloc ), // callstack, named
+    sizeof( QueueHeader ) + sizeof( QueueMemFree ),  // callstack
+    sizeof( QueueHeader ) + sizeof( QueueMemFree ),  // callstack, named
     sizeof( QueueHeader ) + sizeof( QueueMemDiscard ),
-    sizeof( QueueHeader ) + sizeof( QueueMemDiscard ),      // callstack
+    sizeof( QueueHeader ) + sizeof( QueueMemDiscard ), // callstack
     sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),    // callstack
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ),// allocated source location
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ),// allocated source location, callstack
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),     // callstack
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ), // allocated source location
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ), // allocated source location, callstack
     sizeof( QueueHeader ) + sizeof( QueueGpuZoneEnd ),
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),    // serial
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),    // serial, callstack
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ),// serial, allocated source location
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ),// serial, allocated source location, callstack
-    sizeof( QueueHeader ) + sizeof( QueueGpuZoneEnd ),      // serial
-    sizeof( QueueHeader ) + sizeof( QueuePlotDataInt ),
-    sizeof( QueueHeader ) + sizeof( QueuePlotDataFloat ),
-    sizeof( QueueHeader ) + sizeof( QueuePlotDataDouble ),
-    sizeof( QueueHeader ) + sizeof( QueueContextSwitch ),
-    sizeof( QueueHeader ) + sizeof( QueueThreadWakeup ),
-    sizeof( QueueHeader ) + sizeof( QueueGpuTime ),
-    sizeof( QueueHeader ) + sizeof( QueueGpuContextName ),
-    sizeof( QueueHeader ) + sizeof( QueueGpuAnnotationName ),
-    sizeof( QueueHeader ) + sizeof( QueueCallstackFrameSize ),
-    sizeof( QueueHeader ) + sizeof( QueueSymbolInformation ),
-    sizeof( QueueHeader ),                                  // ExternalNameMetadata - not for wire transfer
-    sizeof( QueueHeader ),                                  // SymbolCodeMetadata - not for wire transfer
-    sizeof( QueueHeader ),                                  // SourceCodeMetadata - not for wire transfer
-    sizeof( QueueHeader ) + sizeof( QueueFiberEnter ),
-    sizeof( QueueHeader ) + sizeof( QueueFiberLeave ),
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),     // serial
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBegin ),     // serial, callstack
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ), // serial, allocated source location
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneBeginLean ), // serial, allocated source location, callstack
+    sizeof( QueueHeader ) + sizeof( QueueGpuZoneEnd ),       // serial
+    sizeof( QueueHeader ) + sizeof( QueuePlotDataInt ), sizeof( QueueHeader ) + sizeof( QueuePlotDataFloat ),
+    sizeof( QueueHeader ) + sizeof( QueuePlotDataDouble ), sizeof( QueueHeader ) + sizeof( QueueContextSwitch ),
+    sizeof( QueueHeader ) + sizeof( QueueThreadWakeup ), sizeof( QueueHeader ) + sizeof( QueueGpuTime ),
+    sizeof( QueueHeader ) + sizeof( QueueGpuContextName ), sizeof( QueueHeader ) + sizeof( QueueGpuAnnotationName ),
+    sizeof( QueueHeader ) + sizeof( QueueCallstackFrameSize ), sizeof( QueueHeader ) + sizeof( QueueSymbolInformation ),
+    sizeof( QueueHeader ), // ExternalNameMetadata - not for wire transfer
+    sizeof( QueueHeader ), // SymbolCodeMetadata - not for wire transfer
+    sizeof( QueueHeader ), // SourceCodeMetadata - not for wire transfer
+    sizeof( QueueHeader ) + sizeof( QueueFiberEnter ), sizeof( QueueHeader ) + sizeof( QueueFiberLeave ),
     // above items must be first
-    sizeof( QueueHeader ),                                  // terminate
-    sizeof( QueueHeader ),                                  // keep alive
-    sizeof( QueueHeader ) + sizeof( QueueThreadContext ),
-    sizeof( QueueHeader ) + sizeof( QueueGpuCalibration ),
+    sizeof( QueueHeader ), // terminate
+    sizeof( QueueHeader ), // keep alive
+    sizeof( QueueHeader ) + sizeof( QueueThreadContext ), sizeof( QueueHeader ) + sizeof( QueueGpuCalibration ),
     sizeof( QueueHeader ) + sizeof( QueueGpuTimeSync ),
-    sizeof( QueueHeader ),                                  // crash
-    sizeof( QueueHeader ) + sizeof( QueueCrashReport ),
-    sizeof( QueueHeader ) + sizeof( QueueZoneValidation ),
-    sizeof( QueueHeader ) + sizeof( QueueZoneColor ),
-    sizeof( QueueHeader ) + sizeof( QueueZoneValue ),
-    sizeof( QueueHeader ) + sizeof( QueueFrameMark ),       // continuous frames
-    sizeof( QueueHeader ) + sizeof( QueueFrameMark ),       // start
-    sizeof( QueueHeader ) + sizeof( QueueFrameMark ),       // end
-    sizeof( QueueHeader ) + sizeof( QueueFrameVsync ),
-    sizeof( QueueHeader ) + sizeof( QueueSourceLocation ),
-    sizeof( QueueHeader ) + sizeof( QueueLockAnnounce ),
-    sizeof( QueueHeader ) + sizeof( QueueLockTerminate ),
-    sizeof( QueueHeader ) + sizeof( QueueLockMark ),
-    sizeof( QueueHeader ) + sizeof( QueueMessageLiteral ),
+    sizeof( QueueHeader ), // crash
+    sizeof( QueueHeader ) + sizeof( QueueCrashReport ), sizeof( QueueHeader ) + sizeof( QueueZoneValidation ),
+    sizeof( QueueHeader ) + sizeof( QueueZoneColor ), sizeof( QueueHeader ) + sizeof( QueueZoneValue ),
+    sizeof( QueueHeader ) + sizeof( QueueFrameMark ), // continuous frames
+    sizeof( QueueHeader ) + sizeof( QueueFrameMark ), // start
+    sizeof( QueueHeader ) + sizeof( QueueFrameMark ), // end
+    sizeof( QueueHeader ) + sizeof( QueueFrameVsync ), sizeof( QueueHeader ) + sizeof( QueueSourceLocation ),
+    sizeof( QueueHeader ) + sizeof( QueueLockAnnounce ), sizeof( QueueHeader ) + sizeof( QueueLockTerminate ),
+    sizeof( QueueHeader ) + sizeof( QueueLockMark ), sizeof( QueueHeader ) + sizeof( QueueMessageLiteral ),
     sizeof( QueueHeader ) + sizeof( QueueMessageColorLiteral ),
-    sizeof( QueueHeader ) + sizeof( QueueMessageLiteral ),  // callstack
+    sizeof( QueueHeader ) + sizeof( QueueMessageLiteral ),      // callstack
     sizeof( QueueHeader ) + sizeof( QueueMessageColorLiteral ), // callstack
-    sizeof( QueueHeader ) + sizeof( QueueGpuNewContext ),
-    sizeof( QueueHeader ) + sizeof( QueueCallstackFrame ),
-    sizeof( QueueHeader ) + sizeof( QueueSysTime ),
-    sizeof( QueueHeader ) + sizeof( QueueSysPower ),
+    sizeof( QueueHeader ) + sizeof( QueueGpuNewContext ), sizeof( QueueHeader ) + sizeof( QueueCallstackFrame ),
+    sizeof( QueueHeader ) + sizeof( QueueSysTime ), sizeof( QueueHeader ) + sizeof( QueueSysPower ),
     sizeof( QueueHeader ) + sizeof( QueueTidToPid ),
-    sizeof( QueueHeader ) + sizeof( QueueHwSample ),        // cpu cycle
-    sizeof( QueueHeader ) + sizeof( QueueHwSample ),        // instruction retired
-    sizeof( QueueHeader ) + sizeof( QueueHwSample ),        // cache reference
-    sizeof( QueueHeader ) + sizeof( QueueHwSample ),        // cache miss
-    sizeof( QueueHeader ) + sizeof( QueueHwSample ),        // branch retired
-    sizeof( QueueHeader ) + sizeof( QueueHwSample ),        // branch miss
-    sizeof( QueueHeader ) + sizeof( QueuePlotConfig ),
-    sizeof( QueueHeader ) + sizeof( QueueParamSetup ),
-    sizeof( QueueHeader ),                                  // server query acknowledgement
+    sizeof( QueueHeader ) + sizeof( QueueHwSample ), // cpu cycle
+    sizeof( QueueHeader ) + sizeof( QueueHwSample ), // instruction retired
+    sizeof( QueueHeader ) + sizeof( QueueHwSample ), // cache reference
+    sizeof( QueueHeader ) + sizeof( QueueHwSample ), // cache miss
+    sizeof( QueueHeader ) + sizeof( QueueHwSample ), // branch retired
+    sizeof( QueueHeader ) + sizeof( QueueHwSample ), // branch miss
+    sizeof( QueueHeader ) + sizeof( QueuePlotConfig ), sizeof( QueueHeader ) + sizeof( QueueParamSetup ),
+    sizeof( QueueHeader ), // server query acknowledgement
     sizeof( QueueHeader ) + sizeof( QueueSourceCodeNotAvailable ),
-    sizeof( QueueHeader ),                                  // symbol code not available
+    sizeof( QueueHeader ), // symbol code not available
     sizeof( QueueHeader ) + sizeof( QueueCpuTopology ),
-    sizeof( QueueHeader ),                                  // single string data
-    sizeof( QueueHeader ),                                  // second string data
-    sizeof( QueueHeader ) + sizeof( QueueMemNamePayload ),
-    sizeof( QueueHeader ) + sizeof( QueueThreadGroupHint ),
+    sizeof( QueueHeader ), // single string data
+    sizeof( QueueHeader ), // second string data
+    sizeof( QueueHeader ) + sizeof( QueueMemNamePayload ), sizeof( QueueHeader ) + sizeof( QueueThreadGroupHint ),
     sizeof( QueueHeader ) + sizeof( QueueGpuZoneAnnotation ), // GPU zone annotation
     // keep all QueueStringTransfer below
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // string data
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // thread name
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // plot name
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // allocated source location payload
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // callstack payload
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // callstack alloc payload
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // frame name
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // frame image data
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // external name
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // external thread name
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // symbol code
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // source code
-    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ),  // fiber name
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // string data
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // thread name
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // plot name
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // allocated source location payload
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // callstack payload
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // callstack alloc payload
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // frame name
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // frame image data
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // external name
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // external thread name
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // symbol code
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // source code
+    sizeof( QueueHeader ) + sizeof( QueueStringTransfer ), // fiber name
 };
 
 static_assert( QueueItemSize == 32, "Queue item size not 32 bytes" );

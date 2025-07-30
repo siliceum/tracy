@@ -1,9 +1,9 @@
+#include "../Fonts.hpp"
 #include "TracyImGui.hpp"
 #include "TracyMouse.hpp"
 #include "TracyPrint.hpp"
 #include "TracyTimelineItem.hpp"
 #include "TracyView.hpp"
-#include "../Fonts.hpp"
 
 namespace tracy
 {
@@ -21,7 +21,8 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "The client is slow to answer queries." );
             ImGui::TextUnformatted( "" );
-            ImGui::TextWrapped( "Such behavior is typically caused by the symbol resolution performed client-side. If this is a problem, you may try the following options:" );
+            ImGui::TextWrapped(
+                "Such behavior is typically caused by the symbol resolution performed client-side. If this is a problem, you may try the following options:" );
             ImGui::BulletText( "Disable inline-symbol resolution with TRACY_NO_CALLSTACK_INLINES" );
             ImGui::BulletText( "Disable call stack sampling with TRACY_NO_SAMPLING" );
             ImGui::BulletText( "Change sampling frequency with TRACY_SAMPLING_HZ" );
@@ -89,7 +90,8 @@ void View::DrawNotificationArea()
     {
         ImGui::SameLine();
         TextColoredUnformatted( ImVec4( 1, 0.5, 0, 1 ), ICON_FA_EYE_DROPPER );
-        TooltipIfHovered( "Sampling data and ghost zones may be displayed wrongly due to data inconsistency. Save and reload the trace to fix this." );
+        TooltipIfHovered(
+            "Sampling data and ghost zones may be displayed wrongly due to data inconsistency. Save and reload the trace to fix this." );
     }
     if( m_vd.drawEmptyLabels )
     {
@@ -229,9 +231,12 @@ void View::DrawNotificationArea()
         ImGui::SameLine();
         const auto pos = ImGui::GetCursorPos();
         auto draw = ImGui::GetWindowDrawList();
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 0 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f        ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 2 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 0 * ty, ty * 0.675f ),
+                               ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ),
+                               ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 2 * ty, ty * 0.675f ),
+                               ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
         ImGui::Dummy( ImVec2( ty * 3, ty ) );
         auto rmin = ImGui::GetItemRectMin();
         const auto rmax = ImGui::GetItemRectMax();
@@ -260,11 +265,11 @@ void View::DrawNotificationArea()
     const auto w = ImGui::GetContentRegionAvail().x;
     const auto fps = RealToString( int( io.Framerate + 0.5f ) );
     const auto fpssz = ImGui::CalcTextSize( fps ).x;
-    ImGui::GetWindowDrawList()->AddText( wpos + ImVec2( w-fpssz, 0 ), 0x88FFFFFF, fps );
+    ImGui::GetWindowDrawList()->AddText( wpos + ImVec2( w - fpssz, 0 ), 0x88FFFFFF, fps );
 
 #ifndef NDEBUG
     const auto dsz = ImGui::CalcTextSize( "8888 DEBUG" ).x;
-    ImGui::GetWindowDrawList()->AddText( wpos + ImVec2( w-dsz, 0 ), 0x886666FF, "DEBUG" );
+    ImGui::GetWindowDrawList()->AddText( wpos + ImVec2( w - dsz, 0 ), 0x886666FF, "DEBUG" );
 #endif
 
     ImGui::PopFont();

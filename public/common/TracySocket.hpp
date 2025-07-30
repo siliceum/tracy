@@ -17,7 +17,7 @@ void InitWinSock();
 
 class Socket
 {
-public:
+  public:
     Socket();
     Socket( int sock );
     ~Socket();
@@ -32,7 +32,7 @@ public:
     int ReadUpTo( void* buf, int len );
     bool Read( void* buf, int len, int timeout );
 
-    template<typename ShouldExit>
+    template <typename ShouldExit>
     bool Read( void* buf, int len, int timeout, ShouldExit exitCb )
     {
         auto cbuf = (char*)buf;
@@ -53,7 +53,7 @@ public:
     Socket& operator=( const Socket& ) = delete;
     Socket& operator=( Socket&& ) = delete;
 
-private:
+  private:
     int RecvBuffered( void* buf, int len, int timeout );
     int Recv( void* buf, int len, int timeout );
 
@@ -64,14 +64,14 @@ private:
     std::atomic<int> m_sock;
     int m_bufLeft;
 
-    struct addrinfo *m_res;
-    struct addrinfo *m_ptr;
+    struct addrinfo* m_res;
+    struct addrinfo* m_ptr;
     int m_connSock;
 };
 
 class ListenSocket
 {
-public:
+  public:
     ListenSocket();
     ~ListenSocket();
 
@@ -84,13 +84,13 @@ public:
     ListenSocket& operator=( const ListenSocket& ) = delete;
     ListenSocket& operator=( ListenSocket&& ) = delete;
 
-private:
+  private:
     int m_sock;
 };
 
 class UdpBroadcast
 {
-public:
+  public:
     UdpBroadcast();
     ~UdpBroadcast();
 
@@ -104,14 +104,14 @@ public:
     UdpBroadcast& operator=( const UdpBroadcast& ) = delete;
     UdpBroadcast& operator=( UdpBroadcast&& ) = delete;
 
-private:
+  private:
     int m_sock;
     uint32_t m_addr;
 };
 
 class IpAddress
 {
-public:
+  public:
     IpAddress();
     ~IpAddress();
 
@@ -125,14 +125,14 @@ public:
     IpAddress& operator=( const IpAddress& ) = delete;
     IpAddress& operator=( IpAddress&& ) = delete;
 
-private:
+  private:
     uint32_t m_number;
     char m_text[17];
 };
 
 class UdpListen
 {
-public:
+  public:
     UdpListen();
     ~UdpListen();
 
@@ -146,7 +146,7 @@ public:
     UdpListen& operator=( const UdpListen& ) = delete;
     UdpListen& operator=( UdpListen&& ) = delete;
 
-private:
+  private:
     int m_sock;
 };
 

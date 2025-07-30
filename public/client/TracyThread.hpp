@@ -2,13 +2,13 @@
 #define __TRACYTHREAD_HPP__
 
 #if defined _WIN32
-#  include <windows.h>
+#    include <windows.h>
 #else
-#  include <pthread.h>
+#    include <pthread.h>
 #endif
 
 #ifdef TRACY_MANUAL_LIFETIME
-#  include "tracy_rpmalloc.hpp"
+#    include "tracy_rpmalloc.hpp"
 #endif
 
 namespace tracy
@@ -20,7 +20,7 @@ extern thread_local bool RpThreadInitDone;
 
 class ThreadExitHandler
 {
-public:
+  public:
     ~ThreadExitHandler()
     {
 #ifdef TRACY_MANUAL_LIFETIME
@@ -34,12 +34,13 @@ public:
 
 class Thread
 {
-public:
-    Thread( void(*func)( void* ptr ), void* ptr )
+  public:
+    Thread( void ( *func )( void* ptr ), void* ptr )
         : m_func( func )
         , m_ptr( ptr )
         , m_hnd( CreateThread( nullptr, 0, Launch, this, 0, nullptr ) )
-    {}
+    {
+    }
 
     ~Thread()
     {
@@ -49,10 +50,14 @@ public:
 
     HANDLE Handle() const { return m_hnd; }
 
-private:
-    static DWORD WINAPI Launch( void* ptr ) { ((Thread*)ptr)->m_func( ((Thread*)ptr)->m_ptr ); return 0; }
+  private:
+    static DWORD WINAPI Launch( void* ptr )
+    {
+        ( (Thread*)ptr )->m_func( ( (Thread*)ptr )->m_ptr );
+        return 0;
+    }
 
-    void(*m_func)( void* ptr );
+    void ( *m_func )( void* ptr );
     void* m_ptr;
     HANDLE m_hnd;
 };
@@ -61,24 +66,25 @@ private:
 
 class Thread
 {
-public:
-    Thread( void(*func)( void* ptr ), void* ptr )
+  public:
+    Thread( void ( *func )( void* ptr ), void* ptr )
         : m_func( func )
         , m_ptr( ptr )
     {
         pthread_create( &m_thread, nullptr, Launch, this );
     }
 
-    ~Thread()
-    {
-        pthread_join( m_thread, nullptr );
-    }
+    ~Thread() { pthread_join( m_thread, nullptr ); }
 
     pthread_t Handle() const { return m_thread; }
 
-private:
-    static void* Launch( void* ptr ) { ((Thread*)ptr)->m_func( ((Thread*)ptr)->m_ptr ); return nullptr; }
-    void(*m_func)( void* ptr );
+  private:
+    static void* Launch( void* ptr )
+    {
+        ( (Thread*)ptr )->m_func( ( (Thread*)ptr )->m_ptr );
+        return nullptr;
+    }
+    void ( *m_func )( void* ptr );
     void* m_ptr;
     pthread_t m_thread;
 };

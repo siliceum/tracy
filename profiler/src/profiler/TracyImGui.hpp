@@ -2,7 +2,7 @@
 #define __TRACYIMGUI_HPP__
 
 #ifdef _MSC_VER
-#  pragma warning( disable: 4244 )  // conversion from don't care to whatever, possible loss of data
+#    pragma warning( disable : 4244 ) // conversion from don't care to whatever, possible loss of data
 #endif
 
 #include <math.h>
@@ -27,49 +27,44 @@ namespace tracy
 extern bool s_wasActive;
 bool WasActive();
 
-
 void DrawZigZag( ImDrawList* draw, const ImVec2& wpos, double start, double end, double h, uint32_t color );
-void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0, double x1, double y1, double sw, uint32_t color, bool fix_stripes_in_screen_space, bool inverted );
+void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0, double x1, double y1, double sw,
+                      uint32_t color, bool fix_stripes_in_screen_space, bool inverted );
 void DrawHistogramMinMaxLabel( ImDrawList* draw, int64_t tmin, int64_t tmax, ImVec2 wpos, float w, float ty );
 void PrintSource( const std::vector<Tokenizer::Line>& lines );
 bool PrintTextWrapped( const char* text, const char* end = nullptr );
 
-
 static constexpr const uint32_t SyntaxColors[] = {
-    0xFFB2B2B2,     // default
-    0xFF51AD72,     // comment
-    0xFF1E5EB7,     // preprocessor
-    0xFFFFA3A3,     // string
-    0xFFFFD1A3,     // char literal
-    0xFF87E8FF,     // keyword
-    0xFFE899CE,     // number
-    0xFFE5E5E5,     // punctuation
-    0xFFBF75C6,     // type
-    0xFFE2AF35,     // special
+    0xFFB2B2B2, // default
+    0xFF51AD72, // comment
+    0xFF1E5EB7, // preprocessor
+    0xFFFFA3A3, // string
+    0xFFFFD1A3, // char literal
+    0xFF87E8FF, // keyword
+    0xFFE899CE, // number
+    0xFFE5E5E5, // punctuation
+    0xFFBF75C6, // type
+    0xFFE2AF35, // special
 };
 
 static constexpr const uint32_t AsmOpTypeColors[] = {
-    0xFFE2AF35,     // None
-    0xFF358FE2,     // Jump
-    0xFF358FE2,     // Branch
-    0xFF35E2AF,     // Call
-    0xFF35E2AF,     // Ret
-    0xFF22FFFF,     // Privileged
+    0xFFE2AF35, // None
+    0xFF358FE2, // Jump
+    0xFF358FE2, // Branch
+    0xFF35E2AF, // Call
+    0xFF35E2AF, // Ret
+    0xFF22FFFF, // Privileged
 };
 
 static constexpr const uint32_t AsmSyntaxColors[] = {
-    0xFFFFD1A3,     // label
-    0xFFE5E5E5,     // default ('[', '+', '*', ',')
-    0xFF51AD72,     // dword/xmmword 'ptr'
-    0xFFBF75C6,     // register
-    0xFFE899CE,     // literal
+    0xFFFFD1A3, // label
+    0xFFE5E5E5, // default ('[', '+', '*', ',')
+    0xFF51AD72, // dword/xmmword 'ptr'
+    0xFFBF75C6, // register
+    0xFFE899CE, // literal
 };
 
-
-[[maybe_unused]] static inline float GetScale()
-{
-    return ImGui::GetTextLineHeight() / 15.f;
-}
+[[maybe_unused]] static inline float GetScale() { return ImGui::GetTextLineHeight() / 15.f; }
 
 [[maybe_unused]] static inline void ImageCentered( ImTextureID user_texture_id, const ImVec2& size )
 {
@@ -98,7 +93,8 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
     ImGui::PopStyleColor();
 }
 
-[[maybe_unused]] static inline void TextColoredUnformatted( const ImVec4& col, const char* text, const char* end = nullptr )
+[[maybe_unused]] static inline void TextColoredUnformatted( const ImVec4& col, const char* text,
+                                                            const char* end = nullptr )
 {
     ImGui::PushStyleColor( ImGuiCol_Text, col );
     ImGui::TextUnformatted( text, end );
@@ -128,9 +124,12 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
     const auto ty = ImGui::GetTextLineHeight();
     const auto h = ImGui::GetCursorPosY() - ty * 0.5f;
     const auto w = ImGui::GetWindowWidth();
-    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f - ty, h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f     , h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f        ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f + ty, h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f - ty, h ),
+                           ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
+    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f, h ), ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f ), 16.f ) ) ),
+                           0xFFBBBBBB, 12 );
+    draw->AddCircleFilled( wpos + ImVec2( w * 0.5f + ty, h ),
+                           ty * ( 0.15f + 0.2f * ( pow( cos( time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
 }
 
 [[maybe_unused]] static inline bool SmallCheckbox( const char* label, bool* var )
@@ -144,7 +143,10 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
 [[maybe_unused]] static inline void SmallColorBox( uint32_t color )
 {
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
-    ImGui::ColorButton( "c1", ImVec4( (color & 0xFF) / 255.f, ((color>>8) & 0xFF ) / 255.f, ((color>>16) & 0xFF ) / 255.f, 1.f ), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
+    ImGui::ColorButton(
+        "c1",
+        ImVec4( ( color & 0xFF ) / 255.f, ( ( color >> 8 ) & 0xFF ) / 255.f, ( ( color >> 16 ) & 0xFF ) / 255.f, 1.f ),
+        ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop );
     ImGui::PopStyleVar();
 }
 
@@ -178,14 +180,16 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
     }
 }
 
-[[maybe_unused]] static inline void DrawTextContrast( ImDrawList* draw, const ImVec2& pos, uint32_t color, const char* text )
+[[maybe_unused]] static inline void DrawTextContrast( ImDrawList* draw, const ImVec2& pos, uint32_t color,
+                                                      const char* text )
 {
     const auto scale = round( GetScale() );
     draw->AddText( pos + ImVec2( scale, scale ), 0xAA000000, text );
     draw->AddText( pos, color, text );
 }
 
-[[maybe_unused]] static inline void DrawTextSuperContrast( ImDrawList* draw, const ImVec2& pos, uint32_t color, const char* text )
+[[maybe_unused]] static inline void DrawTextSuperContrast( ImDrawList* draw, const ImVec2& pos, uint32_t color,
+                                                           const char* text )
 {
     const auto scale = GetScale();
     const auto s1 = round( scale );
@@ -240,13 +244,15 @@ static constexpr const uint32_t AsmSyntaxColors[] = {
     return res;
 }
 
-[[maybe_unused]] static tracy_force_inline void DrawLine( ImDrawList* draw, const ImVec2& v1, const ImVec2& v2, uint32_t col, float thickness = 1.0f )
+[[maybe_unused]] static tracy_force_inline void DrawLine( ImDrawList* draw, const ImVec2& v1, const ImVec2& v2,
+                                                          uint32_t col, float thickness = 1.0f )
 {
     const ImVec2 data[2] = { v1, v2 };
     draw->AddPolyline( data, 2, col, 0, thickness );
 }
 
-[[maybe_unused]] static tracy_force_inline void DrawLine( ImDrawList* draw, const ImVec2& v1, const ImVec2& v2, const ImVec2& v3, uint32_t col, float thickness = 1.0f )
+[[maybe_unused]] static tracy_force_inline void DrawLine( ImDrawList* draw, const ImVec2& v1, const ImVec2& v2,
+                                                          const ImVec2& v3, uint32_t col, float thickness = 1.0f )
 {
     const ImVec2 data[3] = { v1, v2, v3 };
     draw->AddPolyline( data, 3, col, 0, thickness );

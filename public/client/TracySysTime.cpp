@@ -2,24 +2,24 @@
 
 #ifdef TRACY_HAS_SYSTIME
 
-#  if defined _WIN32
-#    include <windows.h>
-#    include "../common/TracyWinFamily.hpp"
-#  elif defined __linux__
-#    include <stdio.h>
-#    include <inttypes.h>
-#  elif defined __APPLE__
-#    include <mach/mach_host.h>
-#    include <mach/host_info.h>
-#  elif defined BSD
-#    include <sys/types.h>
-#    include <sys/sysctl.h>
-#  endif
+#    if defined _WIN32
+#        include "../common/TracyWinFamily.hpp"
+#        include <windows.h>
+#    elif defined __linux__
+#        include <inttypes.h>
+#        include <stdio.h>
+#    elif defined __APPLE__
+#        include <mach/host_info.h>
+#        include <mach/mach_host.h>
+#    elif defined BSD
+#        include <sys/sysctl.h>
+#        include <sys/types.h>
+#    endif
 
 namespace tracy
 {
 
-#  if defined _WIN32
+#    if defined _WIN32
 
 static inline uint64_t ConvertTime( const FILETIME& t )
 {
@@ -31,27 +31,27 @@ void SysTime::ReadTimes()
     FILETIME kernelTime;
     FILETIME userTime;
 
-#    if defined TRACY_GDK
+#        if defined TRACY_GDK
     FILETIME creationTime;
     FILETIME exitTime;
 
     GetProcessTimes( GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime );
 
     idle = 0;
-#    else
+#        else
     FILETIME idleTime;
 
     GetSystemTimes( &idleTime, &kernelTime, &userTime );
 
     idle = ConvertTime( idleTime );
-#    endif
+#        endif
 
     const auto kernel = ConvertTime( kernelTime );
     const auto user = ConvertTime( userTime );
     used = kernel + user;
 }
 
-#  elif defined __linux__
+#    elif defined __linux__
 
 void SysTime::ReadTimes()
 {
@@ -59,16 +59,16 @@ void SysTime::ReadTimes()
     FILE* f = fopen( "/proc/stat", "r" );
     if( f )
     {
-        int read = fscanf( f, "cpu %" PRIu64 " %" PRIu64 " %" PRIu64" %" PRIu64, &user, &nice, &system, &idle );
+        int read = fscanf( f, "cpu %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64, &user, &nice, &system, &idle );
         fclose( f );
-        if (read == 4)
+        if( read == 4 )
         {
             used = user + nice + system;
         }
     }
 }
 
-#  elif defined __APPLE__
+#    elif defined __APPLE__
 
 void SysTime::ReadTimes()
 {
@@ -79,7 +79,7 @@ void SysTime::ReadTimes()
     idle = info.cpu_ticks[CPU_STATE_IDLE];
 }
 
-#  elif defined BSD
+#    elif defined BSD
 
 void SysTime::ReadTimes()
 {
@@ -90,12 +90,9 @@ void SysTime::ReadTimes()
     idle = data[4];
 }
 
-#endif
+#    endif
 
-SysTime::SysTime()
-{
-    ReadTimes();
-}
+SysTime::SysTime() { ReadTimes(); }
 
 float SysTime::Get()
 {
@@ -107,12 +104,12 @@ float SysTime::Get()
     const auto diffIdle = idle - oldIdle;
     const auto diffUsed = used - oldUsed;
 
-#if defined _WIN32
+#    if defined _WIN32
     return diffUsed == 0 ? -1 : ( diffUsed - diffIdle ) * 100.f / diffUsed;
-#elif defined __linux__ || defined __APPLE__ || defined BSD
+#    elif defined __linux__ || defined __APPLE__ || defined BSD
     const auto total = diffUsed + diffIdle;
     return total == 0 ? -1 : diffUsed * 100.f / total;
-#endif
+#    endif
 }
 
 }

@@ -1,9 +1,9 @@
 #include <assert.h>
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
 
-#include "TracyEventDebug.hpp"
 #include "../public/common/TracyQueue.hpp"
+#include "TracyEventDebug.hpp"
 
 namespace tracy
 {
@@ -157,7 +157,8 @@ void EventDebug( const QueueItem& ev )
         fprintf( f, "ev %i (ContextSwitch)\n", ev.hdr.idx );
         fprintf( f, "\ttime   = %" PRIi64 "\n", ev.contextSwitch.time );
         fprintf( f, "\tthread = %" PRIu32 " -> %" PRIu32 "\n", ev.contextSwitch.oldThread, ev.contextSwitch.newThread );
-        fprintf( f, "\tcpu    = %" PRIu8 ", oldThreadWaitReason = %" PRIu8 ", oldThreadState = %" PRIu8 "\n", ev.contextSwitch.cpu, ev.contextSwitch.oldThreadWaitReason, ev.contextSwitch.oldThreadState);
+        fprintf( f, "\tcpu    = %" PRIu8 ", oldThreadWaitReason = %" PRIu8 ", oldThreadState = %" PRIu8 "\n",
+                 ev.contextSwitch.cpu, ev.contextSwitch.oldThreadWaitReason, ev.contextSwitch.oldThreadState );
         break;
     case QueueType::ThreadWakeup:
         fprintf( f, "ev %i (ThreadWakeup)\n", ev.hdr.idx );
