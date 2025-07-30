@@ -39,7 +39,7 @@ class TracyLlm
         bool stop;
     };
 
-  public:
+public:
     TracyLlm( Worker& worker );
     ~TracyLlm();
 
@@ -56,7 +56,7 @@ class TracyLlm
 
     bool m_show = false;
 
-  private:
+private:
     void WorkerThread();
 
     void UpdateModels();

@@ -14,19 +14,19 @@
 #include <unordered_map>
 #include <vector>
 
-#define ROCPROFILER_CALL( result, msg )                                                                                \
-    {                                                                                                                  \
-        rocprofiler_status_t CHECKSTATUS = result;                                                                     \
-        if( CHECKSTATUS != ROCPROFILER_STATUS_SUCCESS )                                                                \
-        {                                                                                                              \
-            std::string status_msg = rocprofiler_get_status_string( CHECKSTATUS );                                     \
-            std::cerr << "[" #result "][" << __FILE__ << ":" << __LINE__ << "] " << msg << " failed with error code "  \
-                      << CHECKSTATUS << ": " << status_msg << std::endl;                                               \
-            std::stringstream errmsg{};                                                                                \
-            errmsg << "[" #result "][" << __FILE__ << ":" << __LINE__ << "] " << msg " failure (" << status_msg        \
-                   << ")";                                                                                             \
-            throw std::runtime_error( errmsg.str() );                                                                  \
-        }                                                                                                              \
+#define ROCPROFILER_CALL( result, msg )                                                                               \
+    {                                                                                                                 \
+        rocprofiler_status_t CHECKSTATUS = result;                                                                    \
+        if( CHECKSTATUS != ROCPROFILER_STATUS_SUCCESS )                                                               \
+        {                                                                                                             \
+            std::string status_msg = rocprofiler_get_status_string( CHECKSTATUS );                                    \
+            std::cerr << "[" #result "][" << __FILE__ << ":" << __LINE__ << "] " << msg << " failed with error code " \
+                      << CHECKSTATUS << ": " << status_msg << std::endl;                                              \
+            std::stringstream errmsg{};                                                                               \
+            errmsg << "[" #result "][" << __FILE__ << ":" << __LINE__ << "] " << msg " failure (" << status_msg       \
+                   << ")";                                                                                            \
+            throw std::runtime_error( errmsg.str() );                                                                 \
+        }                                                                                                             \
     }
 
 namespace
@@ -298,8 +298,7 @@ void dispatch_callback( rocprofiler_dispatch_counting_service_data_t dispatch_da
     static std::shared_mutex m_mutex = {};
     static std::unordered_map<uint64_t, rocprofiler_profile_config_id_t> profile_cache = {};
 
-    auto search_cache = [&]()
-    {
+    auto search_cache = [&]() {
         if( auto pos = profile_cache.find( dispatch_data.dispatch_info.agent_id.handle ); pos != profile_cache.end() )
         {
             *config = pos->second;
@@ -323,16 +322,15 @@ void dispatch_callback( rocprofiler_dispatch_counting_service_data_t dispatch_da
     ROCPROFILER_CALL(
         rocprofiler_iterate_agent_supported_counters(
             dispatch_data.dispatch_info.agent_id,
-            []( rocprofiler_agent_id_t, rocprofiler_counter_id_t* counters, size_t num_counters, void* user_data )
-            {
-                std::vector<rocprofiler_counter_id_t>* vec =
-                    static_cast<std::vector<rocprofiler_counter_id_t>*>( user_data );
-                for( size_t i = 0; i < num_counters; i++ )
-                {
-                    vec->push_back( counters[i] );
-                }
-                return ROCPROFILER_STATUS_SUCCESS;
-            },
+            []( rocprofiler_agent_id_t, rocprofiler_counter_id_t* counters, size_t num_counters, void* user_data ) {
+        std::vector<rocprofiler_counter_id_t>* vec =
+            static_cast<std::vector<rocprofiler_counter_id_t>*>( user_data );
+        for( size_t i = 0; i < num_counters; i++ )
+        {
+            vec->push_back( counters[i] );
+        }
+        return ROCPROFILER_STATUS_SUCCESS;
+    },
             static_cast<void*>( &gpu_counters ) ),
         "Could not fetch supported counters" );
 

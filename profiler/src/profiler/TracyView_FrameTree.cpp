@@ -6,7 +6,7 @@
 namespace tracy
 {
 
-template <class T>
+template<class T>
 static tracy_force_inline T* GetFrameTreeItemNoGroup( unordered_flat_map<uint64_t, T>& tree, CallstackFrameId idx )
 {
     auto it = tree.find( idx.data );
@@ -17,9 +17,8 @@ static tracy_force_inline T* GetFrameTreeItemNoGroup( unordered_flat_map<uint64_
     return &it->second;
 }
 
-template <class T>
-static tracy_force_inline T* GetFrameTreeItemGroup( unordered_flat_map<uint64_t, T>& tree, CallstackFrameId idx,
-                                                    const Worker& worker )
+template<class T>
+static tracy_force_inline T* GetFrameTreeItemGroup( unordered_flat_map<uint64_t, T>& tree, CallstackFrameId idx, const Worker& worker )
 {
     auto frameDataPtr = worker.GetCallstackFrame( idx );
     if( !frameDataPtr ) return nullptr;
@@ -36,9 +35,8 @@ static tracy_force_inline T* GetFrameTreeItemGroup( unordered_flat_map<uint64_t,
     return &it->second;
 }
 
-template <class T>
-static tracy_force_inline T* GetParentFrameTreeItemGroup( unordered_flat_map<uint64_t, T>& tree, CallstackFrameId idx,
-                                                          const Worker& worker )
+template<class T>
+static tracy_force_inline T* GetParentFrameTreeItemGroup( unordered_flat_map<uint64_t, T>& tree, CallstackFrameId idx, const Worker& worker )
 {
     auto frameDataPtr = idx.custom ? worker.GetParentCallstackFrame( idx ) : worker.GetCallstackFrame( idx );
     if( !frameDataPtr ) return nullptr;
@@ -64,12 +62,10 @@ unordered_flat_map<uint32_t, View::MemPathData> View::GetCallstackPaths( const M
 
     if( m_memInfo.range.active )
     {
-        auto it = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.min,
-                                    []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+        auto it = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.min, []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
         if( it != mem.data.end() )
         {
-            auto end = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.max,
-                                         []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
+            auto end = std::lower_bound( mem.data.begin(), mem.data.end(), m_memInfo.range.max, []( const auto& lhs, const auto& rhs ) { return lhs.TimeAlloc() < rhs; } );
             if( memRange != MemRange::Full )
             {
                 while( it != end )
@@ -201,8 +197,7 @@ unordered_flat_map<uint64_t, MemCallstackFrameTree> View::GetCallstackFrameTreeB
     return root;
 }
 
-unordered_flat_map<uint64_t, CallstackFrameTree>
-View::GetCallstackFrameTreeBottomUp( const unordered_flat_map<uint32_t, uint64_t>& stacks, bool group ) const
+unordered_flat_map<uint64_t, CallstackFrameTree> View::GetCallstackFrameTreeBottomUp( const unordered_flat_map<uint32_t, uint64_t>& stacks, bool group ) const
 {
     unordered_flat_map<uint64_t, CallstackFrameTree> root;
     if( group )
@@ -242,8 +237,7 @@ View::GetCallstackFrameTreeBottomUp( const unordered_flat_map<uint32_t, uint64_t
     return root;
 }
 
-unordered_flat_map<uint64_t, CallstackFrameTree>
-View::GetParentsCallstackFrameTreeBottomUp( const unordered_flat_map<uint32_t, uint32_t>& stacks, bool group ) const
+unordered_flat_map<uint64_t, CallstackFrameTree> View::GetParentsCallstackFrameTreeBottomUp( const unordered_flat_map<uint32_t, uint32_t>& stacks, bool group ) const
 {
     unordered_flat_map<uint64_t, CallstackFrameTree> root;
     if( group )
@@ -332,8 +326,7 @@ unordered_flat_map<uint64_t, MemCallstackFrameTree> View::GetCallstackFrameTreeT
     return root;
 }
 
-unordered_flat_map<uint64_t, CallstackFrameTree>
-View::GetCallstackFrameTreeTopDown( const unordered_flat_map<uint32_t, uint64_t>& stacks, bool group ) const
+unordered_flat_map<uint64_t, CallstackFrameTree> View::GetCallstackFrameTreeTopDown( const unordered_flat_map<uint32_t, uint64_t>& stacks, bool group ) const
 {
     unordered_flat_map<uint64_t, CallstackFrameTree> root;
     if( group )
@@ -373,8 +366,7 @@ View::GetCallstackFrameTreeTopDown( const unordered_flat_map<uint32_t, uint64_t>
     return root;
 }
 
-unordered_flat_map<uint64_t, CallstackFrameTree>
-View::GetParentsCallstackFrameTreeTopDown( const unordered_flat_map<uint32_t, uint32_t>& stacks, bool group ) const
+unordered_flat_map<uint64_t, CallstackFrameTree> View::GetParentsCallstackFrameTreeTopDown( const unordered_flat_map<uint32_t, uint32_t>& stacks, bool group ) const
 {
     unordered_flat_map<uint64_t, CallstackFrameTree> root;
     if( group )
@@ -424,8 +416,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
     {
         sorted.emplace_back( it );
     }
-    pdqsort_branchless( sorted.begin(), sorted.end(),
-                        []( const auto& lhs, const auto& rhs ) { return lhs->second.alloc > rhs->second.alloc; } );
+    pdqsort_branchless( sorted.begin(), sorted.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second.alloc > rhs->second.alloc; } );
 
     int lidx = 0;
     for( auto& _v : sorted )
@@ -467,10 +458,8 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
             else
             {
                 ImGui::PushID( lidx++ );
-                if( frameName[0] == '[' )
-                    ImGui::PushStyleColor( ImGuiCol_Text, 0x88FFFFFF );
-                else if( isKernel )
-                    ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
+                if( frameName[0] == '[' ) ImGui::PushStyleColor( ImGuiCol_Text, 0x88FFFFFF );
+                else if( isKernel ) ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
                 if( tree.size() == 1 )
                 {
                     if( m_vd.shortenName == ShortenName::Never )
@@ -539,8 +528,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
             const char* fileName = nullptr;
             if( frame.line == 0 )
             {
-                if( frameDataPtr->imageName.Active() )
-                    TextDisabledUnformatted( m_worker.GetString( frameDataPtr->imageName ) );
+                if( frameDataPtr->imageName.Active() ) TextDisabledUnformatted( m_worker.GetString( frameDataPtr->imageName ) );
             }
             else
             {
@@ -562,8 +550,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
             ImGui::SameLine();
             if( v.children.empty() )
             {
-                ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "%s (%s)", MemSizeToString( v.alloc ),
-                                    RealToString( v.count ) );
+                ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "%s (%s)", MemSizeToString( v.alloc ), RealToString( v.count ) );
                 TooltipIfHovered( "Cost in this node" );
             }
             else
@@ -578,13 +565,11 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, MemCallstackFr
                 const auto rc = v.count - childCost;
                 if( rc != 0 )
                 {
-                    ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "%s (%s)",
-                                        MemSizeToString( v.alloc - childAlloc ), RealToString( rc ) );
+                    ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "%s (%s)", MemSizeToString( v.alloc - childAlloc ), RealToString( rc ) );
                     TooltipIfHovered( "Cost only in this node" );
                     ImGui::SameLine();
                 }
-                ImGui::TextColored( ImVec4( 0.8, 0.8, 0.2, 1.0 ), "%s (%s)", MemSizeToString( v.alloc ),
-                                    RealToString( v.count ) );
+                ImGui::TextColored( ImVec4( 0.8, 0.8, 0.2, 1.0 ), "%s (%s)", MemSizeToString( v.alloc ), RealToString( v.count ) );
                 TooltipIfHovered( "Cost in this node and children" );
             }
 
@@ -605,8 +590,7 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, CallstackFrame
     {
         sorted.emplace_back( it );
     }
-    pdqsort_branchless( sorted.begin(), sorted.end(),
-                        []( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
+    pdqsort_branchless( sorted.begin(), sorted.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
 
     int lidx = 0;
     for( auto& _v : sorted )
@@ -648,10 +632,8 @@ void View::DrawFrameTreeLevel( const unordered_flat_map<uint64_t, CallstackFrame
             else
             {
                 ImGui::PushID( lidx++ );
-                if( frameName[0] == '[' )
-                    ImGui::PushStyleColor( ImGuiCol_Text, 0x88FFFFFF );
-                else if( isKernel )
-                    ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
+                if( frameName[0] == '[' ) ImGui::PushStyleColor( ImGuiCol_Text, 0x88FFFFFF );
+                else if( isKernel ) ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
                 if( tree.size() == 1 )
                 {
                     if( m_vd.shortenName == ShortenName::Never )
@@ -752,8 +734,7 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
     {
         sorted.emplace_back( it );
     }
-    pdqsort_branchless( sorted.begin(), sorted.end(),
-                        []( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
+    pdqsort_branchless( sorted.begin(), sorted.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second.count > rhs->second.count; } );
 
     int lidx = 0;
     for( auto& _v : sorted )
@@ -761,8 +742,7 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
         auto& v = _v->second;
         const auto isKernel = ( m_worker.GetCanonicalPointer( v.frame ) >> 63 ) != 0;
         idx++;
-        auto frameDataPtr =
-            v.frame.custom ? m_worker.GetParentCallstackFrame( v.frame ) : m_worker.GetCallstackFrame( v.frame );
+        auto frameDataPtr = v.frame.custom ? m_worker.GetParentCallstackFrame( v.frame ) : m_worker.GetCallstackFrame( v.frame );
         if( frameDataPtr )
         {
             auto& frameData = *frameDataPtr;
@@ -796,10 +776,8 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
             else
             {
                 ImGui::PushID( lidx++ );
-                if( frameName[0] == '[' )
-                    ImGui::PushStyleColor( ImGuiCol_Text, 0x88FFFFFF );
-                else if( isKernel )
-                    ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
+                if( frameName[0] == '[' ) ImGui::PushStyleColor( ImGuiCol_Text, 0x88FFFFFF );
+                else if( isKernel ) ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
                 if( tree.size() == 1 )
                 {
                     if( m_vd.shortenName == ShortenName::Never )
@@ -865,9 +843,7 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
             ImGui::SameLine();
             if( v.children.empty() )
             {
-                ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "(%s)",
-                                    m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * v.count )
-                                                     : RealToString( v.count ) );
+                ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "(%s)", m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * v.count ) : RealToString( v.count ) );
                 TooltipIfHovered( "Cost in this node" );
             }
             else
@@ -877,15 +853,11 @@ void View::DrawParentsFrameTreeLevel( const unordered_flat_map<uint64_t, Callsta
                 const auto r = v.count - childCost;
                 if( r != 0 )
                 {
-                    ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "(%s)",
-                                        m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * r )
-                                                         : RealToString( r ) );
+                    ImGui::TextColored( ImVec4( 0.2, 0.8, 0.8, 1.0 ), "(%s)", m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * r ) : RealToString( r ) );
                     TooltipIfHovered( "Cost only in this node" );
                     ImGui::SameLine();
                 }
-                ImGui::TextColored( ImVec4( 0.8, 0.8, 0.2, 1.0 ), "(%s)",
-                                    m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * v.count )
-                                                     : RealToString( v.count ) );
+                ImGui::TextColored( ImVec4( 0.8, 0.8, 0.2, 1.0 ), "(%s)", m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * v.count ) : RealToString( v.count ) );
                 TooltipIfHovered( "Cost in this node and children" );
             }
 

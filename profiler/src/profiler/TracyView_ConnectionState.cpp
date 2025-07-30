@@ -10,7 +10,7 @@ namespace tracy
 
 constexpr size_t SendQueueEnableThreshold = 1000000;
 constexpr size_t SendQueueDisableThreshold = 500000;
-constexpr int64_t SendQueueTimespanMs = 10000; // 10 s
+constexpr int64_t SendQueueTimespanMs = 10000;  // 10 s
 
 bool View::DrawConnection()
 {
@@ -36,8 +36,7 @@ bool View::DrawConnection()
         ImGui::AlignTextToFramePadding();
         TextColoredUnformatted( isConnected ? 0xFF2222CC : 0xFF444444, ICON_FA_CIRCLE );
         ImGui::SameLine();
-        ImGui::PlotLines( buf, mbpsVector.data(), mbpsVector.size(), 0, nullptr, 0, std::numeric_limits<float>::max(),
-                          ImVec2( 150 * scale, 0 ) );
+        ImGui::PlotLines( buf, mbpsVector.data(), mbpsVector.size(), 0, nullptr, 0, std::numeric_limits<float>::max(), ImVec2( 150 * scale, 0 ) );
         TextDisabledUnformatted( "Ratio" );
         ImGui::SameLine();
         ImGui::Text( "%.1f%%", m_worker.GetCompRatio() * 100.f );
@@ -57,9 +56,7 @@ bool View::DrawConnection()
             if( sendQueue > SendQueueEnableThreshold )
             {
                 m_sendQueueWarning.monitor = true;
-                m_sendQueueWarning.time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                              std::chrono::system_clock::now().time_since_epoch() )
-                                              .count();
+                m_sendQueueWarning.time = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() ).count();
             }
         }
         else
@@ -70,9 +67,7 @@ bool View::DrawConnection()
             }
             else
             {
-                const auto t = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch() )
-                                   .count();
+                const auto t = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() ).count();
                 if( t - m_sendQueueWarning.time > SendQueueTimespanMs )
                 {
                     m_sendQueueWarning.enabled = true;
@@ -113,8 +108,7 @@ bool View::DrawConnection()
         ImGui::Separator();
         if( fi->flip )
         {
-            ImGui::Image( m_frameTextureConn, ImVec2( fi->w * fiScale, fi->h * fiScale ), ImVec2( 0, 1 ),
-                          ImVec2( 1, 0 ) );
+            ImGui::Image( m_frameTextureConn, ImVec2( fi->w * fiScale, fi->h * fiScale ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
         }
         else
         {
@@ -123,11 +117,9 @@ bool View::DrawConnection()
     }
 
     ImGui::Separator();
-    if( ImGui::Button( ICON_FA_FLOPPY_DISK " Save trace" ) &&
-        m_saveThreadState.load( std::memory_order_relaxed ) == SaveThreadState::Inert )
+    if( ImGui::Button( ICON_FA_FLOPPY_DISK " Save trace" ) && m_saveThreadState.load( std::memory_order_relaxed ) == SaveThreadState::Inert )
     {
-        auto cb = [this]( const char* fn )
-        {
+        auto cb = [this]( const char* fn ) {
             const auto sz = strlen( fn );
             if( sz < 7 || memcmp( fn + sz - 6, ".tracy", 6 ) != 0 )
             {
@@ -213,8 +205,7 @@ bool View::DrawConnection()
                 if( ImGui::BeginTable( "##traceparams", 2, ImGuiTableFlags_Borders ) )
                 {
                     ImGui::TableSetupColumn( "Name" );
-                    ImGui::TableSetupColumn( "Value",
-                                             ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
+                    ImGui::TableSetupColumn( "Value", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
                     ImGui::TableHeadersRow();
                     size_t idx = 0;
                     for( auto& p : params )

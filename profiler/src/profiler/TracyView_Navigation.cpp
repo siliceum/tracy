@@ -21,8 +21,7 @@ void View::ZoomToZone( const GpuEvent& ev )
     }
     else
     {
-        const auto td = ctx->threadData.size() == 1 ? ctx->threadData.begin()
-                                                    : ctx->threadData.find( m_worker.DecompressThread( ev.Thread() ) );
+        const auto td = ctx->threadData.size() == 1 ? ctx->threadData.begin() : ctx->threadData.find( m_worker.DecompressThread( ev.Thread() ) );
         assert( td != ctx->threadData.end() );
         int64_t begin;
         if( td->second.timeline.is_magic() )

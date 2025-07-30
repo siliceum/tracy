@@ -46,17 +46,14 @@ bool View::DrawGpu( const TimelineContext& ctx, const GpuCtxData& gpu, int& offs
                 const auto begin = tlm.front().GpuStart();
                 const auto drift = GpuDrift( &gpu );
                 if( !singleThread ) offset += sstep;
-                const auto partDepth = DispatchGpuZoneLevel( tl, hover, pxns, int64_t( nspx ), wpos, offset, 0,
-                                                             gpu.thread, yMin, yMax, begin, drift );
+                const auto partDepth = DispatchGpuZoneLevel( tl, hover, pxns, int64_t( nspx ), wpos, offset, 0, gpu.thread, yMin, yMax, begin, drift );
                 if( partDepth != 0 )
                 {
                     if( !singleThread )
                     {
                         ImGui::PushFont( g_fonts.normal, FontSmall );
-                        DrawTextContrast( draw, wpos + ImVec2( ty, offset - 1 - sstep ), 0xFFFFAAAA,
-                                          m_worker.GetThreadName( td.first ) );
-                        DrawLine( draw, dpos + ImVec2( 0, offset + sty - sstep ),
-                                  dpos + ImVec2( w, offset + sty - sstep ), 0x22FFAAAA );
+                        DrawTextContrast( draw, wpos + ImVec2( ty, offset - 1 - sstep ), 0xFFFFAAAA, m_worker.GetThreadName( td.first ) );
+                        DrawLine( draw, dpos + ImVec2( 0, offset + sty - sstep ), dpos + ImVec2( w, offset + sty - sstep ), 0x22FFAAAA );
                         ImGui::PopFont();
                     }
 
@@ -76,17 +73,14 @@ bool View::DrawGpu( const TimelineContext& ctx, const GpuCtxData& gpu, int& offs
                 const auto begin = tl.front()->GpuStart();
                 const auto drift = GpuDrift( &gpu );
                 if( !singleThread ) offset += sstep;
-                const auto partDepth = DispatchGpuZoneLevel( tl, hover, pxns, int64_t( nspx ), wpos, offset, 0,
-                                                             gpu.thread, yMin, yMax, begin, drift );
+                const auto partDepth = DispatchGpuZoneLevel( tl, hover, pxns, int64_t( nspx ), wpos, offset, 0, gpu.thread, yMin, yMax, begin, drift );
                 if( partDepth != 0 )
                 {
                     if( !singleThread )
                     {
                         ImGui::PushFont( g_fonts.normal, FontSmall );
-                        DrawTextContrast( draw, wpos + ImVec2( ty, offset - 1 - sstep ), 0xFFFFAAAA,
-                                          m_worker.GetThreadName( td.first ) );
-                        DrawLine( draw, dpos + ImVec2( 0, offset + sty - sstep ),
-                                  dpos + ImVec2( w, offset + sty - sstep ), 0x22FFAAAA );
+                        DrawTextContrast( draw, wpos + ImVec2( ty, offset - 1 - sstep ), 0xFFFFAAAA, m_worker.GetThreadName( td.first ) );
+                        DrawLine( draw, dpos + ImVec2( 0, offset + sty - sstep ), dpos + ImVec2( w, offset + sty - sstep ), 0x22FFAAAA );
                         ImGui::PopFont();
                     }
 
@@ -103,9 +97,7 @@ bool View::DrawGpu( const TimelineContext& ctx, const GpuCtxData& gpu, int& offs
     return depth != 0;
 }
 
-int View::DispatchGpuZoneLevel( const Vector<short_ptr<GpuEvent>>& vec, bool hover, double pxns, int64_t nspx,
-                                const ImVec2& wpos, int _offset, int depth, uint64_t thread, float yMin, float yMax,
-                                int64_t begin, int drift )
+int View::DispatchGpuZoneLevel( const Vector<short_ptr<GpuEvent>>& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset, int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
 {
     const auto ty = ImGui::GetTextLineHeight();
     const auto ostep = ty + 1;
@@ -116,52 +108,36 @@ int View::DispatchGpuZoneLevel( const Vector<short_ptr<GpuEvent>>& vec, bool hov
     {
         if( vec.is_magic() )
         {
-            return DrawGpuZoneLevel<VectorAdapterDirect<GpuEvent>>( *(Vector<GpuEvent>*)&vec, hover, pxns, nspx, wpos,
-                                                                    _offset, depth, thread, yMin, yMax, begin, drift );
+            return DrawGpuZoneLevel<VectorAdapterDirect<GpuEvent>>( *(Vector<GpuEvent>*)&vec, hover, pxns, nspx, wpos, _offset, depth, thread, yMin, yMax, begin, drift );
         }
         else
         {
-            return DrawGpuZoneLevel<VectorAdapterPointer<GpuEvent>>( vec, hover, pxns, nspx, wpos, _offset, depth,
-                                                                     thread, yMin, yMax, begin, drift );
+            return DrawGpuZoneLevel<VectorAdapterPointer<GpuEvent>>( vec, hover, pxns, nspx, wpos, _offset, depth, thread, yMin, yMax, begin, drift );
         }
     }
     else
     {
         if( vec.is_magic() )
         {
-            return SkipGpuZoneLevel<VectorAdapterDirect<GpuEvent>>( *(Vector<GpuEvent>*)&vec, hover, pxns, nspx, wpos,
-                                                                    _offset, depth, thread, yMin, yMax, begin, drift );
+            return SkipGpuZoneLevel<VectorAdapterDirect<GpuEvent>>( *(Vector<GpuEvent>*)&vec, hover, pxns, nspx, wpos, _offset, depth, thread, yMin, yMax, begin, drift );
         }
         else
         {
-            return SkipGpuZoneLevel<VectorAdapterPointer<GpuEvent>>( vec, hover, pxns, nspx, wpos, _offset, depth,
-                                                                     thread, yMin, yMax, begin, drift );
+            return SkipGpuZoneLevel<VectorAdapterPointer<GpuEvent>>( vec, hover, pxns, nspx, wpos, _offset, depth, thread, yMin, yMax, begin, drift );
         }
     }
 }
 
-template <typename Adapter, typename V>
-int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset,
-                            int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
+template<typename Adapter, typename V>
+int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset, int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
 {
     // cast to uint64_t, so that unended zones (end = -1) are still drawn
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ),
-                                [begin, drift]( const auto& l, const auto& r )
-                                {
-                                    Adapter a;
-                                    return (uint64_t)AdjustGpuTime( a( l ).GpuEnd(), begin, drift ) < (uint64_t)r;
-                                } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
     if( it == vec.end() ) return depth;
 
     Adapter a;
 
-    const auto zitend =
-        std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ),
-                          [begin, drift]( const auto& l, const auto& r )
-                          {
-                              Adapter a;
-                              return (uint64_t)AdjustGpuTime( a( l ).GpuStart(), begin, drift ) < (uint64_t)r;
-                          } );
+    const auto zitend = std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuStart(), begin, drift ) < (uint64_t)r; } );
     if( it == zitend ) return depth;
     if( AdjustGpuTime( a( *( zitend - 1 ) ).GpuEnd(), begin, drift ) < m_vd.zvStart ) return depth;
 
@@ -195,13 +171,7 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             for( ;; )
             {
                 const auto prevIt = it;
-                it =
-                    std::lower_bound( it, zitend, std::max<int64_t>( 0, nextTime ),
-                                      [begin, drift]( const auto& l, const auto& r )
-                                      {
-                                          Adapter a;
-                                          return (uint64_t)AdjustGpuTime( a( l ).GpuEnd(), begin, drift ) < (uint64_t)r;
-                                      } );
+                it = std::lower_bound( it, zitend, std::max<int64_t>( 0, nextTime ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
                 if( it == prevIt ) ++it;
                 num += std::distance( prevIt, it );
                 if( it == zitend ) break;
@@ -213,15 +183,9 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
                 nextTime = nend + nspx;
             }
             const auto px1 = px1ns * pxns;
-            draw->AddRectFilled(
-                wpos + ImVec2( std::max( px0, -10.0 ), offset ),
-                wpos + ImVec2( std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), offset + ty ), color );
-            DrawZigZag( draw, wpos + ImVec2( 0, offset + ty / 2 ), std::max( px0, -10.0 ),
-                        std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), ty / 4, DarkenColor( color ) );
-            if( hover && ImGui::IsMouseHoveringRect(
-                             wpos + ImVec2( std::max( px0, -10.0 ), offset ),
-                             wpos + ImVec2( std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ),
-                                            offset + ty + 1 ) ) )
+            draw->AddRectFilled( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), offset + ty ), color );
+            DrawZigZag( draw, wpos + ImVec2( 0, offset + ty / 2 ), std::max( px0, -10.0 ), std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), ty / 4, DarkenColor( color ) );
+            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( std::max( px1, px0 + MinVisSize ), double( w + 10 ) ), offset + ty + 1 ) ) )
             {
                 if( num > 1 )
                 {
@@ -267,8 +231,7 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
         {
             if( ev.Child() >= 0 )
             {
-                const auto d = DispatchGpuZoneLevel( m_worker.GetGpuChildren( ev.Child() ), hover, pxns, nspx, wpos,
-                                                     _offset, depth, thread, yMin, yMax, begin, drift );
+                const auto d = DispatchGpuZoneLevel( m_worker.GetGpuChildren( ev.Child() ), hover, pxns, nspx, wpos, _offset, depth, thread, yMin, yMax, begin, drift );
                 if( d > maxdepth ) maxdepth = d;
             }
 
@@ -285,22 +248,18 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             {
                 if( zoneColor.thickness > 1.f )
                 {
-                    draw->AddRect( wpos + ImVec2( px0 + 1, offset + 1 ), wpos + ImVec2( px1 - 1, offset + tsz.y - 1 ),
-                                   zoneColor.accentColor, 0.f, -1, zoneColor.thickness );
+                    draw->AddRect( wpos + ImVec2( px0 + 1, offset + 1 ), wpos + ImVec2( px1 - 1, offset + tsz.y - 1 ), zoneColor.accentColor, 0.f, -1, zoneColor.thickness );
                 }
                 else
                 {
-                    draw->AddRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y ),
-                                   zoneColor.accentColor, 0.f, -1, zoneColor.thickness );
+                    draw->AddRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y ), zoneColor.accentColor, 0.f, -1, zoneColor.thickness );
                 }
             }
             else
             {
                 const auto darkColor = DarkenColor( zoneColor.color );
-                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px0, offset ),
-                          dpos + ImVec2( px1 - 1, offset ), zoneColor.accentColor, zoneColor.thickness );
-                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px1 - 1, offset + tsz.y ),
-                          dpos + ImVec2( px1 - 1, offset ), darkColor, zoneColor.thickness );
+                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px0, offset ), dpos + ImVec2( px1 - 1, offset ), zoneColor.accentColor, zoneColor.thickness );
+                DrawLine( draw, dpos + ImVec2( px0, offset + tsz.y ), dpos + ImVec2( px1 - 1, offset + tsz.y ), dpos + ImVec2( px1 - 1, offset ), darkColor, zoneColor.thickness );
             }
             if( tsz.x < zsz )
             {
@@ -308,16 +267,12 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
                 if( x < 0 || x > w - tsz.x )
                 {
                     ImGui::PushClipRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y * 2 ), true );
-                    DrawTextContrast(
-                        draw,
-                        wpos + ImVec2( std::max( std::max( 0., px0 ), std::min( double( w - tsz.x ), x ) ), offset ),
-                        0xFFFFFFFF, zoneName );
+                    DrawTextContrast( draw, wpos + ImVec2( std::max( std::max( 0., px0 ), std::min( double( w - tsz.x ), x ) ), offset ), 0xFFFFFFFF, zoneName );
                     ImGui::PopClipRect();
                 }
                 else if( ev.GpuStart() == ev.GpuEnd() )
                 {
-                    DrawTextContrast( draw, wpos + ImVec2( px0 + ( px1 - px0 - tsz.x ) * 0.5, offset ), 0xFFFFFFFF,
-                                      zoneName );
+                    DrawTextContrast( draw, wpos + ImVec2( px0 + ( px1 - px0 - tsz.x ) * 0.5, offset ), 0xFFFFFFFF, zoneName );
                 }
                 else
                 {
@@ -327,13 +282,11 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             else
             {
                 ImGui::PushClipRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y * 2 ), true );
-                DrawTextContrast( draw, wpos + ImVec2( ( start - m_vd.zvStart ) * pxns, offset ), 0xFFFFFFFF,
-                                  zoneName );
+                DrawTextContrast( draw, wpos + ImVec2( ( start - m_vd.zvStart ) * pxns, offset ), 0xFFFFFFFF, zoneName );
                 ImGui::PopClipRect();
             }
 
-            if( hover &&
-                ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y + 1 ) ) )
+            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + tsz.y + 1 ) ) )
             {
                 const auto zoneThread = thread != 0 ? thread : m_worker.DecompressThread( ev.Thread() );
                 ZoneTooltip( ev );
@@ -358,28 +311,16 @@ int View::DrawGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
     return maxdepth;
 }
 
-template <typename Adapter, typename V>
-int View::SkipGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset,
-                            int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
+template<typename Adapter, typename V>
+int View::SkipGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx, const ImVec2& wpos, int _offset, int depth, uint64_t thread, float yMin, float yMax, int64_t begin, int drift )
 {
     // cast to uint64_t, so that unended zones (end = -1) are still drawn
-    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ),
-                                [begin, drift]( const auto& l, const auto& r )
-                                {
-                                    Adapter a;
-                                    return (uint64_t)AdjustGpuTime( a( l ).GpuEnd(), begin, drift ) < (uint64_t)r;
-                                } );
+    auto it = std::lower_bound( vec.begin(), vec.end(), std::max<int64_t>( 0, m_vd.zvStart ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
     if( it == vec.end() ) return depth;
 
     Adapter a;
 
-    const auto zitend =
-        std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ),
-                          [begin, drift]( const auto& l, const auto& r )
-                          {
-                              Adapter a;
-                              return (uint64_t)AdjustGpuTime( a( l ).GpuStart(), begin, drift ) < (uint64_t)r;
-                          } );
+    const auto zitend = std::lower_bound( it, vec.end(), std::max<int64_t>( 0, m_vd.zvEnd ), [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuStart(), begin, drift ) < (uint64_t)r; } );
     if( it == zitend ) return depth;
     if( AdjustGpuTime( a( *( zitend - 1 ) ).GpuEnd(), begin, drift ) < m_vd.zvStart ) return depth;
 
@@ -402,13 +343,7 @@ int View::SkipGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
             for( ;; )
             {
                 const auto prevIt = it;
-                it =
-                    std::lower_bound( it, zitend, nextTime,
-                                      [begin, drift]( const auto& l, const auto& r )
-                                      {
-                                          Adapter a;
-                                          return (uint64_t)AdjustGpuTime( a( l ).GpuEnd(), begin, drift ) < (uint64_t)r;
-                                      } );
+                it = std::lower_bound( it, zitend, nextTime, [begin, drift]( const auto& l, const auto& r ) { Adapter a; return (uint64_t)AdjustGpuTime( a(l).GpuEnd(), begin, drift ) < (uint64_t)r; } );
                 if( it == prevIt ) ++it;
                 if( it == zitend ) break;
                 const auto nend = AdjustGpuTime( m_worker.GetZoneEnd( a( *it ) ), begin, drift );
@@ -422,8 +357,7 @@ int View::SkipGpuZoneLevel( const V& vec, bool hover, double pxns, int64_t nspx,
         {
             if( ev.Child() >= 0 )
             {
-                const auto d = DispatchGpuZoneLevel( m_worker.GetGpuChildren( ev.Child() ), hover, pxns, nspx, wpos,
-                                                     _offset, depth, thread, yMin, yMax, begin, drift );
+                const auto d = DispatchGpuZoneLevel( m_worker.GetGpuChildren( ev.Child() ), hover, pxns, nspx, wpos, _offset, depth, thread, yMin, yMax, begin, drift );
                 if( d > maxdepth ) maxdepth = d;
             }
             ++it;

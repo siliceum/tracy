@@ -30,7 +30,9 @@ void View::DrawCallstackWindow()
 
 static nlohmann::json GetCallstackJson( Worker& worker, const VarArray<CallstackFrameId>& cs )
 {
-    nlohmann::json json = { { "type", "callstack" }, { "frames", nlohmann::json::array() } };
+    nlohmann::json json = {
+        { "type", "callstack" },
+        { "frames", nlohmann::json::array() } };
     auto& frames = json["frames"];
 
     int fidx = 0;
@@ -182,8 +184,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                 AddLlmQuery( "What is program doing at this moment?" );
                 ImGui::CloseCurrentPopup();
             }
-            if( ImGui::Selectable(
-                    "Walk me through the details of this callstack, step by step, explaining the code." ) )
+            if( ImGui::Selectable( "Walk me through the details of this callstack, step by step, explaining the code." ) )
             {
                 AddLlmAttachment( GetCallstackJson( m_worker, cs ) );
                 AddLlmQuery( "Walk me through the details of this callstack, step by step, explaining the code." );
@@ -235,13 +236,10 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
     ImGui::PopStyleVar();
 
     ImGui::Separator();
-    if( ImGui::BeginTable( "##callstack", 4,
-                           ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable |
-                               ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY ) )
+    if( ImGui::BeginTable( "##callstack", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY ) )
     {
         ImGui::TableSetupScrollFreeze( 0, 1 );
-        ImGui::TableSetupColumn( "Frame", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed |
-                                              ImGuiTableColumnFlags_NoResize );
+        ImGui::TableSetupColumn( "Frame", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
         ImGui::TableSetupColumn( "Function" );
         ImGui::TableSetupColumn( "Location" );
         ImGui::TableSetupColumn( "Image" );
@@ -417,8 +415,7 @@ void View::DrawCallstackTable( uint32_t callstack, bool globalEntriesButton )
                             ImGui::TextDisabled( "Custom #%" PRIu64, entry.idx );
                         }
                         break;
-                    case 3:
-                    {
+                    case 3: {
                         const auto sym = m_worker.GetSymbolData( frame.symAddr );
                         if( sym )
                         {

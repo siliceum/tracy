@@ -6,11 +6,14 @@
 namespace tracy
 {
 
-template <typename T>
+template<typename T>
 class BuzzAnim
 {
-  public:
-    bool Match( const T& comp ) const { return active && comp == id; }
+public:
+    bool Match( const T& comp ) const
+    {
+        return active && comp == id;
+    }
 
     float Time() const
     {
@@ -36,7 +39,7 @@ class BuzzAnim
         return false;
     }
 
-  private:
+private:
     bool active = false;
     float time;
     T id;

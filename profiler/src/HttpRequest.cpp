@@ -9,14 +9,14 @@
 #include "HttpRequest.hpp"
 
 #if defined _WIN32
-#    include <windows.h>
+#  include <windows.h>
 extern "C" typedef LONG( WINAPI* t_RtlGetVersion )( PRTL_OSVERSIONINFOW );
 extern "C" typedef char*( WINAPI* t_WineGetVersion )();
 extern "C" typedef char*( WINAPI* t_WineGetBuildId )();
 #elif defined __linux__
-#    include <sys/utsname.h>
+#  include <sys/utsname.h>
 #elif defined __APPLE__
-#    include "TargetConditionals.h"
+#  include "TargetConditionals.h"
 #endif
 
 static constexpr char CRLF[2] = { '\r', '\n' };
@@ -28,50 +28,48 @@ static const char* GetOsInfo()
     t_RtlGetVersion RtlGetVersion = (t_RtlGetVersion)GetProcAddress( GetModuleHandleA( "ntdll.dll" ), "RtlGetVersion" );
     if( !RtlGetVersion )
     {
-#    ifdef __MINGW32__
+#  ifdef __MINGW32__
         sprintf( buf, "Windows (MingW)" );
-#    else
+#  else
         sprintf( buf, "Windows" );
-#    endif
+#  endif
     }
     else
     {
         RTL_OSVERSIONINFOW ver = { sizeof( RTL_OSVERSIONINFOW ) };
         RtlGetVersion( &ver );
 
-#    ifdef __MINGW32__
-        sprintf( buf, "Windows %i.%i.%i (MingW)", (int)ver.dwMajorVersion, (int)ver.dwMinorVersion,
-                 (int)ver.dwBuildNumber );
-#    else
+#  ifdef __MINGW32__
+        sprintf( buf, "Windows %i.%i.%i (MingW)", (int)ver.dwMajorVersion, (int)ver.dwMinorVersion, (int)ver.dwBuildNumber );
+#  else
         auto WineGetVersion = (t_WineGetVersion)GetProcAddress( GetModuleHandleA( "ntdll.dll" ), "wine_get_version" );
         auto WineGetBuildId = (t_WineGetBuildId)GetProcAddress( GetModuleHandleA( "ntdll.dll" ), "wine_get_build_id" );
         if( WineGetVersion && WineGetBuildId )
         {
-            sprintf( buf, "Windows %i.%i.%i (Wine %s [%s])", ver.dwMajorVersion, ver.dwMinorVersion, ver.dwBuildNumber,
-                     WineGetVersion(), WineGetBuildId() );
+            sprintf( buf, "Windows %i.%i.%i (Wine %s [%s])", ver.dwMajorVersion, ver.dwMinorVersion, ver.dwBuildNumber, WineGetVersion(), WineGetBuildId() );
         }
         else
         {
             sprintf( buf, "Windows %i.%i.%i", ver.dwMajorVersion, ver.dwMinorVersion, ver.dwBuildNumber );
         }
-#    endif
+#  endif
     }
 #elif defined __linux__
     struct utsname utsName;
     uname( &utsName );
-#    if defined __ANDROID__
+#  if defined __ANDROID__
     sprintf( buf, "Linux %s (Android)", utsName.release );
-#    else
+#  else
     sprintf( buf, "Linux %s", utsName.release );
-#    endif
+#  endif
 #elif defined __APPLE__
-#    if TARGET_OS_IPHONE == 1
+#  if TARGET_OS_IPHONE == 1
     sprintf( buf, "Darwin (iOS)" );
-#    elif TARGET_OS_MAC == 1
+#  elif TARGET_OS_MAC == 1
     sprintf( buf, "Darwin (OSX)" );
-#    else
+#  else
     sprintf( buf, "Darwin (unknown)" );
-#    endif
+#  endif
 #elif defined __DragonFly__
     sprintf( buf, "BSD (DragonFly)" );
 #elif defined __FreeBSD__
@@ -93,11 +91,7 @@ void HttpRequest( const char* server, const char* resource, int port, const std:
     tracy::Socket sock;
     if( !sock.ConnectBlocking( server, port ) ) return;
     char request[4096];
-    const auto len = sprintf(
-        request,
-        "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: Tracy Profiler %i.%i.%i (%s) [%s]\r\nConnection: close\r\nCache-Control: no-cache, no-store, must-revalidate\r\n\r\n",
-        resource, server, tracy::Version::Major, tracy::Version::Minor, tracy::Version::Patch, GetOsInfo(),
-        tracy::GitRef );
+    const auto len = sprintf( request, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: Tracy Profiler %i.%i.%i (%s) [%s]\r\nConnection: close\r\nCache-Control: no-cache, no-store, must-revalidate\r\n\r\n", resource, server, tracy::Version::Major, tracy::Version::Minor, tracy::Version::Patch, GetOsInfo(), tracy::GitRef );
     sock.Send( request, len );
     char response[4096];
     const auto sz = sock.ReadUpTo( response, 4096 );

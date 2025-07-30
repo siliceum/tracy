@@ -6,10 +6,10 @@
 namespace tracy
 {
 
-template <typename T>
+template<typename T>
 class DecayValue
 {
-  public:
+public:
     DecayValue( const T& init, bool active = false )
         : m_value( init )
         , m_active( active )
@@ -38,7 +38,7 @@ class DecayValue
         }
     }
 
-  private:
+private:
     T m_value;
     bool m_active;
 };

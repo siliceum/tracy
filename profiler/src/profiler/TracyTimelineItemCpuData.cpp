@@ -14,15 +14,30 @@ TimelineItemCpuData::TimelineItemCpuData( View& view, Worker& worker, void* key 
 {
 }
 
-void TimelineItemCpuData::SetVisible( bool visible ) { m_view.GetViewData().drawCpuData = visible; }
+void TimelineItemCpuData::SetVisible( bool visible )
+{
+    m_view.GetViewData().drawCpuData = visible;
+}
 
-bool TimelineItemCpuData::IsVisible() const { return m_view.GetViewData().drawCpuData; }
+bool TimelineItemCpuData::IsVisible() const
+{
+    return m_view.GetViewData().drawCpuData;
+}
 
-bool TimelineItemCpuData::IsEmpty() const { return m_worker.GetCpuDataCpuCount() == 0; }
+bool TimelineItemCpuData::IsEmpty() const
+{
+    return m_worker.GetCpuDataCpuCount() == 0;
+}
 
-int64_t TimelineItemCpuData::RangeBegin() const { return -1; }
+int64_t TimelineItemCpuData::RangeBegin() const
+{
+    return -1;
+}
 
-int64_t TimelineItemCpuData::RangeEnd() const { return -1; }
+int64_t TimelineItemCpuData::RangeEnd() const
+{
+    return -1;
+}
 
 bool TimelineItemCpuData::DrawContents( const TimelineContext& ctx, int& offset )
 {
@@ -84,7 +99,9 @@ void TimelineItemCpuData::Preprocess( const TimelineContext& ctx, TaskDispatch& 
             const auto cpuUsageHeight = floor( 30.f * GetScale() );
             if( pos <= yMax && pos + cpuUsageHeight + 3 >= yMin )
             {
-                td.Queue( [this, &ctx] { PreprocessCpuUsage( ctx ); } );
+                td.Queue( [this, &ctx] {
+                    PreprocessCpuUsage( ctx );
+                } );
             }
             pos += cpuUsageHeight + 3;
         }
@@ -100,7 +117,9 @@ void TimelineItemCpuData::Preprocess( const TimelineContext& ctx, TaskDispatch& 
         auto& cs = cpuData[i].cs;
         if( !cs.empty() && pos <= yMax && pos + sty >= yMin )
         {
-            td.Queue( [this, &ctx, &cs, i] { PreprocessCpuCtxSwitches( ctx, cs, m_ctxDraw[i] ); } );
+            td.Queue( [this, &ctx, &cs, i] {
+                PreprocessCpuCtxSwitches( ctx, cs, m_ctxDraw[i] );
+            } );
         }
         pos += sstep;
     }
@@ -108,15 +127,13 @@ void TimelineItemCpuData::Preprocess( const TimelineContext& ctx, TaskDispatch& 
 
 constexpr float MinVisSize = 3;
 
-void TimelineItemCpuData::PreprocessCpuCtxSwitches( const TimelineContext& ctx, const Vector<ContextSwitchCpu>& cs,
-                                                    std::vector<CpuCtxDraw>& out )
+void TimelineItemCpuData::PreprocessCpuCtxSwitches( const TimelineContext& ctx, const Vector<ContextSwitchCpu>& cs, std::vector<CpuCtxDraw>& out )
 {
     const auto vStart = ctx.vStart;
     const auto vEnd = ctx.vEnd;
     const auto nspx = ctx.nspx;
 
-    auto it = std::lower_bound( cs.begin(), cs.end(), std::max<int64_t>( 0, vStart ), []( const auto& l, const auto& r )
-                                { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
+    auto it = std::lower_bound( cs.begin(), cs.end(), std::max<int64_t>( 0, vStart ), []( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
     if( it == cs.end() ) return;
     auto eit = std::lower_bound( it, cs.end(), vEnd, []( const auto& l, const auto& r ) { return l.Start() < r; } );
     if( it == eit ) return;
@@ -133,8 +150,7 @@ void TimelineItemCpuData::PreprocessCpuCtxSwitches( const TimelineContext& ctx, 
             auto next = it + 1;
             for( ;; )
             {
-                next = std::lower_bound( next, eit, nextTime, []( const auto& l, const auto& r )
-                                         { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
+                next = std::lower_bound( next, eit, nextTime, []( const auto& l, const auto& r ) { return ( l.IsEndValid() ? l.End() : l.Start() ) < r; } );
                 if( next == eit ) break;
                 auto prev = next - 1;
                 const auto pt = prev->IsEndValid() ? prev->End() : prev->Start();
@@ -180,8 +196,7 @@ void TimelineItemCpuData::PreprocessCpuUsage( const TimelineContext& ctx )
             else
             {
                 const auto test = ( time << 16 ) | 0xFFFF;
-                auto it = std::upper_bound( itBegin, ctxUsage.end(), test,
-                                            []( const auto& l, const auto& r ) { return l < r._time_other_own; } );
+                auto it = std::upper_bound( itBegin, ctxUsage.end(), test, []( const auto& l, const auto& r ) { return l < r._time_other_own; } );
                 if( it == ctxUsage.end() ) return;
                 if( it == ctxUsage.begin() )
                 {
@@ -219,8 +234,7 @@ void TimelineItemCpuData::PreprocessCpuUsage( const TimelineContext& ctx )
                     if( time > lastTime ) break;
                     if( time >= 0 )
                     {
-                        auto it = std::lower_bound( itBegin, cs.end(), time, []( const auto& l, const auto& r )
-                                                    { return (uint64_t)l.End() < (uint64_t)r; } );
+                        auto it = std::lower_bound( itBegin, cs.end(), time, []( const auto& l, const auto& r ) { return (uint64_t)l.End() < (uint64_t)r; } );
                         if( it == cs.end() ) break;
                         if( it->IsEndValid() && it->Start() <= time )
                         {

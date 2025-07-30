@@ -2,15 +2,15 @@
 #define __TRACYSYSPOWER_HPP__
 
 #if defined __linux__
-#    define TRACY_HAS_SYSPOWER
+#  define TRACY_HAS_SYSPOWER
 #endif
 
 #ifdef TRACY_HAS_SYSPOWER
 
-#    include <stdint.h>
-#    include <stdio.h>
+#  include <stdint.h>
+#  include <stdio.h>
 
-#    include "TracyFastVector.hpp"
+#  include "TracyFastVector.hpp"
 
 namespace tracy
 {
@@ -25,13 +25,13 @@ class SysPower
         const char* name;
     };
 
-  public:
+public:
     SysPower();
     ~SysPower();
 
     void Tick();
 
-  private:
+private:
     void ScanDirectory( const char* path, int parent );
 
     FastVector<Domain> m_domains;

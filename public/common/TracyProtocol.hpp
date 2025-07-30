@@ -152,7 +152,7 @@ struct BroadcastMessage
     uint16_t listenPort;
     uint32_t protocolVersion;
     uint64_t pid;
-    int32_t activeTime; // in seconds
+    int32_t activeTime;        // in seconds
     char programName[WelcomeMessageProgramNameSize];
 };
 

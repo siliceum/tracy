@@ -1,5 +1,5 @@
 #ifdef __MINGW32__
-#    define __STDC_FORMAT_MACROS
+#  define __STDC_FORMAT_MACROS
 #endif
 #include <assert.h>
 #include <inttypes.h>
@@ -7,13 +7,13 @@
 #include <string>
 
 #ifdef _WIN32
-#    include <direct.h>
-#    include <windows.h>
+#  include <direct.h>
+#  include <windows.h>
 #else
-#    include <dirent.h>
-#    include <errno.h>
-#    include <sys/types.h>
-#    include <unistd.h>
+#  include <dirent.h>
+#  include <errno.h>
+#  include <sys/types.h>
+#  include <unistd.h>
 #endif
 #include <sys/stat.h>
 
@@ -37,7 +37,7 @@ static bool CreateDirStruct( const std::string& path )
     {
         pos = path.find( '/', pos + 1 );
 #ifdef _WIN32
-        if( pos == 2 && path[1] == ':' ) continue; // Don't create drive name.
+        if( pos == 2 && path[1] == ':' ) continue;    // Don't create drive name.
         if( _mkdir( path.substr( 0, pos ).c_str() ) != 0 )
 #else
         if( mkdir( path.substr( 0, pos ).c_str(), S_IRWXU ) != 0 )
@@ -231,8 +231,7 @@ const char* GetSavePath( const char* program, uint64_t time, const char* file, b
     }
 
     // 604800 = 7 days
-    sz +=
-        sprintf( buf + sz, "/tracy/user/%c/%s/%" PRIu64 "/%" PRIu64 "/", tmp[0], tmp, uint64_t( time / 604800 ), time );
+    sz += sprintf( buf + sz, "/tracy/user/%c/%s/%" PRIu64 "/%" PRIu64 "/", tmp[0], tmp, uint64_t( time / 604800 ), time );
 
     if( create )
     {

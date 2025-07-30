@@ -98,7 +98,10 @@ AchievementsMgr::AchievementsMgr()
     ini_free( ini );
 }
 
-AchievementsMgr::~AchievementsMgr() { Save(); }
+AchievementsMgr::~AchievementsMgr()
+{
+    Save();
+}
 
 void AchievementsMgr::Achieve( const char* id )
 {
@@ -134,7 +137,10 @@ void AchievementsMgr::Achieve( const char* id )
     Save();
 }
 
-data::AchievementCategory** AchievementsMgr::GetCategories() const { return data::AchievementCategories; }
+data::AchievementCategory** AchievementsMgr::GetCategories() const
+{
+    return data::AchievementCategories;
+}
 
 data::AchievementCategory* AchievementsMgr::GetCategoryForAchievement( const char* id ) const
 {

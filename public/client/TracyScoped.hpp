@@ -17,7 +17,7 @@ namespace tracy
 
 class ScopedZone
 {
-  public:
+public:
     ScopedZone( const ScopedZone& ) = delete;
     ScopedZone( ScopedZone&& ) = delete;
     ScopedZone& operator=( const ScopedZone& ) = delete;
@@ -46,9 +46,7 @@ class ScopedZone
         TracyQueueCommit( zoneBeginThread );
     }
 
-    tracy_force_inline ScopedZone( uint32_t line, const char* source, size_t sourceSz, const char* function,
-                                   size_t functionSz, const char* name, size_t nameSz, uint32_t color,
-                                   int32_t depth = -1, bool is_active = true )
+    tracy_force_inline ScopedZone( uint32_t line, const char* source, size_t sourceSz, const char* function, size_t functionSz, const char* name, size_t nameSz, uint32_t color, int32_t depth = -1, bool is_active = true )
 #ifdef TRACY_ON_DEMAND
         : m_active( is_active && GetProfiler().IsConnected() )
 #else
@@ -73,9 +71,7 @@ class ScopedZone
         TracyQueueCommit( zoneBeginThread );
     }
 
-    tracy_force_inline ScopedZone( uint32_t line, const char* source, size_t sourceSz, const char* function,
-                                   size_t functionSz, const char* name, size_t nameSz, int32_t depth,
-                                   bool is_active = true )
+    tracy_force_inline ScopedZone( uint32_t line, const char* source, size_t sourceSz, const char* function, size_t functionSz, const char* name, size_t nameSz, int32_t depth, bool is_active = true )
         : ScopedZone( line, source, sourceSz, function, functionSz, name, nameSz, 0, depth, is_active )
     {
     }
@@ -195,7 +191,7 @@ class ScopedZone
 
     tracy_force_inline bool IsActive() const { return m_active; }
 
-  private:
+private:
     const bool m_active;
 
 #ifdef TRACY_ON_DEMAND

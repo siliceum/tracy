@@ -60,8 +60,7 @@ void ConnectionHistory::Rebuild()
     {
         vec.emplace_back( it );
     }
-    tracy::pdqsort_branchless( vec.begin(), vec.end(),
-                               []( const auto& lhs, const auto& rhs ) { return lhs->second > rhs->second; } );
+    tracy::pdqsort_branchless( vec.begin(), vec.end(), []( const auto& lhs, const auto& rhs ) { return lhs->second > rhs->second; } );
     std::swap( m_connHistVec, vec );
 }
 

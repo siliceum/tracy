@@ -138,13 +138,15 @@ static ImGuiKey TranslateKeyCode( const char* code )
     return ImGuiKey_None;
 }
 
-Backend::Backend( const char* title, const std::function<void()>& redraw,
-                  const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy,
-                  RunQueue* mainThreadTasks )
+Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks )
 {
     constexpr EGLint eglConfigAttrib[] = {
-        EGL_SURFACE_TYPE,    EGL_WINDOW_BIT, EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_NONE };
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+        EGL_NONE };
 
     s_eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
     EGLBoolean res;
@@ -166,7 +168,9 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
 
     s_eglSurf = eglCreateWindowSurface( s_eglDpy, eglConfig, 0, nullptr );
 
-    constexpr EGLint eglCtxAttrib[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+    constexpr EGLint eglCtxAttrib[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE };
 
     s_eglCtx = eglCreateContext( s_eglDpy, eglConfig, EGL_NO_CONTEXT, eglCtxAttrib );
     if( !s_eglCtx )
@@ -193,90 +197,73 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
     ImGuiIO& io = ImGui::GetIO();
     io.BackendPlatformName = "wasm (tracy profiler)";
 
-    emscripten_set_mousedown_callback( "#canvas", nullptr, EM_TRUE,
-                                       []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL
-                                       {
-                                           ImGui::GetIO().AddMouseButtonEvent( e->button == 0 ? 0 : 3 - e->button,
-                                                                               true );
-                                           tracy::s_wasActive = true;
-                                           return EM_TRUE;
-                                       } );
-    emscripten_set_mouseup_callback( "#canvas", nullptr, EM_TRUE,
-                                     []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL
-                                     {
-                                         ImGui::GetIO().AddMouseButtonEvent( e->button == 0 ? 0 : 3 - e->button,
-                                                                             false );
-                                         tracy::s_wasActive = true;
-                                         return EM_TRUE;
-                                     } );
-    emscripten_set_mousemove_callback( "#canvas", nullptr, EM_TRUE,
-                                       []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL
-                                       {
-                                           const auto scale = EM_ASM_DOUBLE( { return window.devicePixelRatio; } );
-                                           ImGui::GetIO().AddMousePosEvent( e->targetX * scale, e->targetY * scale );
-                                           tracy::s_wasActive = true;
-                                           return EM_TRUE;
-                                       } );
-    emscripten_set_mouseleave_callback( "#canvas", nullptr, EM_TRUE,
-                                        []( int, const EmscriptenMouseEvent*, void* ) -> EM_BOOL
-                                        {
-                                            ImGui::GetIO().AddFocusEvent( false );
-                                            tracy::s_wasActive = true;
-                                            return EM_TRUE;
-                                        } );
-    emscripten_set_mouseenter_callback( "#canvas", nullptr, EM_TRUE,
-                                        []( int, const EmscriptenMouseEvent*, void* ) -> EM_BOOL
-                                        {
-                                            ImGui::GetIO().AddFocusEvent( true );
-                                            tracy::s_wasActive = true;
-                                            return EM_TRUE;
-                                        } );
-    emscripten_set_wheel_callback( "#canvas", nullptr, EM_TRUE,
-                                   []( int, const EmscriptenWheelEvent* e, void* ) -> EM_BOOL
-                                   {
-                                       ImGui::GetIO().AddMouseWheelEvent( e->deltaX * -0.05, e->deltaY * -0.05 );
-                                       tracy::s_wasActive = true;
-                                       return EM_TRUE;
-                                   } );
-    emscripten_set_keydown_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE,
-                                     []( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL
-                                     {
-                                         const auto code = TranslateKeyCode( e->code );
-                                         if( code == ImGuiKey_None ) return EM_FALSE;
-                                         ImGui::GetIO().AddKeyEvent( code, true );
-                                         if( e->key[0] && !e->key[1] ) ImGui::GetIO().AddInputCharacter( *e->key );
-                                         return EM_TRUE;
-                                     } );
-    emscripten_set_keyup_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE,
-                                   []( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL
-                                   {
-                                       const auto code = TranslateKeyCode( e->code );
-                                       if( code == ImGuiKey_None ) return EM_FALSE;
-                                       ImGui::GetIO().AddKeyEvent( code, false );
-                                       return EM_TRUE;
-                                   } );
+    emscripten_set_mousedown_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL {
+        ImGui::GetIO().AddMouseButtonEvent( e->button == 0 ? 0 : 3 - e->button, true );
+        tracy::s_wasActive = true;
+        return EM_TRUE;
+    } );
+    emscripten_set_mouseup_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL {
+        ImGui::GetIO().AddMouseButtonEvent( e->button == 0 ? 0 : 3 - e->button, false );
+        tracy::s_wasActive = true;
+        return EM_TRUE;
+    } );
+    emscripten_set_mousemove_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL {
+        const auto scale = EM_ASM_DOUBLE( { return window.devicePixelRatio; } );
+        ImGui::GetIO().AddMousePosEvent( e->targetX * scale, e->targetY * scale );
+        tracy::s_wasActive = true;
+        return EM_TRUE;
+    } );
+    emscripten_set_mouseleave_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenMouseEvent*, void* ) -> EM_BOOL {
+        ImGui::GetIO().AddFocusEvent( false );
+        tracy::s_wasActive = true;
+        return EM_TRUE;
+    } );
+    emscripten_set_mouseenter_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenMouseEvent*, void* ) -> EM_BOOL {
+        ImGui::GetIO().AddFocusEvent( true );
+        tracy::s_wasActive = true;
+        return EM_TRUE;
+    } );
+    emscripten_set_wheel_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenWheelEvent* e, void* ) -> EM_BOOL {
+        ImGui::GetIO().AddMouseWheelEvent( e->deltaX * -0.05, e->deltaY * -0.05 );
+        tracy::s_wasActive = true;
+        return EM_TRUE;
+    } );
+    emscripten_set_keydown_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, []( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
+        const auto code = TranslateKeyCode( e->code );
+        if( code == ImGuiKey_None ) return EM_FALSE;
+        ImGui::GetIO().AddKeyEvent( code, true );
+        if( e->key[0] && !e->key[1] ) ImGui::GetIO().AddInputCharacter( *e->key );
+        return EM_TRUE;
+    } );
+    emscripten_set_keyup_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, []( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
+        const auto code = TranslateKeyCode( e->code );
+        if( code == ImGuiKey_None ) return EM_FALSE;
+        ImGui::GetIO().AddKeyEvent( code, false );
+        return EM_TRUE;
+    } );
 
-    s_time = std::chrono::duration_cast<std::chrono::microseconds>(
-                 std::chrono::high_resolution_clock::now().time_since_epoch() )
-                 .count();
+    s_time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
 }
 
-Backend::~Backend() {}
+Backend::~Backend()
+{
+}
 
-void Backend::Show() {}
+void Backend::Show()
+{
+}
 
 void Backend::Run()
 {
-    emscripten_set_main_loop(
-        []()
-        {
-            s_redraw();
-            s_mainThreadTasks->Run();
-        },
-        0, 1 );
+    emscripten_set_main_loop( []() {
+        s_redraw();
+        s_mainThreadTasks->Run();
+    }, 0, 1 );
 }
 
-void Backend::Attention() {}
+void Backend::Attention()
+{
+}
 
 void Backend::NewFrame( int& w, int& h )
 {
@@ -292,8 +279,7 @@ void Backend::NewFrame( int& w, int& h )
 
     if( s_width != w || s_height != h )
     {
-        EM_ASM( Module.canvas.style.width = window.innerWidth + 'px';
-                Module.canvas.style.height = window.innerHeight + 'px' );
+        EM_ASM( Module.canvas.style.width = window.innerWidth + 'px'; Module.canvas.style.height = window.innerHeight + 'px' );
         EM_ASM( Module.canvas.width = $0; Module.canvas.height = $1, w, h );
 
         s_width = w;
@@ -313,51 +299,25 @@ void Backend::NewFrame( int& w, int& h )
     const char* cursorName;
     switch( cursor )
     {
-    case ImGuiMouseCursor_None:
-        cursorName = "none";
-        break;
+    case ImGuiMouseCursor_None: cursorName = "none"; break;
     case ImGuiMouseCursor_Arrow:
         switch( s_isBusy() )
         {
         default:
-        case 0:
-            cursorName = "default";
-            break;
-        case 1:
-            cursorName = "progress";
-            break;
-        case 2:
-            cursorName = "wait";
-            break;
+        case 0: cursorName = "default"; break;
+        case 1: cursorName = "progress"; break;
+        case 2: cursorName = "wait"; break;
         }
         break;
-    case ImGuiMouseCursor_TextInput:
-        cursorName = "text";
-        break;
-    case ImGuiMouseCursor_ResizeAll:
-        cursorName = "move";
-        break;
-    case ImGuiMouseCursor_ResizeNS:
-        cursorName = "ns-resize";
-        break;
-    case ImGuiMouseCursor_ResizeEW:
-        cursorName = "ew-resize";
-        break;
-    case ImGuiMouseCursor_ResizeNESW:
-        cursorName = "nesw-resize";
-        break;
-    case ImGuiMouseCursor_ResizeNWSE:
-        cursorName = "nwse-resize";
-        break;
-    case ImGuiMouseCursor_Hand:
-        cursorName = "pointer";
-        break;
-    case ImGuiMouseCursor_NotAllowed:
-        cursorName = "not-allowed";
-        break;
-    default:
-        cursorName = "auto";
-        break;
+    case ImGuiMouseCursor_TextInput: cursorName = "text"; break;
+    case ImGuiMouseCursor_ResizeAll: cursorName = "move"; break;
+    case ImGuiMouseCursor_ResizeNS: cursorName = "ns-resize"; break;
+    case ImGuiMouseCursor_ResizeEW: cursorName = "ew-resize"; break;
+    case ImGuiMouseCursor_ResizeNESW: cursorName = "nesw-resize"; break;
+    case ImGuiMouseCursor_ResizeNWSE: cursorName = "nwse-resize"; break;
+    case ImGuiMouseCursor_Hand: cursorName = "pointer"; break;
+    case ImGuiMouseCursor_NotAllowed: cursorName = "not-allowed"; break;
+    default: cursorName = "auto"; break;
     };
     if( s_prevCursor != cursorName )
     {
@@ -365,9 +325,7 @@ void Backend::NewFrame( int& w, int& h )
         EM_ASM_INT( { document.getElementById( 'canvas' ).style.cursor = UTF8ToString( $0 ); }, cursorName );
     }
 
-    uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>(
-                        std::chrono::high_resolution_clock::now().time_since_epoch() )
-                        .count();
+    uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
     io.DeltaTime = std::min( 0.1f, ( time - s_time ) / 1000000.f );
     s_time = time;
 }
@@ -382,9 +340,14 @@ void Backend::EndFrame()
     ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 }
 
-void Backend::SetIcon( uint8_t* data, int w, int h ) {}
+void Backend::SetIcon( uint8_t* data, int w, int h )
+{
+}
 
-void Backend::SetTitle( const char* title ) { EM_ASM( document.title = UTF8ToString( $0 ), title ); }
+void Backend::SetTitle( const char* title )
+{
+    EM_ASM( document.title = UTF8ToString( $0 ), title );
+}
 
 float Backend::GetDpiScale()
 {

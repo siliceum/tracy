@@ -38,7 +38,7 @@ struct ContextSwitchDraw
 {
     ContextSwitchDrawType type;
     uint32_t idx;
-    uint32_t data; // Folded: number of items -OR- Waiting: wait stack
+    uint32_t data;                  // Folded: number of items -OR- Waiting: wait stack
 };
 
 struct SamplesDraw
@@ -71,9 +71,9 @@ struct LockState
     enum Type : uint8_t
     {
         Nothing = 1 << 0,
-        HasLock = 1 << 1,         // green
-        HasBlockingLock = 1 << 2, // yellow
-        WaitLock = 1 << 3         // red
+        HasLock = 1 << 1,   // green
+        HasBlockingLock = 1 << 2,   // yellow
+        WaitLock = 1 << 3    // red
     };
 };
 

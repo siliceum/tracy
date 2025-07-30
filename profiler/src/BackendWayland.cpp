@@ -265,8 +265,7 @@ static void RecomputeScale()
     tracy::s_wasActive = true;
 }
 
-static void PointerEnter( void*, struct wl_pointer* pointer, uint32_t serial, struct wl_surface* surf, wl_fixed_t sx,
-                          wl_fixed_t sy )
+static void PointerEnter( void*, struct wl_pointer* pointer, uint32_t serial, struct wl_surface* surf, wl_fixed_t sx, wl_fixed_t sy )
 {
     if( s_cursorShapeDev )
     {
@@ -294,23 +293,15 @@ static void PointerMotion( void*, struct wl_pointer* pointer, uint32_t time, wl_
     io.AddMousePosEvent( wl_fixed_to_double( sx * s_maxScale / 120 ), wl_fixed_to_double( sy * s_maxScale / 120 ) );
 }
 
-static void PointerButton( void*, struct wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button,
-                           uint32_t state )
+static void PointerButton( void*, struct wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state )
 {
     int b;
     switch( button )
     {
-    case BTN_LEFT:
-        b = 0;
-        break;
-    case BTN_MIDDLE:
-        b = 2;
-        break;
-    case BTN_RIGHT:
-        b = 1;
-        break;
-    default:
-        return;
+    case BTN_LEFT: b = 0; break;
+    case BTN_MIDDLE: b = 2; break;
+    case BTN_RIGHT: b = 1; break;
+    default: return;
     }
     ImGuiIO& io = ImGui::GetIO();
     io.AddMouseButtonEvent( b, state == WL_POINTER_BUTTON_STATE_PRESSED );
@@ -329,11 +320,17 @@ static void PointerAxis( void*, struct wl_pointer* pointer, uint32_t time, uint3
     }
 }
 
-static void PointerAxisSource( void*, struct wl_pointer* pointer, uint32_t source ) {}
+static void PointerAxisSource( void*, struct wl_pointer* pointer, uint32_t source )
+{
+}
 
-static void PointerAxisStop( void*, struct wl_pointer* pointer, uint32_t time, uint32_t axis ) {}
+static void PointerAxisStop( void*, struct wl_pointer* pointer, uint32_t time, uint32_t axis )
+{
+}
 
-static void PointerAxisDiscrete( void*, struct wl_pointer* pointer, uint32_t axis, int32_t type ) {}
+static void PointerAxisDiscrete( void*, struct wl_pointer* pointer, uint32_t axis, int32_t type )
+{
+}
 
 static void PointerFrame( void*, struct wl_pointer* pointer )
 {
@@ -348,15 +345,16 @@ static void PointerFrame( void*, struct wl_pointer* pointer )
     }
 }
 
-constexpr struct wl_pointer_listener pointerListener = { .enter = PointerEnter,
-                                                         .leave = PointerLeave,
-                                                         .motion = PointerMotion,
-                                                         .button = PointerButton,
-                                                         .axis = PointerAxis,
-                                                         .frame = PointerFrame,
-                                                         .axis_source = PointerAxisSource,
-                                                         .axis_stop = PointerAxisStop,
-                                                         .axis_discrete = PointerAxisDiscrete };
+constexpr struct wl_pointer_listener pointerListener = {
+    .enter = PointerEnter,
+    .leave = PointerLeave,
+    .motion = PointerMotion,
+    .button = PointerButton,
+    .axis = PointerAxis,
+    .frame = PointerFrame,
+    .axis_source = PointerAxisSource,
+    .axis_stop = PointerAxisStop,
+    .axis_discrete = PointerAxisDiscrete };
 
 static void KeyboardKeymap( void*, struct wl_keyboard* kbd, uint32_t format, int32_t fd, uint32_t size )
 {
@@ -404,8 +402,7 @@ static void KeyboardKeymap( void*, struct wl_keyboard* kbd, uint32_t format, int
     s_xkbSuper = xkb_keymap_mod_get_index( s_xkbKeymap, "Mod4" );
 }
 
-static void KeyboardEnter( void*, struct wl_keyboard* kbd, uint32_t serial, struct wl_surface* surf,
-                           struct wl_array* keys )
+static void KeyboardEnter( void*, struct wl_keyboard* kbd, uint32_t serial, struct wl_surface* surf, struct wl_array* keys )
 {
     ImGui::GetIO().AddFocusEvent( true );
     s_hasFocus = true;
@@ -451,9 +448,7 @@ static void KeyboardKey( void*, struct wl_keyboard* kbd, uint32_t serial, uint32
         s_keyRepeat.key = s_keyTable[key];
         s_keyRepeat.active = true;
         s_keyRepeat.first = true;
-        s_keyRepeat.time = std::chrono::duration_cast<std::chrono::microseconds>(
-                               std::chrono::high_resolution_clock::now().time_since_epoch() )
-                               .count();
+        s_keyRepeat.time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
     }
 
     if( state == WL_KEYBOARD_KEY_STATE_PRESSED )
@@ -470,9 +465,7 @@ static void KeyboardKey( void*, struct wl_keyboard* kbd, uint32_t serial, uint32
                 memcpy( s_keyRepeat.txt, txt, sizeof( s_keyRepeat.txt ) );
                 s_keyRepeat.active = true;
                 s_keyRepeat.first = true;
-                s_keyRepeat.time = std::chrono::duration_cast<std::chrono::microseconds>(
-                                       std::chrono::high_resolution_clock::now().time_since_epoch() )
-                                       .count();
+                s_keyRepeat.time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
             }
         }
         s_dataSerial = serial;
@@ -483,8 +476,7 @@ static void KeyboardKey( void*, struct wl_keyboard* kbd, uint32_t serial, uint32
     }
 }
 
-static void KeyboardModifiers( void*, struct wl_keyboard* kbd, uint32_t serial, uint32_t mods_depressed,
-                               uint32_t mods_latched, uint32_t mods_locked, uint32_t group )
+static void KeyboardModifiers( void*, struct wl_keyboard* kbd, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group )
 {
     xkb_state_update_mask( s_xkbState, mods_depressed, mods_latched, mods_locked, 0, 0, group );
 
@@ -502,12 +494,13 @@ static void KeyboardRepeatInfo( void*, struct wl_keyboard* kbd, int32_t rate, in
     s_keyRepeatDelay = delay * 1000;
 }
 
-constexpr struct wl_keyboard_listener keyboardListener = { .keymap = KeyboardKeymap,
-                                                           .enter = KeyboardEnter,
-                                                           .leave = KeyboardLeave,
-                                                           .key = KeyboardKey,
-                                                           .modifiers = KeyboardModifiers,
-                                                           .repeat_info = KeyboardRepeatInfo };
+constexpr struct wl_keyboard_listener keyboardListener = {
+    .keymap = KeyboardKeymap,
+    .enter = KeyboardEnter,
+    .leave = KeyboardLeave,
+    .key = KeyboardKey,
+    .modifiers = KeyboardModifiers,
+    .repeat_info = KeyboardRepeatInfo };
 
 static void SeatCapabilities( void*, struct wl_seat* seat, uint32_t caps )
 {
@@ -543,22 +536,34 @@ static void SeatCapabilities( void*, struct wl_seat* seat, uint32_t caps )
     }
 }
 
-static void SeatName( void*, struct wl_seat* seat, const char* name ) {}
-
-constexpr struct wl_seat_listener seatListener = { .capabilities = SeatCapabilities, .name = SeatName };
-
-static void WmPing( void*, struct xdg_wm_base* shell, uint32_t serial ) { xdg_wm_base_pong( shell, serial ); }
-
-constexpr struct xdg_wm_base_listener wmListener = { .ping = WmPing };
-
-static void OutputGeometry( void*, struct wl_output* output, int32_t x, int32_t y, int32_t phys_w, int32_t phys_h,
-                            int32_t subpixel, const char* make, const char* model, int32_t transform )
+static void SeatName( void*, struct wl_seat* seat, const char* name )
 {
 }
 
-static void OutputMode( void*, struct wl_output* output, uint32_t flags, int32_t w, int32_t h, int32_t refresh ) {}
+constexpr struct wl_seat_listener seatListener = {
+    .capabilities = SeatCapabilities,
+    .name = SeatName };
 
-static void OutputDone( void*, struct wl_output* output ) { RecomputeScale(); }
+static void WmPing( void*, struct xdg_wm_base* shell, uint32_t serial )
+{
+    xdg_wm_base_pong( shell, serial );
+}
+
+constexpr struct xdg_wm_base_listener wmListener = {
+    .ping = WmPing };
+
+static void OutputGeometry( void*, struct wl_output* output, int32_t x, int32_t y, int32_t phys_w, int32_t phys_h, int32_t subpixel, const char* make, const char* model, int32_t transform )
+{
+}
+
+static void OutputMode( void*, struct wl_output* output, uint32_t flags, int32_t w, int32_t h, int32_t refresh )
+{
+}
+
+static void OutputDone( void*, struct wl_output* output )
+{
+    RecomputeScale();
+}
 
 static void OutputScale( void* data, struct wl_output* output, int32_t scale )
 {
@@ -567,18 +572,30 @@ static void OutputScale( void* data, struct wl_output* output, int32_t scale )
 }
 
 constexpr struct wl_output_listener outputListener = {
-    .geometry = OutputGeometry, .mode = OutputMode, .done = OutputDone, .scale = OutputScale };
+    .geometry = OutputGeometry,
+    .mode = OutputMode,
+    .done = OutputDone,
+    .scale = OutputScale };
 
-static void DecorationConfigure( void*, struct zxdg_toplevel_decoration_v1* tldec, uint32_t mode ) {}
+static void DecorationConfigure( void*, struct zxdg_toplevel_decoration_v1* tldec, uint32_t mode )
+{
+}
 
-constexpr struct zxdg_toplevel_decoration_v1_listener decorationListener = { .configure = DecorationConfigure };
+constexpr struct zxdg_toplevel_decoration_v1_listener decorationListener = {
+    .configure = DecorationConfigure };
 
-static void IconMgrSize( void*, struct xdg_toplevel_icon_manager_v1*, int32_t size ) { s_iconSizes.push_back( size ); }
+static void IconMgrSize( void*, struct xdg_toplevel_icon_manager_v1*, int32_t size )
+{
+    s_iconSizes.push_back( size );
+}
 
-static void IconMgrDone( void*, struct xdg_toplevel_icon_manager_v1* ) {}
+static void IconMgrDone( void*, struct xdg_toplevel_icon_manager_v1* )
+{
+}
 
-constexpr struct xdg_toplevel_icon_manager_v1_listener iconMgrListener = { .icon_size = IconMgrSize,
-                                                                           .done = IconMgrDone };
+constexpr struct xdg_toplevel_icon_manager_v1_listener iconMgrListener = {
+    .icon_size = IconMgrSize,
+    .done = IconMgrDone };
 
 static void RegistryGlobal( void*, struct wl_registry* reg, uint32_t name, const char* interface, uint32_t version )
 {
@@ -614,13 +631,11 @@ static void RegistryGlobal( void*, struct wl_registry* reg, uint32_t name, const
     }
     else if( strcmp( interface, zxdg_decoration_manager_v1_interface.name ) == 0 )
     {
-        s_decoration =
-            (zxdg_decoration_manager_v1*)wl_registry_bind( reg, name, &zxdg_decoration_manager_v1_interface, 1 );
+        s_decoration = (zxdg_decoration_manager_v1*)wl_registry_bind( reg, name, &zxdg_decoration_manager_v1_interface, 1 );
     }
     else if( strcmp( interface, wp_fractional_scale_manager_v1_interface.name ) == 0 )
     {
-        s_fractionalScale = (wp_fractional_scale_manager_v1*)wl_registry_bind(
-            reg, name, &wp_fractional_scale_manager_v1_interface, 1 );
+        s_fractionalScale = (wp_fractional_scale_manager_v1*)wl_registry_bind( reg, name, &wp_fractional_scale_manager_v1_interface, 1 );
     }
     else if( strcmp( interface, wp_viewporter_interface.name ) == 0 )
     {
@@ -628,8 +643,7 @@ static void RegistryGlobal( void*, struct wl_registry* reg, uint32_t name, const
     }
     else if( strcmp( interface, wp_cursor_shape_manager_v1_interface.name ) == 0 )
     {
-        s_cursorShape =
-            (wp_cursor_shape_manager_v1*)wl_registry_bind( reg, name, &wp_cursor_shape_manager_v1_interface, 1 );
+        s_cursorShape = (wp_cursor_shape_manager_v1*)wl_registry_bind( reg, name, &wp_cursor_shape_manager_v1_interface, 1 );
         if( s_pointer ) s_cursorShapeDev = wp_cursor_shape_manager_v1_get_pointer( s_cursorShape, s_pointer );
     }
     else if( strcmp( interface, wl_data_device_manager_interface.name ) == 0 )
@@ -638,8 +652,7 @@ static void RegistryGlobal( void*, struct wl_registry* reg, uint32_t name, const
     }
     else if( strcmp( interface, xdg_toplevel_icon_manager_v1_interface.name ) == 0 )
     {
-        s_iconMgr =
-            (xdg_toplevel_icon_manager_v1*)wl_registry_bind( reg, name, &xdg_toplevel_icon_manager_v1_interface, 1 );
+        s_iconMgr = (xdg_toplevel_icon_manager_v1*)wl_registry_bind( reg, name, &xdg_toplevel_icon_manager_v1_interface, 1 );
         xdg_toplevel_icon_manager_v1_add_listener( s_iconMgr, &iconMgrListener, nullptr );
     }
 }
@@ -653,8 +666,9 @@ static void RegistryGlobalRemove( void*, struct wl_registry* reg, uint32_t name 
     RecomputeScale();
 }
 
-constexpr struct wl_registry_listener registryListener = { .global = RegistryGlobal,
-                                                           .global_remove = RegistryGlobalRemove };
+constexpr struct wl_registry_listener registryListener = {
+    .global = RegistryGlobal,
+    .global_remove = RegistryGlobalRemove };
 
 static void XdgSurfaceConfigure( void*, struct xdg_surface* surf, uint32_t serial )
 {
@@ -662,10 +676,10 @@ static void XdgSurfaceConfigure( void*, struct xdg_surface* surf, uint32_t seria
     xdg_surface_ack_configure( surf, serial );
 }
 
-constexpr struct xdg_surface_listener xdgSurfaceListener = { .configure = XdgSurfaceConfigure };
+constexpr struct xdg_surface_listener xdgSurfaceListener = {
+    .configure = XdgSurfaceConfigure };
 
-static void XdgToplevelConfigure( void*, struct xdg_toplevel* toplevel, int32_t width, int32_t height,
-                                  struct wl_array* states )
+static void XdgToplevelConfigure( void*, struct xdg_toplevel* toplevel, int32_t width, int32_t height, struct wl_array* states )
 {
     if( width == 0 || height == 0 ) return;
 
@@ -685,10 +699,14 @@ static void XdgToplevelConfigure( void*, struct xdg_toplevel* toplevel, int32_t 
     s_height = height;
 }
 
-static void XdgToplevelClose( void*, struct xdg_toplevel* toplevel ) { s_running = false; }
+static void XdgToplevelClose( void*, struct xdg_toplevel* toplevel )
+{
+    s_running = false;
+}
 
-constexpr struct xdg_toplevel_listener toplevelListener = { .configure = XdgToplevelConfigure,
-                                                            .close = XdgToplevelClose };
+constexpr struct xdg_toplevel_listener toplevelListener = {
+    .configure = XdgToplevelConfigure,
+    .close = XdgToplevelClose };
 
 static void SurfaceEnter( void*, struct wl_surface* surface, struct wl_output* output )
 {
@@ -723,13 +741,16 @@ static void SurfacePreferredBufferScale( void*, struct wl_surface* surface, int3
     tracy::s_wasActive = true;
 }
 
-static void SurfacePreferredBufferTransform( void*, struct wl_surface* surface, uint32_t transform ) {}
+static void SurfacePreferredBufferTransform( void*, struct wl_surface* surface, uint32_t transform )
+{
+}
 
-constexpr struct wl_surface_listener surfaceListener = { .enter = SurfaceEnter,
-                                                         .leave = SurfaceLeave,
+constexpr struct wl_surface_listener surfaceListener = {
+    .enter = SurfaceEnter,
+    .leave = SurfaceLeave,
 #ifdef WL_SURFACE_PREFERRED_BUFFER_SCALE_SINCE_VERSION
-                                                         .preferred_buffer_scale = SurfacePreferredBufferScale,
-                                                         .preferred_buffer_transform = SurfacePreferredBufferTransform
+    .preferred_buffer_scale = SurfacePreferredBufferScale,
+    .preferred_buffer_transform = SurfacePreferredBufferTransform
 #endif
 };
 
@@ -739,7 +760,8 @@ static void FractionalPreferredScale( void*, struct wp_fractional_scale_v1* frac
     tracy::s_wasActive = true;
 }
 
-constexpr struct wp_fractional_scale_v1_listener fractionalListener = { .preferred_scale = FractionalPreferredScale };
+constexpr struct wp_fractional_scale_v1_listener fractionalListener = {
+    .preferred_scale = FractionalPreferredScale };
 
 static void DataOfferOffer( void*, struct wl_data_offer* offer, const char* mimeType )
 {
@@ -756,12 +778,18 @@ static void DataOfferOffer( void*, struct wl_data_offer* offer, const char* mime
     }
 }
 
-static void DataOfferSourceActions( void*, struct wl_data_offer* offer, uint32_t sourceActions ) {}
+static void DataOfferSourceActions( void*, struct wl_data_offer* offer, uint32_t sourceActions )
+{
+}
 
-static void DataOfferAction( void*, struct wl_data_offer* offer, uint32_t dndAction ) {}
+static void DataOfferAction( void*, struct wl_data_offer* offer, uint32_t dndAction )
+{
+}
 
 constexpr struct wl_data_offer_listener dataOfferListener = {
-    .offer = DataOfferOffer, .source_actions = DataOfferSourceActions, .action = DataOfferAction };
+    .offer = DataOfferOffer,
+    .source_actions = DataOfferSourceActions,
+    .action = DataOfferAction };
 
 static void DataDeviceDataOffer( void*, struct wl_data_device* dataDevice, struct wl_data_offer* offer )
 {
@@ -770,8 +798,7 @@ static void DataDeviceDataOffer( void*, struct wl_data_device* dataDevice, struc
     s_newDataOfferValid = false;
 }
 
-static void DataDeviceEnter( void*, struct wl_data_device* dataDevice, uint32_t serial, struct wl_surface* surface,
-                             wl_fixed_t x, wl_fixed_t y, struct wl_data_offer* offer )
+static void DataDeviceEnter( void*, struct wl_data_device* dataDevice, uint32_t serial, struct wl_surface* surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer* offer )
 {
     if( s_newDataOffer )
     {
@@ -780,9 +807,13 @@ static void DataDeviceEnter( void*, struct wl_data_device* dataDevice, uint32_t 
     }
 }
 
-static void DataDeviceLeave( void*, struct wl_data_device* dataDevice ) {}
+static void DataDeviceLeave( void*, struct wl_data_device* dataDevice )
+{
+}
 
-static void DataDeviceMotion( void*, struct wl_data_device* dataDevice, uint32_t time, wl_fixed_t x, wl_fixed_t y ) {}
+static void DataDeviceMotion( void*, struct wl_data_device* dataDevice, uint32_t time, wl_fixed_t x, wl_fixed_t y )
+{
+}
 
 static void DataDeviceSelection( void*, struct wl_data_device* dataDevice, struct wl_data_offer* offer )
 {
@@ -806,13 +837,16 @@ static void DataDeviceSelection( void*, struct wl_data_device* dataDevice, struc
     }
 }
 
-constexpr struct wl_data_device_listener dataDeviceListener = { .data_offer = DataDeviceDataOffer,
-                                                                .enter = DataDeviceEnter,
-                                                                .leave = DataDeviceLeave,
-                                                                .motion = DataDeviceMotion,
-                                                                .selection = DataDeviceSelection };
+constexpr struct wl_data_device_listener dataDeviceListener = {
+    .data_offer = DataDeviceDataOffer,
+    .enter = DataDeviceEnter,
+    .leave = DataDeviceLeave,
+    .motion = DataDeviceMotion,
+    .selection = DataDeviceSelection };
 
-void DataSourceTarget( void*, struct wl_data_source* dataSource, const char* mimeType ) {}
+void DataSourceTarget( void*, struct wl_data_source* dataSource, const char* mimeType )
+{
+}
 
 void DataSourceSend( void*, struct wl_data_source* dataSource, const char* mimeType, int32_t fd )
 {
@@ -839,7 +873,9 @@ void DataSourceCancelled( void*, struct wl_data_source* dataSource )
 }
 
 constexpr struct wl_data_source_listener dataSourceListener = {
-    .target = DataSourceTarget, .send = DataSourceSend, .cancelled = DataSourceCancelled };
+    .target = DataSourceTarget,
+    .send = DataSourceSend,
+    .cancelled = DataSourceCancelled };
 
 static void SetupCursor()
 {
@@ -897,9 +933,7 @@ static const char* GetClipboard( ImGuiContext* )
     return s_clipboardIncoming.c_str();
 }
 
-Backend::Backend( const char* title, const std::function<void()>& redraw,
-                  const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy,
-                  RunQueue* mainThreadTasks )
+Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks )
 {
     s_redraw = redraw;
     s_scaleChanged = scaleChanged;
@@ -958,8 +992,12 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
     SetupCursor();
 
     constexpr EGLint eglConfigAttrib[] = {
-        EGL_SURFACE_TYPE,    EGL_WINDOW_BIT, EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_NONE };
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+        EGL_NONE };
 
     s_eglDpy = eglGetPlatformDisplay( EGL_PLATFORM_WAYLAND_KHR, s_dpy, nullptr );
     EGLBoolean res;
@@ -989,8 +1027,10 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
     s_eglSurf = eglCreatePlatformWindowSurface( s_eglDpy, eglConfig, s_eglWin, nullptr );
 
     constexpr EGLint eglCtxAttrib[] = {
-        EGL_CONTEXT_MAJOR_VERSION,           3,       EGL_CONTEXT_MINOR_VERSION, 2, EGL_CONTEXT_OPENGL_PROFILE_MASK,
-        EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT, EGL_NONE };
+        EGL_CONTEXT_MAJOR_VERSION, 3,
+        EGL_CONTEXT_MINOR_VERSION, 2,
+        EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+        EGL_NONE };
 
     s_eglCtx = eglCreateContext( s_eglDpy, eglConfig, EGL_NO_CONTEXT, eglCtxAttrib );
     if( !s_eglCtx )
@@ -1044,9 +1084,7 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
         platform.Platform_GetClipboardTextFn = GetClipboard;
     }
 
-    s_time = std::chrono::duration_cast<std::chrono::microseconds>(
-                 std::chrono::high_resolution_clock::now().time_since_epoch() )
-                 .count();
+    s_time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
 }
 
 Backend::~Backend()
@@ -1094,14 +1132,16 @@ Backend::~Backend()
     wl_display_disconnect( s_dpy );
 }
 
-void Backend::Show() { wl_surface_commit( s_surf ); }
+void Backend::Show()
+{
+    wl_surface_commit( s_surf );
+}
 
 void Backend::Run()
 {
     while( s_running && wl_display_dispatch( s_dpy ) != -1 )
     {
-        if( tracy::s_config.focusLostLimit && !s_hasFocus )
-            std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
+        if( tracy::s_config.focusLostLimit && !s_hasFocus ) std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
         s_redraw();
         s_mainThreadTasks->Run();
     }
@@ -1114,7 +1154,8 @@ static void TokenDone( void*, xdg_activation_token_v1* token, const char* str )
     s_actToken = nullptr;
 }
 
-constexpr struct xdg_activation_token_v1_listener tokenListener = { .done = TokenDone };
+constexpr struct xdg_activation_token_v1_listener tokenListener = {
+    .done = TokenDone };
 
 void Backend::Attention()
 {
@@ -1135,8 +1176,7 @@ void Backend::NewFrame( int& w, int& h )
         wl_egl_window_resize( s_eglWin, s_width * s_maxScale / 120, s_height * s_maxScale / 120, 0, 0 );
         if( s_fracSurf )
         {
-            wp_viewport_set_source( s_viewport, 0, 0, wl_fixed_from_double( s_width * s_maxScale / 120. ),
-                                    wl_fixed_from_double( s_height * s_maxScale / 120. ) );
+            wp_viewport_set_source( s_viewport, 0, 0, wl_fixed_from_double( s_width * s_maxScale / 120. ), wl_fixed_from_double( s_height * s_maxScale / 120. ) );
             wp_viewport_set_destination( s_viewport, s_width, s_height );
         }
     }
@@ -1165,9 +1205,7 @@ void Backend::NewFrame( int& w, int& h )
 
     ImGui_ImplOpenGL3_NewFrame();
 
-    uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>(
-                        std::chrono::high_resolution_clock::now().time_since_epoch() )
-                        .count();
+    uint64_t time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
     io.DeltaTime = std::min( 0.1f, ( time - s_time ) / 1000000.f );
     s_time = time;
 
@@ -1175,7 +1213,8 @@ void Backend::NewFrame( int& w, int& h )
     {
         tracy::s_wasActive = true;
         const auto delta = s_time - s_keyRepeat.time;
-        if( ( s_keyRepeat.first && delta >= s_keyRepeatDelay ) || ( !s_keyRepeat.first && delta >= s_keyRepeatRate ) )
+        if( ( s_keyRepeat.first && delta >= s_keyRepeatDelay ) ||
+            ( !s_keyRepeat.first && delta >= s_keyRepeatRate ) )
         {
             s_keyRepeat.first = false;
             s_keyRepeat.time = s_time;
@@ -1329,6 +1368,12 @@ void Backend::SetIcon( uint8_t* data, int w, int h )
     wl_shm_pool_destroy( pool );
 }
 
-void Backend::SetTitle( const char* title ) { xdg_toplevel_set_title( s_toplevel, title ); }
+void Backend::SetTitle( const char* title )
+{
+    xdg_toplevel_set_title( s_toplevel, title );
+}
 
-float Backend::GetDpiScale() { return s_maxScale / 120.f; }
+float Backend::GetDpiScale()
+{
+    return s_maxScale / 120.f;
+}

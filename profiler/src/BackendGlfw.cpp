@@ -46,13 +46,17 @@ static void glfw_window_size_callback( GLFWwindow* window, int w, int h )
     tracy::s_wasActive = true;
 }
 
-static void glfw_window_maximize_callback( GLFWwindow*, int maximized ) { s_winPos->maximize = maximized; }
+static void glfw_window_maximize_callback( GLFWwindow*, int maximized )
+{
+    s_winPos->maximize = maximized;
+}
 
-static void glfw_window_iconify_callback( GLFWwindow*, int iconified ) { s_iconified = iconified != 0; }
+static void glfw_window_iconify_callback( GLFWwindow*, int iconified )
+{
+    s_iconified = iconified != 0;
+}
 
-Backend::Backend( const char* title, const std::function<void()>& redraw,
-                  const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy,
-                  RunQueue* mainThreadTasks )
+Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks )
 {
     glfwSetErrorCallback( glfw_error_callback );
     if( !glfwInit() ) exit( 1 );
@@ -68,12 +72,12 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
     glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
 #endif
 #ifdef WIN32
-#    if GLFW_VERSION_MAJOR > 3 || ( GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4 )
+#  if GLFW_VERSION_MAJOR > 3 || ( GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4 )
     glfwWindowHint( GLFW_WIN32_KEYBOARD_MENU, 1 );
-#    endif
-#    if GLFW_VERSION_MAJOR > 3 || ( GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3 )
+#  endif
+#  if GLFW_VERSION_MAJOR > 3 || ( GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3 )
     glfwWindowHint( GLFW_SCALE_TO_MONITOR, 1 );
-#    endif
+#  endif
 #endif
     s_window = glfwCreateWindow( m_winPos.w, m_winPos.h, title, NULL, NULL );
     if( !s_window ) exit( 1 );
@@ -85,12 +89,7 @@ Backend::Backend( const char* title, const std::function<void()>& redraw,
 
     glfwMakeContextCurrent( s_window );
     glfwSwapInterval( 1 ); // Enable vsync
-    glfwSetWindowRefreshCallback( s_window,
-                                  []( GLFWwindow* )
-                                  {
-                                      tracy::s_wasActive = true;
-                                      s_redraw();
-                                  } );
+    glfwSetWindowRefreshCallback( s_window, []( GLFWwindow* ) { tracy::s_wasActive = true; s_redraw(); } );
 
     ImGui_ImplGlfw_InitForOpenGL( s_window, true );
     ImGui_ImplOpenGL3_Init( "#version 150" );
@@ -119,7 +118,10 @@ Backend::~Backend()
     glfwTerminate();
 }
 
-void Backend::Show() { glfwShowWindow( s_window ); }
+void Backend::Show()
+{
+    glfwShowWindow( s_window );
+}
 
 void Backend::Run()
 {
@@ -133,8 +135,7 @@ void Backend::Run()
         {
             glfwPollEvents();
             s_redraw();
-            if( tracy::s_config.focusLostLimit && !glfwGetWindowAttrib( s_window, GLFW_FOCUSED ) )
-                std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
+            if( tracy::s_config.focusLostLimit && !glfwGetWindowAttrib( s_window, GLFW_FOCUSED ) ) std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
             s_mainThreadTasks->Run();
         }
     }
@@ -193,7 +194,10 @@ void Backend::SetIcon( uint8_t* data, int w, int h )
     glfwSetWindowIcon( s_window, 1, &icon );
 }
 
-void Backend::SetTitle( const char* title ) { glfwSetWindowTitle( s_window, title ); }
+void Backend::SetTitle( const char* title )
+{
+    glfwSetWindowTitle( s_window, title );
+}
 
 float Backend::GetDpiScale()
 {

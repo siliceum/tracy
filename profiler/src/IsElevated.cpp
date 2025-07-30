@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#    include <windows.h>
+#  include <windows.h>
 
 bool IsElevated()
 {
@@ -24,12 +24,18 @@ bool IsElevated()
 
 #elif defined __EMSCRIPTEN__
 
-bool IsElevated() { return false; }
+bool IsElevated()
+{
+    return false;
+}
 
 #else
 
-#    include <unistd.h>
+#  include <unistd.h>
 
-bool IsElevated() { return getuid() == 0; }
+bool IsElevated()
+{
+    return getuid() == 0;
+}
 
 #endif

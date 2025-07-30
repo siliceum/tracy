@@ -1,42 +1,42 @@
 #ifdef _MSC_VER
-#    pragma warning( disable : 4996 )
+#  pragma warning( disable : 4996 )
 #endif
 #if defined _WIN32
-#    ifndef WIN32_LEAN_AND_MEAN
-#        define WIN32_LEAN_AND_MEAN
-#    endif
-#    ifndef NOMINMAX
-#        define NOMINMAX
-#    endif
-#    include "TracyWinFamily.hpp"
-#    include <malloc.h>
-#    include <windows.h>
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#  include "TracyWinFamily.hpp"
+#  include <malloc.h>
+#  include <windows.h>
 #else
-#    include <pthread.h>
-#    include <string.h>
-#    include <unistd.h>
+#  include <pthread.h>
+#  include <string.h>
+#  include <unistd.h>
 #endif
 
 #ifdef __linux__
-#    ifdef __ANDROID__
-#        include <sys/types.h>
-#    else
-#        include <sys/syscall.h>
-#    endif
-#    include <fcntl.h>
+#  ifdef __ANDROID__
+#    include <sys/types.h>
+#  else
+#    include <sys/syscall.h>
+#  endif
+#  include <fcntl.h>
 #elif defined __FreeBSD__
-#    include <sys/thr.h>
+#  include <sys/thr.h>
 #elif defined __NetBSD__
-#    include <lwp.h>
+#  include <lwp.h>
 #elif defined __DragonFly__
-#    include <sys/lwp.h>
+#  include <sys/lwp.h>
 #elif defined __QNX__
-#    include <process.h>
-#    include <sys/neutrino.h>
+#  include <process.h>
+#  include <sys/neutrino.h>
 #endif
 
 #ifdef __MINGW32__
-#    define __STDC_FORMAT_MACROS
+#  define __STDC_FORMAT_MACROS
 #endif
 #include <inttypes.h>
 #include <stdio.h>
@@ -50,8 +50,8 @@ extern "C" typedef HRESULT( WINAPI* t_GetThreadDescription )( HANDLE, PWSTR* );
 #endif
 
 #ifdef TRACY_ENABLE
-#    include "TracyAlloc.hpp"
-#    include <atomic>
+#  include "TracyAlloc.hpp"
+#  include <atomic>
 #endif
 
 namespace tracy
@@ -63,8 +63,7 @@ namespace detail
 TRACY_API uint32_t GetThreadHandleImpl()
 {
 #if defined _WIN32
-    static_assert( sizeof( decltype( GetCurrentThreadId() ) ) <= sizeof( uint32_t ),
-                   "Thread handle too big to fit in protocol" );
+    static_assert( sizeof( decltype( GetCurrentThreadId() ) ) <= sizeof( uint32_t ), "Thread handle too big to fit in protocol" );
     return uint32_t( GetCurrentThreadId() );
 #elif defined __APPLE__
     uint64_t id;
@@ -90,13 +89,13 @@ TRACY_API uint32_t GetThreadHandleImpl()
     // Not supported, but let it compile.
     return 0;
 #else
-// To add support for a platform, retrieve and return the kernel thread identifier here.
-//
-// Note that pthread_t (as for example returned by pthread_self()) is *not* a kernel
-// thread identifier. It is a pointer to a library-allocated data structure instead.
-// Such pointers will be reused heavily, making the pthread_t non-unique. Additionally
-// a 64-bit pointer cannot be reliably truncated to 32 bits.
-#    error "Unsupported platform!"
+    // To add support for a platform, retrieve and return the kernel thread identifier here.
+    //
+    // Note that pthread_t (as for example returned by pthread_self()) is *not* a kernel
+    // thread identifier. It is a pointer to a library-allocated data structure instead.
+    // Such pointers will be reused heavily, making the pthread_t non-unique. Additionally
+    // a 64-bit pointer cannot be reliably truncated to 32 bits.
+#  error "Unsupported platform!"
 #endif
 }
 
@@ -107,7 +106,7 @@ std::atomic<ThreadNameData*>& GetThreadNameData();
 #endif
 
 #if defined _MSC_VER && !defined __clang__
-#    pragma pack( push, 8 )
+#  pragma pack( push, 8 )
 struct THREADNAME_INFO
 {
     DWORD dwType;
@@ -115,7 +114,7 @@ struct THREADNAME_INFO
     DWORD dwThreadID;
     DWORD dwFlags;
 };
-#    pragma pack( pop )
+#  pragma pack( pop )
 
 void ThreadNameMsvcMagic( const THREADNAME_INFO& info )
 {
@@ -129,17 +128,19 @@ void ThreadNameMsvcMagic( const THREADNAME_INFO& info )
 }
 #endif
 
-TRACY_API void SetThreadName( const char* name ) { SetThreadNameWithHint( name, 0 ); }
+TRACY_API void SetThreadName( const char* name )
+{
+    SetThreadNameWithHint( name, 0 );
+}
 
 TRACY_API void SetThreadNameWithHint( const char* name, int32_t groupHint )
 {
 #if defined _WIN32
-#    if defined TRACY_WIN32_NO_DESKTOP
+#  if defined TRACY_WIN32_NO_DESKTOP
     static auto _SetThreadDescription = &::SetThreadDescription;
-#    else
-    static auto _SetThreadDescription =
-        (t_SetThreadDescription)GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "SetThreadDescription" );
-#    endif
+#  else
+    static auto _SetThreadDescription = (t_SetThreadDescription)GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "SetThreadDescription" );
+#  endif
     if( _SetThreadDescription )
     {
         wchar_t buf[256];
@@ -148,36 +149,36 @@ TRACY_API void SetThreadNameWithHint( const char* name, int32_t groupHint )
     }
     else
     {
-#    if defined _MSC_VER && !defined __clang__
+#  if defined _MSC_VER && !defined __clang__
         THREADNAME_INFO info;
         info.dwType = 0x1000;
         info.szName = name;
         info.dwThreadID = GetCurrentThreadId();
         info.dwFlags = 0;
         ThreadNameMsvcMagic( info );
-#    endif
+#  endif
     }
 #elif defined _GNU_SOURCE && !defined __EMSCRIPTEN__
     {
         const auto sz = strlen( name );
         if( sz <= 15 )
         {
-#    if defined __APPLE__
+#  if defined __APPLE__
             pthread_setname_np( name );
-#    else
+#  else
             pthread_setname_np( pthread_self(), name );
-#    endif
+#  endif
         }
         else
         {
             char buf[16];
             memcpy( buf, name, 15 );
             buf[15] = '\0';
-#    if defined __APPLE__
+#  if defined __APPLE__
             pthread_setname_np( buf );
-#    else
+#  else
             pthread_setname_np( pthread_self(), buf );
-#    endif
+#  endif
         }
     }
 #elif defined __QNX__
@@ -207,8 +208,7 @@ TRACY_API void SetThreadNameWithHint( const char* name, int32_t groupHint )
         data->groupHint = groupHint;
         data->name = buf;
         data->next = GetThreadNameData().load( std::memory_order_relaxed );
-        while( !GetThreadNameData().compare_exchange_weak( data->next, data, std::memory_order_release,
-                                                           std::memory_order_relaxed ) )
+        while( !GetThreadNameData().compare_exchange_weak( data->next, data, std::memory_order_release, std::memory_order_relaxed ) )
         {
         }
     }
@@ -247,12 +247,11 @@ TRACY_API const char* GetThreadName( uint32_t id )
 #endif
 
 #if defined _WIN32
-#    if defined TRACY_WIN32_NO_DESKTOP
+#  if defined TRACY_WIN32_NO_DESKTOP
     static auto _GetThreadDescription = &::GetThreadDescription;
-#    else
-    static auto _GetThreadDescription =
-        (t_GetThreadDescription)GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "GetThreadDescription" );
-#    endif
+#  else
+    static auto _GetThreadDescription = (t_GetThreadDescription)GetProcAddress( GetModuleHandleA( "kernel32.dll" ), "GetThreadDescription" );
+#  endif
     if( _GetThreadDescription )
     {
         auto hnd = OpenThread( THREAD_QUERY_LIMITED_INFORMATION, FALSE, (DWORD)id );
@@ -276,9 +275,9 @@ TRACY_API const char* GetThreadName( uint32_t id )
     char path[32];
     snprintf( path, sizeof( path ), "/proc/self/task/%d/comm", id );
     sprintf( buf, "%" PRIu32, id );
-#    ifndef __ANDROID__
+#  ifndef __ANDROID__
     pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &cs );
-#    endif
+#  endif
     if( ( fd = open( path, O_RDONLY ) ) > 0 )
     {
         int len = read( fd, buf, 255 );
@@ -292,9 +291,9 @@ TRACY_API const char* GetThreadName( uint32_t id )
         }
         close( fd );
     }
-#    ifndef __ANDROID__
+#  ifndef __ANDROID__
     pthread_setcancelstate( cs, 0 );
-#    endif
+#  endif
     return buf;
 #elif defined __QNX__
     static char qnxNameBuf[_NTO_THREAD_NAME_MAX + 1] = { 0 };
@@ -323,7 +322,8 @@ TRACY_API const char* GetEnvVar( const char* name )
     DWORD const kBufferSize = DWORD( sizeof( buffer ) / sizeof( buffer[0] ) );
     DWORD count = GetEnvironmentVariableA( name, buffer, kBufferSize );
 
-    if( count == 0 ) return nullptr;
+    if( count == 0 )
+        return nullptr;
 
     if( count >= kBufferSize )
     {

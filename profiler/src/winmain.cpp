@@ -1,8 +1,8 @@
 #ifdef _WIN32
-#    include <intrin.h>
-#    include <stdint.h>
-#    include <stdlib.h>
-#    include <windows.h>
+#  include <intrin.h>
+#  include <stdint.h>
+#  include <stdlib.h>
+#  include <windows.h>
 
 namespace tracy
 {
@@ -33,18 +33,12 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd,
 
         if( tracy::DiscoveryAVX2() && !cpuHasAVX2 )
         {
-            MessageBoxA(
-                nullptr,
-                "This program is compiled with AVX2 instruction set, but your CPU doesn't support it. You must recompile with lower instruction set.\n\nIn Visual Studio go to Project properties -> C/C++ -> Code Generation -> Enable Enhanced Instruction Set and select appropriate value for your CPU.",
-                "Wrong CPU architecture", MB_ICONERROR );
+            MessageBoxA( nullptr, "This program is compiled with AVX2 instruction set, but your CPU doesn't support it. You must recompile with lower instruction set.\n\nIn Visual Studio go to Project properties -> C/C++ -> Code Generation -> Enable Enhanced Instruction Set and select appropriate value for your CPU.", "Wrong CPU architecture", MB_ICONERROR );
             return 0;
         }
         if( tracy::DiscoveryAVX() && !cpuHasAVX )
         {
-            MessageBoxA(
-                nullptr,
-                "This program is compiled with AVX instruction set, but your CPU doesn't support it. You must recompile with lower instruction set.\n\nIn Visual Studio go to Project properties -> C/C++ -> Code Generation -> Enable Enhanced Instruction Set and select appropriate value for your CPU.",
-                "Wrong CPU architecture", MB_ICONERROR );
+            MessageBoxA( nullptr, "This program is compiled with AVX instruction set, but your CPU doesn't support it. You must recompile with lower instruction set.\n\nIn Visual Studio go to Project properties -> C/C++ -> Code Generation -> Enable Enhanced Instruction Set and select appropriate value for your CPU.", "Wrong CPU architecture", MB_ICONERROR );
             return 0;
         }
     }

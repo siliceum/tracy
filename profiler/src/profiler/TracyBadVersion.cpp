@@ -72,9 +72,7 @@ void BadVersionImpl( BadVersionState& badVer )
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_CLOUD_ARROW_DOWN );
         ImGui::PopFont();
-        ImGui::Text(
-            "The file you are trying to open is unsupported.\nYou should update to Tracy %i.%i.%i or newer and try again.",
-            badVer.version >> 16, ( badVer.version >> 8 ) & 0xFF, badVer.version & 0xFF );
+        ImGui::Text( "The file you are trying to open is unsupported.\nYou should update to Tracy %i.%i.%i or newer and try again.", badVer.version >> 16, ( badVer.version >> 8 ) & 0xFF, badVer.version & 0xFF );
         ImGui::Separator();
         if( ImGui::Button( ICON_FA_DOWNLOAD " Download update" ) )
         {
@@ -95,9 +93,7 @@ void BadVersionImpl( BadVersionState& badVer )
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_GHOST );
         ImGui::PopFont();
-        ImGui::Text(
-            "You are trying to open a file which was created by legacy version %i.%i.%i.\nUse the update utility from an older version of the profiler to convert the file to a supported version.",
-            badVer.version >> 16, ( badVer.version >> 8 ) & 0xFF, badVer.version & 0xFF );
+        ImGui::Text( "You are trying to open a file which was created by legacy version %i.%i.%i.\nUse the update utility from an older version of the profiler to convert the file to a supported version.", badVer.version >> 16, ( badVer.version >> 8 ) & 0xFF, badVer.version & 0xFF );
         ImGui::Separator();
         if( ImGui::Button( "Maybe I don't need it" ) )
         {

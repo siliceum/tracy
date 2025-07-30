@@ -15,7 +15,7 @@ namespace tracy
 
 class RingBuffer
 {
-  public:
+public:
     RingBuffer( unsigned int size, int fd, int id, int cpu = -1 )
         : m_size( size )
         , m_id( id )
@@ -69,7 +69,10 @@ class RingBuffer
     int GetId() const { return m_id; }
     int GetCpu() const { return m_cpu; }
 
-    void Enable() { ioctl( m_fd, PERF_EVENT_IOC_ENABLE, 0 ); }
+    void Enable()
+    {
+        ioctl( m_fd, PERF_EVENT_IOC_ENABLE, 0 );
+    }
 
     void Read( void* dst, uint64_t offset, uint64_t cnt )
     {
@@ -94,7 +97,10 @@ class RingBuffer
         StoreTail();
     }
 
-    bool CheckTscCaps() const { return m_metadata->cap_user_time_zero; }
+    bool CheckTscCaps() const
+    {
+        return m_metadata->cap_user_time_zero;
+    }
 
     int64_t ConvertTimeToTsc( int64_t timestamp ) const
     {
@@ -107,17 +113,18 @@ class RingBuffer
 
     uint64_t LoadHead() const
     {
-        return std::atomic_load_explicit( (const volatile std::atomic<uint64_t>*)&m_metadata->data_head,
-                                          std::memory_order_acquire );
+        return std::atomic_load_explicit( (const volatile std::atomic<uint64_t>*)&m_metadata->data_head, std::memory_order_acquire );
     }
 
-    uint64_t GetTail() const { return m_tail; }
+    uint64_t GetTail() const
+    {
+        return m_tail;
+    }
 
-  private:
+private:
     void StoreTail()
     {
-        std::atomic_store_explicit( (volatile std::atomic<uint64_t>*)&m_metadata->data_tail, m_tail,
-                                    std::memory_order_release );
+        std::atomic_store_explicit( (volatile std::atomic<uint64_t>*)&m_metadata->data_tail, m_tail, std::memory_order_release );
     }
 
     unsigned int m_size;

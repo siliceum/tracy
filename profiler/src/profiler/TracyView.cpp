@@ -1,9 +1,9 @@
 #ifdef _MSC_VER
-#    pragma warning( disable : 4267 ) // conversion from don't care to whatever, possible loss of data
+#  pragma warning( disable : 4267 )  // conversion from don't care to whatever, possible loss of data
 #endif
 
 #ifdef __MINGW32__
-#    define __STDC_FORMAT_MACROS
+#  define __STDC_FORMAT_MACROS
 #endif
 #include <algorithm>
 #include <assert.h>
@@ -29,7 +29,7 @@
 #include "imgui_internal.h"
 
 #ifndef M_PI_2
-#    define M_PI_2 1.57079632679489661923
+#  define M_PI_2 1.57079632679489661923
 #endif
 
 namespace tracy
@@ -37,11 +37,8 @@ namespace tracy
 
 double s_time = 0;
 
-View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), const char* addr, uint16_t port,
-            SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
-    : m_worker( addr, port,
-                s_config.memoryLimit == 0 ? -1
-                                          : ( s_config.memoryLimitPercent * tracy::GetPhysicalMemorySize() / 100 ) )
+View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), const char* addr, uint16_t port, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
+    : m_worker( addr, port, s_config.memoryLimit == 0 ? -1 : ( s_config.memoryLimitPercent * tracy::GetPhysicalMemorySize() / 100 ) )
     , m_staticView( false )
     , m_viewMode( ViewMode::LastFrames )
     , m_viewModeHeuristicTry( true )
@@ -71,8 +68,7 @@ View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), const 
     SetupConfig();
 }
 
-View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), FileRead& f, SetTitleCallback stcb,
-            SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
+View::View( void ( *cbMainThread )( const std::function<void()>&, bool ), FileRead& f, SetTitleCallback stcb, SetScaleCallback sscb, AttentionCallback acb, AchievementsMgr* amgr )
     : m_worker( f )
     , m_filename( f.GetFilename() )
     , m_staticView( true )
@@ -170,7 +166,8 @@ void View::ViewSource( const char* fileName, int line, const char* functionName 
     {
         const auto name = m_worker.GetString( sym.second.name );
         const auto ptr = strstr( name, functionName );
-        if( ptr && ( ptr[fnsz] == 0 || ptr[fnsz] == '(' || ptr[fnsz] == '<' ) &&
+        if( ptr &&
+            ( ptr[fnsz] == 0 || ptr[fnsz] == '(' || ptr[fnsz] == '<' ) &&
             ( ptr == name || ( ptr[-1] == ' ' || ptr[-1] == ':' ) ) )
         {
             if( addr != 0 )
@@ -273,12 +270,19 @@ bool View::ViewDispatch( const char* fileName, int line, uint64_t symAddr )
     }
 }
 
-static const char* CompressionName[] = { "LZ4", "LZ4 HC", "LZ4 HC extreme", "Zstd", nullptr };
+static const char* CompressionName[] = {
+    "LZ4",
+    "LZ4 HC",
+    "LZ4 HC extreme",
+    "Zstd",
+    nullptr };
 
 static const char* CompressionDesc[] = {
-    "Fastest save, fast load time, big file size", "Slow save, fastest load time, reasonable file size",
+    "Fastest save, fast load time, big file size",
+    "Slow save, fastest load time, reasonable file size",
     "Very slow save, fastest load time, file smaller than LZ4 HC",
-    "Configurable save time (fast-slowest), reasonable load time, smallest file size", nullptr };
+    "Configurable save time (fast-slowest), reasonable load time, smallest file size",
+    nullptr };
 
 static_assert( sizeof( CompressionName ) == sizeof( CompressionDesc ), "Unmatched compression names and descriptions" );
 
@@ -315,8 +319,7 @@ bool View::Draw()
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_TRIANGLE_EXCLAMATION );
         ImGui::PopFont();
-        ImGui::TextUnformatted(
-            "The client you are trying to connect to uses incompatible protocol version.\nMake sure you are using the same Tracy version on both client and server." );
+        ImGui::TextUnformatted( "The client you are trying to connect to uses incompatible protocol version.\nMake sure you are using the same Tracy version on both client and server." );
         ImGui::Separator();
         if( ImGui::Button( "My bad" ) )
         {
@@ -342,8 +345,7 @@ bool View::Draw()
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_LIGHTBULB );
         ImGui::PopFont();
-        ImGui::TextUnformatted(
-            "The client you are trying to connect to is no longer able to sent profiling data,\nbecause another server was already connected to it.\nYou can do the following:\n\n  1. Restart the client application.\n  2. Rebuild the client application with on-demand mode enabled." );
+        ImGui::TextUnformatted( "The client you are trying to connect to is no longer able to sent profiling data,\nbecause another server was already connected to it.\nYou can do the following:\n\n  1. Restart the client application.\n  2. Rebuild the client application with on-demand mode enabled." );
         ImGui::Separator();
         if( ImGui::Button( "I understand" ) )
         {
@@ -369,8 +371,7 @@ bool View::Draw()
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_HANDSHAKE );
         ImGui::PopFont();
-        ImGui::TextUnformatted(
-            "The client you are trying to connect to has disconnected during the initial\nconnection handshake. Please check your network configuration." );
+        ImGui::TextUnformatted( "The client you are trying to connect to has disconnected during the initial\nconnection handshake. Please check your network configuration." );
         ImGui::Separator();
         if( ImGui::Button( "Will do" ) )
         {
@@ -397,8 +398,7 @@ bool View::Draw()
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_SKULL );
         ImGui::PopFont();
-        ImGui::TextUnformatted(
-            "Profiling session terminated due to improper instrumentation.\nPlease correct your program and try again." );
+        ImGui::TextUnformatted( "Profiling session terminated due to improper instrumentation.\nPlease correct your program and try again." );
         ImGui::TextUnformatted( "Reason:" );
         ImGui::SameLine();
         ImGui::TextUnformatted( Worker::GetFailureString( failure ) );
@@ -437,8 +437,7 @@ bool View::Draw()
                 ImGui::BeginChild( "##callstackFailure", ImVec2( 1200, 500 ) );
                 if( ImGui::BeginTable( "##callstack", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders ) )
                 {
-                    ImGui::TableSetupColumn( "Frame",
-                                             ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
+                    ImGui::TableSetupColumn( "Frame", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
                     ImGui::TableSetupColumn( "Function" );
                     ImGui::TableSetupColumn( "Location" );
                     ImGui::TableSetupColumn( "Image" );
@@ -652,7 +651,8 @@ bool View::Draw()
         ImGui::EndPopup();
     }
 
-    if( !m_staticView && ( ImGui::IsKeyDown( ImGuiKey_LeftCtrl ) || ImGui::IsKeyDown( ImGuiKey_RightCtrl ) ) &&
+    if( !m_staticView &&
+        ( ImGui::IsKeyDown( ImGuiKey_LeftCtrl ) || ImGui::IsKeyDown( ImGuiKey_RightCtrl ) ) &&
         ( ImGui::IsKeyDown( ImGuiKey_LeftShift ) || ImGui::IsKeyDown( ImGuiKey_RightShift ) ) &&
         ( ImGui::IsKeyDown( ImGuiKey_LeftAlt ) || ImGui::IsKeyDown( ImGuiKey_RightAlt ) ) &&
         ImGui::IsKeyPressed( ImGuiKey_R ) )
@@ -665,7 +665,10 @@ bool View::Draw()
     return DrawImpl();
 }
 
-static const char* MainWindowButtons[] = { ICON_FA_PLAY " Resume", ICON_FA_PAUSE " Pause", ICON_FA_SQUARE " Stopped" };
+static const char* MainWindowButtons[] = {
+    ICON_FA_PLAY " Resume",
+    ICON_FA_PAUSE " Pause",
+    ICON_FA_SQUARE " Stopped" };
 
 enum
 {
@@ -727,13 +730,11 @@ bool View::DrawImpl()
         m_threadReinsert.reserve( threadHints.size() );
         for( auto v : threadHints )
         {
-            auto it =
-                std::find_if( m_threadOrder.begin(), m_threadOrder.end(), [v]( const auto& t ) { return t->id == v; } );
+            auto it = std::find_if( m_threadOrder.begin(), m_threadOrder.end(), [v]( const auto& t ) { return t->id == v; } );
             if( it != m_threadOrder.end() )
             {
                 // Will be reinserted in the correct place later.
-                // A separate list is kept of threads that were already known to avoid having to figure out which one is
-                // missing in m_threadOrder.
+                // A separate list is kept of threads that were already known to avoid having to figure out which one is missing in m_threadOrder.
                 m_threadReinsert.push_back( *it );
                 m_threadOrder.erase( it );
             }
@@ -793,12 +794,7 @@ bool View::DrawImpl()
         ImGui::SetNextWindowPos( viewport->Pos );
         ImGui::SetNextWindowSize( ImVec2( m_rootWidth, m_rootHeight ) );
         ImGui::SetNextWindowViewport( viewport->ID );
-        ImGui::Begin( "Timeline view###Profiler", nullptr,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
-                          ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar |
-                          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
-                          ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking |
-                          ImGuiWindowFlags_NoNavFocus );
+        ImGui::Begin( "Timeline view###Profiler", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoNavFocus );
 
         style.WindowRounding = wrPrev;
         style.WindowBorderSize = wbsPrev;
@@ -841,8 +837,7 @@ bool View::DrawImpl()
     {
         if( m_worker.IsConnected() )
         {
-            if( ImGui::Button( m_viewMode == ViewMode::Paused ? MainWindowButtons[0] : MainWindowButtons[1],
-                               ImVec2( bw, 0 ) ) )
+            if( ImGui::Button( m_viewMode == ViewMode::Paused ? MainWindowButtons[0] : MainWindowButtons[1], ImVec2( bw, 0 ) ) )
             {
                 if( m_viewMode != ViewMode::Paused )
                 {
@@ -879,8 +874,7 @@ bool View::DrawImpl()
             const auto lastTime = m_worker.GetLastTime() - m_worker.GetFirstTime();
             if( lastTime > 5 * 1000 * 1000 * 1000ll )
             {
-                if( m_viewMode == ViewMode::LastFrames &&
-                    m_worker.GetFrameCount( *m_worker.GetFramesBase() ) <= ( m_worker.IsOnDemand() ? 3 : 2 ) )
+                if( m_viewMode == ViewMode::LastFrames && m_worker.GetFrameCount( *m_worker.GetFramesBase() ) <= ( m_worker.IsOnDemand() ? 3 : 2 ) )
                 {
                     m_viewMode = ViewMode::LastRange;
                     ZoomToRange( lastTime - 5 * 1000 * 1000 * 1000ll, lastTime, false );
@@ -1015,12 +1009,9 @@ bool View::DrawImpl()
             const auto numFrames = mainFrameSet ? m_frames->frames.size() - 1 : m_frames->frames.size();
             const auto frameOffset = mainFrameSet ? 0 : 1;
             ImGui::SetNextItemWidth( 120 * GetScale() );
-            const bool clicked =
-                ImGui::InputInt( "##goToFrame", &frameNum, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue );
+            const bool clicked = ImGui::InputInt( "##goToFrame", &frameNum, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue );
             frameNum = std::min( std::max( frameNum, 1 ), int( numFrames ) );
-            if( clicked )
-                ZoomToRange( m_worker.GetFrameBegin( *m_frames, frameNum - frameOffset ),
-                             m_worker.GetFrameEnd( *m_frames, frameNum - frameOffset ) );
+            if( clicked ) ZoomToRange( m_worker.GetFrameBegin( *m_frames, frameNum - frameOffset ), m_worker.GetFrameEnd( *m_frames, frameNum - frameOffset ) );
             ImGui::EndPopup();
         }
     }
@@ -1341,10 +1332,11 @@ bool View::DrawImpl()
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_PLUG );
         ImGui::PopFont();
-        ImGui::TextUnformatted( "Connection to the profiled application was lost\n"
-                                "before all required profiling data could be retrieved.\n"
-                                "This will result in missing source locations,\n"
-                                "unresolved stack frames, etc." );
+        ImGui::TextUnformatted(
+            "Connection to the profiled application was lost\n"
+            "before all required profiling data could be retrieved.\n"
+            "This will result in missing source locations,\n"
+            "unresolved stack frames, etc." );
         ImGui::Separator();
         if( ImGui::Button( "Dismiss" ) ) ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
@@ -1440,17 +1432,15 @@ bool View::Save( const char* fn, FileCompression comp, int zlevel, bool buildDic
 
     m_userData.StateShouldBePreserved();
     m_saveThreadState.store( SaveThreadState::Saving, std::memory_order_relaxed );
-    m_saveThread = std::thread(
-        [this, f{ std::move( f ) }, buildDict]
-        {
-            std::lock_guard<std::mutex> lock( m_worker.GetDataLock() );
-            m_worker.Write( *f, buildDict );
-            f->Finish();
-            const auto stats = f->GetCompressionStatistics();
-            m_srcFileBytes.store( stats.first, std::memory_order_relaxed );
-            m_dstFileBytes.store( stats.second, std::memory_order_relaxed );
-            m_saveThreadState.store( SaveThreadState::NeedsJoin, std::memory_order_release );
-        } );
+    m_saveThread = std::thread( [this, f{ std::move( f ) }, buildDict] {
+        std::lock_guard<std::mutex> lock( m_worker.GetDataLock() );
+        m_worker.Write( *f, buildDict );
+        f->Finish();
+        const auto stats = f->GetCompressionStatistics();
+        m_srcFileBytes.store( stats.first, std::memory_order_relaxed );
+        m_dstFileBytes.store( stats.second, std::memory_order_relaxed );
+        m_saveThreadState.store( SaveThreadState::NeedsJoin, std::memory_order_release );
+    } );
 
     return true;
 }
@@ -1461,11 +1451,18 @@ void View::HighlightThread( uint64_t thread )
     m_drawThreadHighlight = thread;
 }
 
-void View::SelectThread( uint64_t thread ) { m_selectedThread = thread; }
+void View::SelectThread( uint64_t thread )
+{
+    m_selectedThread = thread;
+}
 
 bool View::WasActive() const
 {
-    return m_wasActive || m_zoomAnim.active || m_notificationTime > 0 || !m_playback.pause || m_worker.IsConnected() ||
+    return m_wasActive ||
+           m_zoomAnim.active ||
+           m_notificationTime > 0 ||
+           !m_playback.pause ||
+           m_worker.IsConnected() ||
            !m_worker.IsBackgroundDone();
 }
 

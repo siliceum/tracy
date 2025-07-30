@@ -11,33 +11,33 @@
 #include "TracySystem.hpp"
 
 #ifdef _WIN32
-#    ifndef NOMINMAX
-#        define NOMINMAX
-#    endif
-#    include <winsock2.h>
-#    include <ws2tcpip.h>
-#    ifdef _MSC_VER
-#        pragma warning( disable : 4244 )
-#        pragma warning( disable : 4267 )
-#    endif
-#    define poll WSAPoll
-#    ifdef _MSC_VER
-#        pragma comment( lib, "ws2_32.lib" )
-#    endif
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#  ifdef _MSC_VER
+#    pragma warning( disable : 4244 )
+#    pragma warning( disable : 4267 )
+#  endif
+#  define poll WSAPoll
+#  ifdef _MSC_VER
+#    pragma comment( lib, "ws2_32.lib" )
+#  endif
 #else
-#    include <arpa/inet.h>
-#    include <errno.h>
-#    include <fcntl.h>
-#    include <netdb.h>
-#    include <netinet/in.h>
-#    include <poll.h>
-#    include <sys/param.h>
-#    include <sys/socket.h>
-#    include <unistd.h>
+#  include <arpa/inet.h>
+#  include <errno.h>
+#  include <fcntl.h>
+#  include <netdb.h>
+#  include <netinet/in.h>
+#  include <poll.h>
+#  include <sys/param.h>
+#  include <sys/socket.h>
+#  include <unistd.h>
 #endif
 
 #ifndef MSG_NOSIGNAL
-#    define MSG_NOSIGNAL 0
+#  define MSG_NOSIGNAL 0
 #endif
 
 namespace tracy
@@ -63,7 +63,10 @@ struct __wsinit
     }
 };
 
-void InitWinSock() { static __wsinit init; }
+void InitWinSock()
+{
+    static __wsinit init;
+}
 #endif
 
 enum
@@ -431,7 +434,10 @@ bool Socket::HasData()
     return poll( &fd, 1, 0 ) > 0;
 }
 
-bool Socket::IsValid() const { return m_sock.load( std::memory_order_relaxed ) >= 0; }
+bool Socket::IsValid() const
+{
+    return m_sock.load( std::memory_order_relaxed ) >= 0;
+}
 
 ListenSocket::ListenSocket()
     : m_sock( -1 )
@@ -643,7 +649,9 @@ IpAddress::IpAddress()
     *m_text = '\0';
 }
 
-IpAddress::~IpAddress() {}
+IpAddress::~IpAddress()
+{
+}
 
 void IpAddress::Set( const struct sockaddr& addr )
 {

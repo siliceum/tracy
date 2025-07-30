@@ -24,12 +24,10 @@ bool WasActive()
 void DrawZigZag( ImDrawList* draw, const ImVec2& wpos, double start, double end, double h, uint32_t color )
 {
     const auto v = ( end - start ) / ( h * 2 );
-    draw->AddImage( zigzagTex, wpos + ImVec2( start, -h ), wpos + ImVec2( end, h ), ImVec2( 0, 0 ), ImVec2( v, 1 ),
-                    color );
+    draw->AddImage( zigzagTex, wpos + ImVec2( start, -h ), wpos + ImVec2( end, h ), ImVec2( 0, 0 ), ImVec2( v, 1 ), color );
 }
 
-void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0, double x1, double y1, double sw,
-                      uint32_t color, bool fix_stripes_in_screen_space, bool inverted )
+void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0, double x1, double y1, double sw, uint32_t color, bool fix_stripes_in_screen_space, bool inverted )
 {
     assert( x1 >= x0 );
     assert( y1 >= y0 );
@@ -57,20 +55,15 @@ void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0
     if( fix_stripes_in_screen_space )
     {
         const auto window_height = double( ImGui::GetWindowHeight() );
-        const auto flipped_v0y =
-            window_height - v0.y; // we transform into a y-is-up coordinate space to achieve upper-left to lower-right
-                                  // stripes. If we didn't, we would calculate values for lower-left to upper-right
+        const auto flipped_v0y = window_height - v0.y; // we transform into a y-is-up coordinate space to achieve upper-left to lower-right stripes. If we didn't, we would calculate values for lower-left to upper-right
 
         const auto manhattan_distance = x0 + flipped_v0y;
         const auto in_multiples_of_2_times_sw = int( manhattan_distance / ( sw * 2 ) );
 
-        const auto floored_manhatten_distance =
-            double( in_multiples_of_2_times_sw * sw * 2 ); // floor in terms of 2 * stripe width
+        const auto floored_manhatten_distance = double( in_multiples_of_2_times_sw * sw * 2 ); // floor in terms of 2 * stripe width
 
-        const auto corrected_flipped_v0y =
-            ( floored_manhatten_distance - x0 ); // the corrected (floored) y respects the position of the stripes
-        v0.y = window_height - corrected_flipped_v0y -
-               double( inverted * sw ); // transform back into y-is-down imgui space
+        const auto corrected_flipped_v0y = ( floored_manhatten_distance - x0 ); // the corrected (floored) y respects the position of the stripes
+        v0.y = window_height - corrected_flipped_v0y - double( inverted * sw ); // transform back into y-is-down imgui space
     }
 
     for( int i = 0; i < cnt; i++ )

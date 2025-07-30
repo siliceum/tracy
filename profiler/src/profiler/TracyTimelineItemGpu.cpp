@@ -17,7 +17,10 @@ TimelineItemGpu::TimelineItemGpu( View& view, Worker& worker, GpuCtxData* gpu )
 {
 }
 
-bool TimelineItemGpu::IsEmpty() const { return m_gpu->threadData.empty(); }
+bool TimelineItemGpu::IsEmpty() const
+{
+    return m_gpu->threadData.empty();
+}
 
 const char* TimelineItemGpu::HeaderLabel() const
 {
@@ -37,8 +40,10 @@ void TimelineItemGpu::HeaderTooltip( const char* label ) const
 {
     const bool dynamicColors = m_view.GetViewData().dynamicColors;
     const bool isMultithreaded =
-        ( m_gpu->type == GpuContextType::Vulkan ) || ( m_gpu->type == GpuContextType::OpenCL ) ||
-        ( m_gpu->type == GpuContextType::Direct3D12 ) || ( m_gpu->type == GpuContextType::Metal );
+        ( m_gpu->type == GpuContextType::Vulkan ) ||
+        ( m_gpu->type == GpuContextType::OpenCL ) ||
+        ( m_gpu->type == GpuContextType::Direct3D12 ) ||
+        ( m_gpu->type == GpuContextType::Metal );
 
     char buf[64];
     sprintf( buf, "%s context %i", GpuContextNames[(int)m_gpu->type], m_idx );
@@ -174,14 +179,11 @@ int64_t TimelineItemGpu::RangeEnd() const
         {
             if( td.second.timeline.is_magic() )
             {
-                t = std::max( t,
-                              std::min( m_worker.GetLastTime(),
-                                        m_worker.GetZoneEnd( ( (Vector<GpuEvent>*)&td.second.timeline )->back() ) ) );
+                t = std::max( t, std::min( m_worker.GetLastTime(), m_worker.GetZoneEnd( ( (Vector<GpuEvent>*)&td.second.timeline )->back() ) ) );
             }
             else
             {
-                t = std::max( t,
-                              std::min( m_worker.GetLastTime(), m_worker.GetZoneEnd( *td.second.timeline.back() ) ) );
+                t = std::max( t, std::min( m_worker.GetLastTime(), m_worker.GetZoneEnd( *td.second.timeline.back() ) ) );
             }
         }
     }

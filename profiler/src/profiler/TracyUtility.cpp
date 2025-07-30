@@ -9,10 +9,11 @@ namespace tracy
 {
 
 // Short list based on GetTypes() in TracySourceTokenizer.cpp
-constexpr const char* TypesList[] = { "bool ",     "char ",     "double ",   "float ",     "int ",      "long ",
-                                      "short ",    "signed ",   "unsigned ", "void ",      "wchar_t ",  "size_t ",
-                                      "int8_t ",   "int16_t ",  "int32_t ",  "int64_t ",   "intptr_t ", "uint8_t ",
-                                      "uint16_t ", "uint32_t ", "uint64_t ", "ptrdiff_t ", nullptr };
+constexpr const char* TypesList[] = {
+    "bool ", "char ", "double ", "float ", "int ", "long ", "short ",
+    "signed ", "unsigned ", "void ", "wchar_t ", "size_t ", "int8_t ",
+    "int16_t ", "int32_t ", "int64_t ", "intptr_t ", "uint8_t ", "uint16_t ",
+    "uint32_t ", "uint64_t ", "ptrdiff_t ", nullptr };
 
 const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, float zsz )
 {
@@ -39,10 +40,8 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
         while( cnt > 0 )
         {
             if( ptr == end ) break;
-            if( *ptr == '<' )
-                cnt++;
-            else if( *ptr == '>' )
-                cnt--;
+            if( *ptr == '<' ) cnt++;
+            else if( *ptr == '>' ) cnt--;
             ptr++;
         }
         *dst++ = '>';
@@ -64,10 +63,8 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
         while( cnt > 0 )
         {
             if( ptr == end ) break;
-            if( *ptr == '(' )
-                cnt++;
-            else if( *ptr == ')' )
-                cnt--;
+            if( *ptr == '(' ) cnt++;
+            else if( *ptr == ')' ) cnt--;
             ptr++;
         }
         *dst++ = ')';

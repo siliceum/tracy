@@ -14,4 +14,7 @@ ImGuiTracyContext::ImGuiTracyContext()
     io.ConfigScrollbarScrollByPage = false;
 }
 
-ImGuiTracyContext::~ImGuiTracyContext() { ImGui::DestroyContext(); }
+ImGuiTracyContext::~ImGuiTracyContext()
+{
+    ImGui::DestroyContext();
+}

@@ -6,7 +6,7 @@
 
 class Filters
 {
-  public:
+public:
     Filters();
     ~Filters();
 
@@ -19,7 +19,7 @@ class Filters
     bool FailPort( uint16_t port );
     bool FailProg( const char* prog );
 
-  private:
+private:
     std::string m_fn;
 
     ImGuiTextFilter m_addrFilter, m_portFilter, m_progFilter;

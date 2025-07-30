@@ -27,11 +27,19 @@ TimelineController::TimelineController( View& view, Worker& worker, bool threadi
 {
 }
 
-TimelineController::~TimelineController() {}
+TimelineController::~TimelineController()
+{
+}
 
-void TimelineController::FirstFrameExpired() { m_firstFrame = false; }
+void TimelineController::FirstFrameExpired()
+{
+    m_firstFrame = false;
+}
 
-void TimelineController::Begin() { m_items.clear(); }
+void TimelineController::Begin()
+{
+    m_items.clear();
+}
 
 void TimelineController::UpdateCenterItem()
 {
@@ -93,15 +101,13 @@ std::optional<int> TimelineController::CalculateScrollPosition() const
 
 void TimelineController::End( double pxns, const ImVec2& wpos, bool hover, bool vcenter, float yMin, float yMax )
 {
-    auto shouldUpdateCenterItem = [&]()
-    {
+    auto shouldUpdateCenterItem = [&]() {
         const auto imguiChangedScroll = m_scroll != ImGui::GetScrollY();
         const auto& mouseDelta = ImGui::GetIO().MouseDelta;
         const auto mouseMoved = mouseDelta.x != 0.0f || mouseDelta.y != 0.0f;
         const auto& mousePos = ImGui::GetIO().MousePos;
         const auto mouseVisible = ImGui::IsMousePosValid( &mousePos );
-        return ( ( imguiChangedScroll || mouseMoved || !mouseVisible ) && !ImGui::IsMouseDown( 1 ) ) ||
-               !m_centerItemkey;
+        return ( ( imguiChangedScroll || mouseMoved || !mouseVisible ) && !ImGui::IsMouseDown( 1 ) ) || !m_centerItemkey;
     };
 
     if( !vcenter )

@@ -15,26 +15,26 @@ static tracy_force_inline void* Callstack( int32_t /*depth*/ ) { return nullptr;
 
 #else
 
-#    if TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 5
-#        include <unwind.h>
-#    elif TRACY_HAS_CALLSTACK >= 3
-#        ifdef TRACY_LIBUNWIND_BACKTRACE
-// libunwind is, in general, significantly faster than execinfo based backtraces
-#            define UNW_LOCAL_ONLY
-#            include <libunwind.h>
-#        else
-#            include <execinfo.h>
-#        endif
+#  if TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 5
+#    include <unwind.h>
+#  elif TRACY_HAS_CALLSTACK >= 3
+#    ifdef TRACY_LIBUNWIND_BACKTRACE
+     // libunwind is, in general, significantly faster than execinfo based backtraces
+#      define UNW_LOCAL_ONLY
+#      include <libunwind.h>
+#    else
+#      include <execinfo.h>
 #    endif
+#  endif
 
-#    ifdef TRACY_DEBUGINFOD
-#        include <elfutils/debuginfod.h>
-#    endif
+#  ifdef TRACY_DEBUGINFOD
+#    include <elfutils/debuginfod.h>
+#  endif
 
-#    include <assert.h>
-#    include <stdint.h>
+#  include <assert.h>
+#  include <stdint.h>
 
-#    include "../common/TracyAlloc.hpp"
+#  include "../common/TracyAlloc.hpp"
 
 namespace tracy
 {
@@ -73,12 +73,12 @@ void InitCallstackCritical();
 void EndCallstack();
 const char* GetKernelModulePath( uint64_t addr );
 
-#    ifdef TRACY_DEBUGINFOD
+#  ifdef TRACY_DEBUGINFOD
 const uint8_t* GetBuildIdForImage( const char* image, size_t& size );
 debuginfod_client* GetDebuginfodClient();
-#    endif
+#  endif
 
-#    if TRACY_HAS_CALLSTACK == 1
+#  if TRACY_HAS_CALLSTACK == 1
 
 extern "C"
 {
@@ -94,7 +94,7 @@ static tracy_force_inline void* Callstack( int32_t depth )
     return trace;
 }
 
-#    elif TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 5
+#  elif TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 5
 
 struct BacktraceState
 {
@@ -127,7 +127,7 @@ static tracy_force_inline void* Callstack( int32_t depth )
     return trace;
 }
 
-#    elif TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
+#  elif TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
 
 static tracy_force_inline void* Callstack( int32_t depth )
 {
@@ -135,18 +135,18 @@ static tracy_force_inline void* Callstack( int32_t depth )
 
     auto trace = (uintptr_t*)tracy_malloc( ( 1 + (size_t)depth ) * sizeof( uintptr_t ) );
 
-#        ifdef TRACY_LIBUNWIND_BACKTRACE
+#    ifdef TRACY_LIBUNWIND_BACKTRACE
     size_t num = unw_backtrace( (void**)( trace + 1 ), depth );
-#        else
+#    else
     const auto num = (size_t)backtrace( (void**)( trace + 1 ), depth );
-#        endif
+#    endif
 
     *trace = num;
 
     return trace;
 }
 
-#    endif
+#  endif
 
 }
 

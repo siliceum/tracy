@@ -10,10 +10,10 @@
 namespace tracy
 {
 
-template <typename T>
+template<typename T>
 class FastVector
 {
-  public:
+public:
     using iterator = T*;
     using const_iterator = const T*;
 
@@ -28,7 +28,10 @@ class FastVector
     FastVector( const FastVector& ) = delete;
     FastVector( FastVector&& ) = delete;
 
-    ~FastVector() { tracy_free( m_ptr ); }
+    ~FastVector()
+    {
+        tracy_free( m_ptr );
+    }
 
     FastVector& operator=( const FastVector& ) = delete;
     FastVector& operator=( FastVector&& ) = delete;
@@ -81,9 +84,15 @@ class FastVector
         return m_write;
     }
 
-    void commit_next() { m_write++; }
+    void commit_next()
+    {
+        m_write++;
+    }
 
-    void clear() { m_write = m_ptr; }
+    void clear()
+    {
+        m_write = m_ptr;
+    }
 
     void swap( FastVector& vec )
     {
@@ -102,7 +111,7 @@ class FastVector
         vec.m_end = end1;
     }
 
-  private:
+private:
     tracy_no_inline void AllocMore()
     {
         const auto cap = size_t( m_end - m_ptr ) * 2;

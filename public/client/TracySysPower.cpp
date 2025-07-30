@@ -2,16 +2,16 @@
 
 #ifdef TRACY_HAS_SYSPOWER
 
-#    include <chrono>
-#    include <dirent.h>
-#    include <inttypes.h>
-#    include <stdio.h>
-#    include <string.h>
-#    include <sys/types.h>
+#  include <chrono>
+#  include <dirent.h>
+#  include <inttypes.h>
+#  include <stdio.h>
+#  include <string.h>
+#  include <sys/types.h>
 
-#    include "../common/TracyAlloc.hpp"
-#    include "TracyDebug.hpp"
-#    include "TracyProfiler.hpp"
+#  include "../common/TracyAlloc.hpp"
+#  include "TracyDebug.hpp"
+#  include "TracyProfiler.hpp"
 
 namespace tracy
 {
@@ -35,7 +35,7 @@ SysPower::~SysPower()
 void SysPower::Tick()
 {
     auto t = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    if( t - m_lastTime > 10000000 ) // 10 ms
+    if( t - m_lastTime > 10000000 )    // 10 ms
     {
         m_lastTime = t;
         for( auto& v : m_domains )

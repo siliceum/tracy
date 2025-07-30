@@ -186,9 +186,7 @@ void View::DrawOptions()
                                     const auto p1 = dist( gen );
                                     if( p0 != p1 )
                                     {
-                                        slopes[idx++] =
-                                            float( 1.0 - double( tl[p1].GpuStart() - tl[p0].GpuStart() ) /
-                                                             double( tl[p1].CpuStart() - tl[p0].CpuStart() ) );
+                                        slopes[idx++] = float( 1.0 - double( tl[p1].GpuStart() - tl[p0].GpuStart() ) / double( tl[p1].CpuStart() - tl[p0].CpuStart() ) );
                                     }
                                 } while( idx < NumSlopes );
                             }
@@ -200,9 +198,7 @@ void View::DrawOptions()
                                     const auto p1 = dist( gen );
                                     if( p0 != p1 )
                                     {
-                                        slopes[idx++] = float(
-                                            1.0 - double( timeline[p1]->GpuStart() - timeline[p0]->GpuStart() ) /
-                                                      double( timeline[p1]->CpuStart() - timeline[p0]->CpuStart() ) );
+                                        slopes[idx++] = float( 1.0 - double( timeline[p1]->GpuStart() - timeline[p0]->GpuStart() ) / double( timeline[p1]->CpuStart() - timeline[p0]->CpuStart() ) );
                                     }
                                 } while( idx < NumSlopes );
                             }
@@ -331,13 +327,11 @@ void View::DrawOptions()
             ImGui::SameLine();
             DrawHelpMarker( "Right click on lock name to open lock information window." );
 
-            const bool multiExpand =
-                ImGui::TreeNodeEx( "Contended locks present in multiple threads", ImGuiTreeNodeFlags_DefaultOpen );
+            const bool multiExpand = ImGui::TreeNodeEx( "Contended locks present in multiple threads", ImGuiTreeNodeFlags_DefaultOpen );
             ImGui::SameLine();
             size_t visibleMultiCntCont = 0;
             for( const auto& l : m_worker.GetLockMap() )
-                if( l.second->threadList.size() != 1 && l.second->isContended && Vis( l.second ) )
-                    visibleMultiCntCont++;
+                if( l.second->threadList.size() != 1 && l.second->isContended && Vis( l.second ) ) visibleMultiCntCont++;
             if( visibleMultiCntCont == multiCntCont )
             {
                 ImGui::TextDisabled( "(%zu)", multiCntCont );
@@ -367,8 +361,7 @@ void View::DrawOptions()
 
                 for( const auto& l : m_worker.GetLockMap() )
                 {
-                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 &&
-                        l.second->isContended )
+                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 && l.second->isContended )
                     {
                         auto& sl = m_worker.GetSourceLocation( l.second->srcloc );
                         auto fileName = m_worker.GetString( sl.file );
@@ -380,8 +373,7 @@ void View::DrawOptions()
                         }
                         else
                         {
-                            sprintf( buf, "%" PRIu32 ": %s", l.first,
-                                     m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
+                            sprintf( buf, "%" PRIu32 ": %s", l.first, m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
                         }
                         SmallCheckbox( buf, &Vis( l.second ) );
                         if( ImGui::IsItemHovered() )
@@ -403,8 +395,7 @@ void View::DrawOptions()
                         {
                             ImGui::SameLine();
                         }
-                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ),
-                                             LocationToString( fileName, sl.line ) );
+                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ), LocationToString( fileName, sl.line ) );
                         if( ImGui::IsItemHovered() )
                         {
                             DrawSourceTooltip( fileName, sl.line, 1, 1 );
@@ -428,8 +419,7 @@ void View::DrawOptions()
             ImGui::SameLine();
             uint64_t visibleMultiCntUncont = 0;
             for( const auto& l : m_worker.GetLockMap() )
-                if( l.second->threadList.size() != 1 && !l.second->isContended && Vis( l.second ) )
-                    visibleMultiCntUncont++;
+                if( l.second->threadList.size() != 1 && !l.second->isContended && Vis( l.second ) ) visibleMultiCntUncont++;
             if( visibleMultiCntUncont == multiCntUncont )
             {
                 ImGui::TextDisabled( "(%zu)", multiCntUncont );
@@ -459,8 +449,7 @@ void View::DrawOptions()
 
                 for( const auto& l : m_worker.GetLockMap() )
                 {
-                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 &&
-                        !l.second->isContended )
+                    if( l.second->valid && !l.second->timeline.empty() && l.second->threadList.size() != 1 && !l.second->isContended )
                     {
                         auto& sl = m_worker.GetSourceLocation( l.second->srcloc );
                         auto fileName = m_worker.GetString( sl.file );
@@ -472,8 +461,7 @@ void View::DrawOptions()
                         }
                         else
                         {
-                            sprintf( buf, "%" PRIu32 ": %s", l.first,
-                                     m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
+                            sprintf( buf, "%" PRIu32 ": %s", l.first, m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
                         }
                         SmallCheckbox( buf, &Vis( l.second ) );
                         if( ImGui::IsItemHovered() )
@@ -495,8 +483,7 @@ void View::DrawOptions()
                         {
                             ImGui::SameLine();
                         }
-                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ),
-                                             LocationToString( fileName, sl.line ) );
+                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ), LocationToString( fileName, sl.line ) );
                         if( ImGui::IsItemHovered() )
                         {
                             DrawSourceTooltip( fileName, sl.line, 1, 1 );
@@ -562,8 +549,7 @@ void View::DrawOptions()
                         }
                         else
                         {
-                            sprintf( buf, "%" PRIu32 ": %s", l.first,
-                                     m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
+                            sprintf( buf, "%" PRIu32 ": %s", l.first, m_worker.GetString( m_worker.GetSourceLocation( l.second->srcloc ).function ) );
                         }
                         SmallCheckbox( buf, &Vis( l.second ) );
                         if( ImGui::IsItemHovered() )
@@ -585,8 +571,7 @@ void View::DrawOptions()
                         {
                             ImGui::SameLine();
                         }
-                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ),
-                                             LocationToString( fileName, sl.line ) );
+                        ImGui::TextDisabled( "(%s) %s", RealToString( l.second->timeline.size() ), LocationToString( fileName, sl.line ) );
                         if( ImGui::IsItemHovered() )
                         {
                             DrawSourceTooltip( fileName, sl.line, 1, 1 );
@@ -703,13 +688,10 @@ void View::DrawOptions()
         ImGui::SameLine();
         if( ImGui::SmallButton( "Sort" ) )
         {
-            pdqsort_branchless( m_threadOrder.begin(), m_threadOrder.end(),
-                                [this]( const auto& lhs, const auto& rhs )
-                                {
-                                    if( lhs->groupHint != rhs->groupHint ) return lhs->groupHint < rhs->groupHint;
-                                    return strcmp( m_worker.GetThreadName( lhs->id ),
-                                                   m_worker.GetThreadName( rhs->id ) ) < 0;
-                                } );
+            pdqsort_branchless( m_threadOrder.begin(), m_threadOrder.end(), [this]( const auto& lhs, const auto& rhs ) {
+                if( lhs->groupHint != rhs->groupHint ) return lhs->groupHint < rhs->groupHint;
+                return strcmp( m_worker.GetThreadName( lhs->id ), m_worker.GetThreadName( rhs->id ) ) < 0;
+            } );
         }
 
         const auto wposx = ImGui::GetCursorScreenPos().x;
@@ -776,14 +758,11 @@ void View::DrawOptions()
             int source;
             for( size_t i = 0; i < m_threadDnd.size(); i++ )
             {
-                if( ImGui::BeginDragDropTargetCustom(
-                        ImRect( wposx, m_threadDnd[i] - half, wposx + w, m_threadDnd[i] + half ), i + 1 ) )
+                if( ImGui::BeginDragDropTargetCustom( ImRect( wposx, m_threadDnd[i] - half, wposx + w, m_threadDnd[i] + half ), i + 1 ) )
                 {
                     auto draw = ImGui::GetWindowDrawList();
-                    draw->AddLine( ImVec2( wposx, m_threadDnd[i] ), ImVec2( wposx + w, m_threadDnd[i] ),
-                                   ImGui::GetColorU32( ImGuiCol_DragDropTarget ), 2.f );
-                    if( auto payload =
-                            ImGui::AcceptDragDropPayload( "ThreadOrder", ImGuiDragDropFlags_AcceptNoDrawDefaultRect ) )
+                    draw->AddLine( ImVec2( wposx, m_threadDnd[i] ), ImVec2( wposx + w, m_threadDnd[i] ), ImGui::GetColorU32( ImGuiCol_DragDropTarget ), 2.f );
+                    if( auto payload = ImGui::AcceptDragDropPayload( "ThreadOrder", ImGuiDragDropFlags_AcceptNoDrawDefaultRect ) )
                     {
                         target = (int)i;
                         source = *(int*)payload->Data;
@@ -853,8 +832,7 @@ void View::DrawOptions()
                 SmallCheckbox( GetFrameSetName( *fd ), &Vis( fd ) );
                 ImGui::PopID();
                 ImGui::SameLine();
-                ImGui::TextDisabled( "%s %sframes", RealToString( fd->frames.size() ),
-                                     fd->continuous ? "" : "discontinuous " );
+                ImGui::TextDisabled( "%s %sframes", RealToString( fd->frames.size() ), fd->continuous ? "" : "discontinuous " );
             }
             ImGui::TreePop();
         }

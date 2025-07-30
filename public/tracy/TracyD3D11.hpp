@@ -3,25 +3,25 @@
 
 #ifndef TRACY_ENABLE
 
-#    define TracyD3D11Context( device, queue ) nullptr
-#    define TracyD3D11Destroy( ctx )
-#    define TracyD3D11ContextName( ctx, name, size )
+#  define TracyD3D11Context( device, queue ) nullptr
+#  define TracyD3D11Destroy( ctx )
+#  define TracyD3D11ContextName( ctx, name, size )
 
-#    define TracyD3D11NewFrame( ctx )
+#  define TracyD3D11NewFrame( ctx )
 
-#    define TracyD3D11Zone( ctx, name )
-#    define TracyD3D11ZoneC( ctx, name, color )
-#    define TracyD3D11NamedZone( ctx, varname, name, active )
-#    define TracyD3D11NamedZoneC( ctx, varname, name, color, active )
-#    define TracyD3D11ZoneTransient( ctx, varname, name, active )
+#  define TracyD3D11Zone( ctx, name )
+#  define TracyD3D11ZoneC( ctx, name, color )
+#  define TracyD3D11NamedZone( ctx, varname, name, active )
+#  define TracyD3D11NamedZoneC( ctx, varname, name, color, active )
+#  define TracyD3D11ZoneTransient( ctx, varname, name, active )
 
-#    define TracyD3D11ZoneS( ctx, name, depth )
-#    define TracyD3D11ZoneCS( ctx, name, color, depth )
-#    define TracyD3D11NamedZoneS( ctx, varname, name, depth, active )
-#    define TracyD3D11NamedZoneCS( ctx, varname, name, color, depth, active )
-#    define TracyD3D11ZoneTransientS( ctx, varname, name, depth, active )
+#  define TracyD3D11ZoneS( ctx, name, depth )
+#  define TracyD3D11ZoneCS( ctx, name, color, depth )
+#  define TracyD3D11NamedZoneS( ctx, varname, name, depth, active )
+#  define TracyD3D11NamedZoneCS( ctx, varname, name, color, depth, active )
+#  define TracyD3D11ZoneTransientS( ctx, varname, name, depth, active )
 
-#    define TracyD3D11Collect( ctx )
+#  define TracyD3D11Collect( ctx )
 
 namespace tracy
 {
@@ -34,24 +34,24 @@ using TracyD3D11Ctx = void*;
 
 #else
 
-#    include <assert.h>
-#    include <atomic>
-#    include <stdlib.h>
+#  include <assert.h>
+#  include <atomic>
+#  include <stdlib.h>
 
-#    include "../client/TracyCallstack.hpp"
-#    include "../client/TracyProfiler.hpp"
-#    include "../common/TracyYield.hpp"
-#    include "Tracy.hpp"
+#  include "../client/TracyCallstack.hpp"
+#  include "../client/TracyProfiler.hpp"
+#  include "../common/TracyYield.hpp"
+#  include "Tracy.hpp"
 
-#    include <d3d11.h>
+#  include <d3d11.h>
 
-#    define TracyD3D11Panic( msg, ... )                                                                                \
-        do                                                                                                             \
-        {                                                                                                              \
-            assert( false && "TracyD3D11: " msg );                                                                     \
-            TracyMessageLC( "TracyD3D11: " msg, tracy::Color::Red4 );                                                  \
-            __VA_ARGS__;                                                                                               \
-        } while( false );
+#  define TracyD3D11Panic( msg, ... )                               \
+      do                                                            \
+      {                                                             \
+          assert( false && "TracyD3D11: " msg );                    \
+          TracyMessageLC( "TracyD3D11: " msg, tracy::Color::Red4 ); \
+          __VA_ARGS__;                                              \
+      } while( false );
 
 namespace tracy
 {
@@ -68,7 +68,7 @@ class D3D11Ctx
         BLOCK
     };
 
-  public:
+public:
     D3D11Ctx( ID3D11Device* device, ID3D11DeviceContext* devicectx )
     {
         // TODO: consider calling ID3D11Device::GetImmediateContext() instead of passing it as an argument
@@ -120,11 +120,12 @@ class D3D11Ctx
                 continue;
             }
 
-            if( disjoint.Disjoint ) continue;
+            if( disjoint.Disjoint )
+                continue;
 
             UINT64 timestamp = 0;
             if( m_immediateDevCtx->GetData( m_queries[0], &timestamp, sizeof( timestamp ), 0 ) != S_OK )
-                continue; // this should never happen (we waited for the query to finish above)
+                continue;   // this should never happen (we waited for the query to finish above)
 
             tcpu = tcpu0 + ( tcpu1 - tcpu0 ) * 1 / 2;
             tgpu = timestamp * ( 1000000000 / disjoint.Frequency );
@@ -140,15 +141,15 @@ class D3D11Ctx
         MemWrite( &item->hdr.type, QueueType::GpuNewContext );
         MemWrite( &item->gpuNewContext.cpuTime, tcpu );
         MemWrite( &item->gpuNewContext.gpuTime, tgpu );
-        MemWrite( &item->gpuNewContext.thread, uint32_t( 0 ) ); // #TODO: why not GetThreadHandle()?
+        MemWrite( &item->gpuNewContext.thread, uint32_t( 0 ) );   // #TODO: why not GetThreadHandle()?
         MemWrite( &item->gpuNewContext.period, 1.0f );
         MemWrite( &item->gpuNewContext.context, m_contextId );
         MemWrite( &item->gpuNewContext.flags, uint8_t( 0 ) );
         MemWrite( &item->gpuNewContext.type, GpuContextType::Direct3D11 );
 
-#    ifdef TRACY_ON_DEMAND
+#  ifdef TRACY_ON_DEMAND
         GetProfiler().DeferItem( *item );
-#    endif
+#  endif
 
         Profiler::QueueSerialFinish();
     }
@@ -181,9 +182,9 @@ class D3D11Ctx
         MemWrite( &item->gpuContextNameFat.context, m_contextId );
         MemWrite( &item->gpuContextNameFat.ptr, (uint64_t)ptr );
         MemWrite( &item->gpuContextNameFat.size, len );
-#    ifdef TRACY_ON_DEMAND
+#  ifdef TRACY_ON_DEMAND
         GetProfiler().DeferItem( *item );
-#    endif
+#  endif
         Profiler::QueueSerialFinish();
     }
 
@@ -191,13 +192,13 @@ class D3D11Ctx
     {
         ZoneScopedC( Color::Red4 );
 
-#    ifdef TRACY_ON_DEMAND
+#  ifdef TRACY_ON_DEMAND
         if( !GetProfiler().IsConnected() )
         {
             m_previousCheckpoint = m_nextCheckpoint = m_queryCounter;
             return;
         }
-#    endif
+#  endif
 
         if( m_previousCheckpoint == m_nextCheckpoint )
         {
@@ -216,8 +217,7 @@ class D3D11Ctx
         }
 
         D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint = {};
-        if( m_immediateDevCtx->GetData( m_disjointQuery, &disjoint, sizeof( disjoint ),
-                                        D3D11_ASYNC_GETDATA_DONOTFLUSH ) != S_OK )
+        if( m_immediateDevCtx->GetData( m_disjointQuery, &disjoint, sizeof( disjoint ), D3D11_ASYNC_GETDATA_DONOTFLUSH ) != S_OK )
         {
             return;
         }
@@ -255,7 +255,7 @@ class D3D11Ctx
         m_previousCheckpoint = m_nextCheckpoint;
     }
 
-  private:
+private:
     tracy_force_inline uint32_t RingIndex( uintptr_t index )
     {
         index %= MaxQueries;
@@ -280,16 +280,22 @@ class D3D11Ctx
         return RingIndex( id );
     }
 
-    tracy_force_inline ID3D11Query* GetQueryObjectFromId( uint32_t id ) { return m_queries[id]; }
+    tracy_force_inline ID3D11Query* GetQueryObjectFromId( uint32_t id )
+    {
+        return m_queries[id];
+    }
 
     tracy_force_inline void WaitForQuery( ID3D11Query* query )
     {
         m_immediateDevCtx->Flush();
         while( m_immediateDevCtx->GetData( query, nullptr, 0, 0 ) != S_OK )
-            YieldThread(); // busy-wait :-( attempt to reduce power usage with _mm_pause() & friends...
+            YieldThread();  // busy-wait :-( attempt to reduce power usage with _mm_pause() & friends...
     }
 
-    tracy_force_inline uint8_t GetContextId() const { return m_contextId; }
+    tracy_force_inline uint8_t GetContextId() const
+    {
+        return m_contextId;
+    }
 
     ID3D11Device* m_device = nullptr;
     ID3D11DeviceContext* m_immediateDevCtx = nullptr;
@@ -297,7 +303,7 @@ class D3D11Ctx
     ID3D11Query* m_queries[MaxQueries];
     ID3D11Query* m_disjointQuery = nullptr;
 
-    uint8_t m_contextId = 255; // NOTE: apparently, 255 means invalid id; is this documented anywhere?
+    uint8_t m_contextId = 255;  // NOTE: apparently, 255 means invalid id; is this documented anywhere?
 
     uintptr_t m_queryCounter = 0;
 
@@ -307,7 +313,7 @@ class D3D11Ctx
 
 class D3D11ZoneScope
 {
-  public:
+public:
     tracy_force_inline D3D11ZoneScope( D3D11Ctx* ctx, const SourceLocationData* srcloc, bool active )
         : D3D11ZoneScope( ctx, active )
     {
@@ -334,29 +340,23 @@ class D3D11ZoneScope
         }
     }
 
-    tracy_force_inline D3D11ZoneScope( D3D11Ctx* ctx, uint32_t line, const char* source, size_t sourceSz,
-                                       const char* function, size_t functionSz, const char* name, size_t nameSz,
-                                       bool active )
+    tracy_force_inline D3D11ZoneScope( D3D11Ctx* ctx, uint32_t line, const char* source, size_t sourceSz, const char* function, size_t functionSz, const char* name, size_t nameSz, bool active )
         : D3D11ZoneScope( ctx, active )
     {
         if( !m_active ) return;
 
-        const auto sourceLocation =
-            Profiler::AllocSourceLocation( line, source, sourceSz, function, functionSz, name, nameSz );
+        const auto sourceLocation = Profiler::AllocSourceLocation( line, source, sourceSz, function, functionSz, name, nameSz );
 
         auto* item = Profiler::QueueSerial();
         WriteQueueItem( item, QueueType::GpuZoneBeginAllocSrcLocSerial, sourceLocation );
     }
 
-    tracy_force_inline D3D11ZoneScope( D3D11Ctx* ctx, uint32_t line, const char* source, size_t sourceSz,
-                                       const char* function, size_t functionSz, const char* name, size_t nameSz,
-                                       int32_t depth, bool active )
+    tracy_force_inline D3D11ZoneScope( D3D11Ctx* ctx, uint32_t line, const char* source, size_t sourceSz, const char* function, size_t functionSz, const char* name, size_t nameSz, int32_t depth, bool active )
         : D3D11ZoneScope( ctx, active )
     {
         if( !m_active ) return;
 
-        const auto sourceLocation =
-            Profiler::AllocSourceLocation( line, source, sourceSz, function, functionSz, name, nameSz );
+        const auto sourceLocation = Profiler::AllocSourceLocation( line, source, sourceSz, function, functionSz, name, nameSz );
 
         if( depth > 0 && has_callstack() )
         {
@@ -386,13 +386,13 @@ class D3D11ZoneScope
         Profiler::QueueSerialFinish();
     }
 
-  private:
+private:
     tracy_force_inline D3D11ZoneScope( D3D11Ctx* ctx, bool active )
-#    ifdef TRACY_ON_DEMAND
+#  ifdef TRACY_ON_DEMAND
         : m_active( active && GetProfiler().IsConnected() )
-#    else
+#  else
         : m_active( active )
-#    endif
+#  endif
     {
         if( !m_active ) return;
         m_ctx = ctx;
@@ -431,78 +431,59 @@ static inline void DestroyD3D11Context( D3D11Ctx* ctx )
 }
 }
 
-#    undef TracyD3D11Panic
+#  undef TracyD3D11Panic
 
 using TracyD3D11Ctx = tracy::D3D11Ctx*;
 
-#    define TracyD3D11Context( device, devicectx ) tracy::CreateD3D11Context( device, devicectx );
-#    define TracyD3D11Destroy( ctx ) tracy::DestroyD3D11Context( ctx );
-#    define TracyD3D11ContextName( ctx, name, size ) ctx->Name( name, size );
+#  define TracyD3D11Context( device, devicectx ) tracy::CreateD3D11Context( device, devicectx );
+#  define TracyD3D11Destroy( ctx ) tracy::DestroyD3D11Context( ctx );
+#  define TracyD3D11ContextName( ctx, name, size ) ctx->Name( name, size );
 
-#    define TracyD3D11UnnamedZone ___tracy_gpu_d3d11_zone
-#    define TracyD3D11SrcLocSymbol TracyConcat( __tracy_gpu_d3d11_source_location, TracyLine )
-#    define TracyD3D11SrcLocObject( name, color )                                                                      \
-        static constexpr tracy::SourceLocationData TracyD3D11SrcLocSymbol{ name, TracyFunction, TracyFile,             \
-                                                                           (uint32_t)TracyLine, color };
+#  define TracyD3D11UnnamedZone ___tracy_gpu_d3d11_zone
+#  define TracyD3D11SrcLocSymbol TracyConcat( __tracy_gpu_d3d11_source_location, TracyLine )
+#  define TracyD3D11SrcLocObject( name, color ) static constexpr tracy::SourceLocationData TracyD3D11SrcLocSymbol{ name, TracyFunction, TracyFile, (uint32_t)TracyLine, color };
 
-#    if defined TRACY_HAS_CALLSTACK && defined TRACY_CALLSTACK
-#        define TracyD3D11Zone( ctx, name )                                                                            \
-            TracyD3D11NamedZoneS( ctx, TracyD3D11UnnamedZone, name, TRACY_CALLSTACK, true )
-#        define TracyD3D11ZoneC( ctx, name, color )                                                                    \
-            TracyD3D11NamedZoneCS( ctx, TracyD3D11UnnamedZone, name, color, TRACY_CALLSTACK, true )
-#        define TracyD3D11NamedZone( ctx, varname, name, active )                                                      \
-            TracyD3D11SrcLocObject( name, 0 );                                                                         \
-            tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, TRACY_CALLSTACK, active );
-#        define TracyD3D11NamedZoneC( ctx, varname, name, color, active )                                              \
-            TracyD3D11SrcLocObject( name, color );                                                                     \
-            tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, TRACY_CALLSTACK, active );
-#        define TracyD3D11ZoneTransient( ctx, varname, name, active )                                                  \
-            TracyD3D11ZoneTransientS( ctx, varname, cmdList, name, TRACY_CALLSTACK, active )
-#    else
-#        define TracyD3D11Zone( ctx, name ) TracyD3D11NamedZone( ctx, TracyD3D11UnnamedZone, name, true )
-#        define TracyD3D11ZoneC( ctx, name, color )                                                                    \
-            TracyD3D11NamedZoneC( ctx, TracyD3D11UnnamedZone, name, color, true )
-#        define TracyD3D11NamedZone( ctx, varname, name, active )                                                      \
-            TracyD3D11SrcLocObject( name, 0 );                                                                         \
-            tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, active );
-#        define TracyD3D11NamedZoneC( ctx, varname, name, color, active )                                              \
-            TracyD3D11SrcLocObject( name, color );                                                                     \
-            tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, active );
-#        define TracyD3D11ZoneTransient( ctx, varname, name, active )                                                  \
-            tracy::D3D11ZoneScope varname{                                                                             \
-                ctx,  TracyLine,      TracyFile, strlen( TracyFile ), TracyFunction, strlen( TracyFunction ),          \
-                name, strlen( name ), active };
-#    endif
+#  if defined TRACY_HAS_CALLSTACK && defined TRACY_CALLSTACK
+#    define TracyD3D11Zone( ctx, name ) TracyD3D11NamedZoneS( ctx, TracyD3D11UnnamedZone, name, TRACY_CALLSTACK, true )
+#    define TracyD3D11ZoneC( ctx, name, color ) TracyD3D11NamedZoneCS( ctx, TracyD3D11UnnamedZone, name, color, TRACY_CALLSTACK, true )
+#    define TracyD3D11NamedZone( ctx, varname, name, active ) \
+        TracyD3D11SrcLocObject( name, 0 );                    \
+        tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, TRACY_CALLSTACK, active );
+#    define TracyD3D11NamedZoneC( ctx, varname, name, color, active ) \
+        TracyD3D11SrcLocObject( name, color );                        \
+        tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, TRACY_CALLSTACK, active );
+#    define TracyD3D11ZoneTransient( ctx, varname, name, active ) TracyD3D11ZoneTransientS( ctx, varname, cmdList, name, TRACY_CALLSTACK, active )
+#  else
+#    define TracyD3D11Zone( ctx, name ) TracyD3D11NamedZone( ctx, TracyD3D11UnnamedZone, name, true )
+#    define TracyD3D11ZoneC( ctx, name, color ) TracyD3D11NamedZoneC( ctx, TracyD3D11UnnamedZone, name, color, true )
+#    define TracyD3D11NamedZone( ctx, varname, name, active ) \
+        TracyD3D11SrcLocObject( name, 0 );                    \
+        tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, active );
+#    define TracyD3D11NamedZoneC( ctx, varname, name, color, active ) \
+        TracyD3D11SrcLocObject( name, color );                        \
+        tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, active );
+#    define TracyD3D11ZoneTransient( ctx, varname, name, active ) tracy::D3D11ZoneScope varname{ ctx, TracyLine, TracyFile, strlen( TracyFile ), TracyFunction, strlen( TracyFunction ), name, strlen( name ), active };
+#  endif
 
-#    ifdef TRACY_HAS_CALLSTACK
-#        define TracyD3D11ZoneS( ctx, name, depth )                                                                    \
-            TracyD3D11NamedZoneS( ctx, TracyD3D11UnnamedZone, name, depth, true )
-#        define TracyD3D11ZoneCS( ctx, name, color, depth )                                                            \
-            TracyD3D11NamedZoneCS( ctx, TracyD3D11UnnamedZone, name, color, depth, true )
-#        define TracyD3D11NamedZoneS( ctx, varname, name, depth, active )                                              \
-            TracyD3D11SrcLocObject( name, 0 );                                                                         \
-            tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, depth, active );
-#        define TracyD3D11NamedZoneCS( ctx, varname, name, color, depth, active )                                      \
-            TracyD3D11SrcLocObject( name, color );                                                                     \
-            tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, depth, active );
-#        define TracyD3D11ZoneTransientS( ctx, varname, name, depth, active )                                          \
-            tracy::D3D11ZoneScope varname{ ctx,           TracyLine,                                                   \
-                                           TracyFile,     strlen( TracyFile ),                                         \
-                                           TracyFunction, strlen( TracyFunction ),                                     \
-                                           name,          strlen( name ),                                              \
-                                           depth,         active };
-#    else
-#        define TracyD3D11ZoneS( ctx, name, depth, active ) TracyD3D11Zone( ctx, name )
-#        define TracyD3D11ZoneCS( ctx, name, color, depth, active ) TracyD3D11ZoneC( name, color )
-#        define TracyD3D11NamedZoneS( ctx, varname, name, depth, active )                                              \
-            TracyD3D11NamedZone( ctx, varname, name, active )
-#        define TracyD3D11NamedZoneCS( ctx, varname, name, color, depth, active )                                      \
-            TracyD3D11NamedZoneC( ctx, varname, name, color, active )
-#        define TracyD3D11ZoneTransientS( ctx, varname, name, depth, active )                                          \
-            TracyD3D11ZoneTransient( ctx, varname, name, active )
-#    endif
+#  ifdef TRACY_HAS_CALLSTACK
+#    define TracyD3D11ZoneS( ctx, name, depth ) TracyD3D11NamedZoneS( ctx, TracyD3D11UnnamedZone, name, depth, true )
+#    define TracyD3D11ZoneCS( ctx, name, color, depth ) TracyD3D11NamedZoneCS( ctx, TracyD3D11UnnamedZone, name, color, depth, true )
+#    define TracyD3D11NamedZoneS( ctx, varname, name, depth, active ) \
+        TracyD3D11SrcLocObject( name, 0 );                            \
+        tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, depth, active );
+#    define TracyD3D11NamedZoneCS( ctx, varname, name, color, depth, active ) \
+        TracyD3D11SrcLocObject( name, color );                                \
+        tracy::D3D11ZoneScope varname( ctx, &TracyD3D11SrcLocSymbol, depth, active );
+#    define TracyD3D11ZoneTransientS( ctx, varname, name, depth, active ) tracy::D3D11ZoneScope varname{ ctx, TracyLine, TracyFile, strlen( TracyFile ), TracyFunction, strlen( TracyFunction ), name, strlen( name ), depth, active };
+#  else
+#    define TracyD3D11ZoneS( ctx, name, depth, active ) TracyD3D11Zone( ctx, name )
+#    define TracyD3D11ZoneCS( ctx, name, color, depth, active ) TracyD3D11ZoneC( name, color )
+#    define TracyD3D11NamedZoneS( ctx, varname, name, depth, active ) TracyD3D11NamedZone( ctx, varname, name, active )
+#    define TracyD3D11NamedZoneCS( ctx, varname, name, color, depth, active ) TracyD3D11NamedZoneC( ctx, varname, name, color, active )
+#    define TracyD3D11ZoneTransientS( ctx, varname, name, depth, active ) TracyD3D11ZoneTransient( ctx, varname, name, active )
+#  endif
 
-#    define TracyD3D11Collect( ctx ) ctx->Collect();
+#  define TracyD3D11Collect( ctx ) ctx->Collect();
 
 #endif
 

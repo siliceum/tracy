@@ -10,9 +10,8 @@ class RunQueue;
 
 class Backend
 {
-  public:
-    Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged,
-             const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks );
+public:
+    Backend( const char* title, const std::function<void()>& redraw, const std::function<void( float )>& scaleChanged, const std::function<int( void )>& isBusy, RunQueue* mainThreadTasks );
     ~Backend();
 
     void Show();
@@ -27,7 +26,7 @@ class Backend
 
     float GetDpiScale();
 
-  private:
+private:
     WindowPosition m_winPos;
     int m_w, m_h;
 };

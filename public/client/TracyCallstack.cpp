@@ -11,38 +11,38 @@
 
 #ifdef TRACY_HAS_CALLSTACK
 
-#    if TRACY_HAS_CALLSTACK == 1
-#        ifndef NOMINMAX
-#            define NOMINMAX
-#        endif
-#        include <algorithm>
-#        include <psapi.h>
-#        include <windows.h>
-#        ifdef _MSC_VER
-#            pragma warning( push )
-#            pragma warning( disable : 4091 )
-#        endif
-#        include <dbghelp.h>
-#        ifdef _MSC_VER
-#            pragma warning( pop )
-#        endif
-#    elif TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
-#        include "../libbacktrace/backtrace.hpp"
-#        include <algorithm>
-#        include <cxxabi.h>
-#        include <dlfcn.h>
-#        include <stdlib.h>
-#    elif TRACY_HAS_CALLSTACK == 5
-#        include <cxxabi.h>
-#        include <dlfcn.h>
+#  if TRACY_HAS_CALLSTACK == 1
+#    ifndef NOMINMAX
+#      define NOMINMAX
 #    endif
+#    include <algorithm>
+#    include <psapi.h>
+#    include <windows.h>
+#    ifdef _MSC_VER
+#      pragma warning( push )
+#      pragma warning( disable : 4091 )
+#    endif
+#    include <dbghelp.h>
+#    ifdef _MSC_VER
+#      pragma warning( pop )
+#    endif
+#  elif TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
+#    include "../libbacktrace/backtrace.hpp"
+#    include <algorithm>
+#    include <cxxabi.h>
+#    include <dlfcn.h>
+#    include <stdlib.h>
+#  elif TRACY_HAS_CALLSTACK == 5
+#    include <cxxabi.h>
+#    include <dlfcn.h>
+#  endif
 
-#    ifdef TRACY_DBGHELP_LOCK
-#        include "TracyProfiler.hpp"
+#  ifdef TRACY_DBGHELP_LOCK
+#    include "TracyProfiler.hpp"
 
-#        define DBGHELP_INIT TracyConcat( TRACY_DBGHELP_LOCK, Init() )
-#        define DBGHELP_LOCK TracyConcat( TRACY_DBGHELP_LOCK, Lock() );
-#        define DBGHELP_UNLOCK TracyConcat( TRACY_DBGHELP_LOCK, Unlock() );
+#    define DBGHELP_INIT TracyConcat( TRACY_DBGHELP_LOCK, Init() )
+#    define DBGHELP_LOCK TracyConcat( TRACY_DBGHELP_LOCK, Lock() );
+#    define DBGHELP_UNLOCK TracyConcat( TRACY_DBGHELP_LOCK, Unlock() );
 
 extern "C"
 {
@@ -50,10 +50,9 @@ extern "C"
     void DBGHELP_LOCK;
     void DBGHELP_UNLOCK;
 };
-#    endif
+#  endif
 
-#    if TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 ||                            \
-        TRACY_HAS_CALLSTACK == 5 || TRACY_HAS_CALLSTACK == 6
+#  if TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 5 || TRACY_HAS_CALLSTACK == 6
 // If you want to use your own demangling functionality (e.g. for another language),
 // define TRACY_DEMANGLE and provide your own implementation of the __tracy_demangle
 // function. The input parameter is a function name. The demangle function must
@@ -66,7 +65,7 @@ extern "C"
 // profiler can choose to truncate it.
 extern "C" const char* ___tracy_demangle( const char* mangled );
 
-#        ifndef TRACY_DEMANGLE
+#    ifndef TRACY_DEMANGLE
 constexpr size_t ___tracy_demangle_buffer_len = 1024 * 1024;
 char* ___tracy_demangle_buffer;
 
@@ -75,7 +74,10 @@ void ___tracy_init_demangle_buffer()
     ___tracy_demangle_buffer = (char*)tracy::tracy_malloc( ___tracy_demangle_buffer_len );
 }
 
-void ___tracy_free_demangle_buffer() { tracy::tracy_free( ___tracy_demangle_buffer ); }
+void ___tracy_free_demangle_buffer()
+{
+    tracy::tracy_free( ___tracy_demangle_buffer );
+}
 
 extern "C" const char* ___tracy_demangle( const char* mangled )
 {
@@ -85,24 +87,24 @@ extern "C" const char* ___tracy_demangle( const char* mangled )
     size_t len = ___tracy_demangle_buffer_len;
     return abi::__cxa_demangle( mangled, ___tracy_demangle_buffer, &len, &status );
 }
-#        endif
 #    endif
+#  endif
 
-#    if TRACY_HAS_CALLSTACK == 3
-#        define TRACY_USE_IMAGE_CACHE
-#        include <link.h>
-#    endif
+#  if TRACY_HAS_CALLSTACK == 3
+#    define TRACY_USE_IMAGE_CACHE
+#    include <link.h>
+#  endif
 
 namespace tracy
 {
 
-#    ifdef TRACY_USE_IMAGE_CACHE
+#  ifdef TRACY_USE_IMAGE_CACHE
 // when we have access to dl_iterate_phdr(), we can build a cache of address ranges to image paths
 // so we can quickly determine which image an address falls into.
 // We refresh this cache only when we hit an address that doesn't fall into any known range.
 class ImageCache
 {
-  public:
+public:
     struct ImageEntry
     {
         void* m_startAddress = nullptr;
@@ -116,7 +118,10 @@ class ImageCache
         Refresh();
     }
 
-    ~ImageCache() { Clear(); }
+    ~ImageCache()
+    {
+        Clear();
+    }
 
     const ImageEntry* GetImageForAddress( void* address )
     {
@@ -129,7 +134,7 @@ class ImageCache
         return entry;
     }
 
-  private:
+private:
     tracy::FastVector<ImageEntry> m_images;
     bool m_updated = false;
     bool m_haveMainImageName = false;
@@ -143,9 +148,8 @@ class ImageCache
 
         const uint32_t headerCount = info->dlpi_phnum;
         assert( headerCount > 0 );
-        const auto endAddress =
-            reinterpret_cast<void*>( info->dlpi_addr + info->dlpi_phdr[info->dlpi_phnum - 1].p_vaddr +
-                                     info->dlpi_phdr[info->dlpi_phnum - 1].p_memsz );
+        const auto endAddress = reinterpret_cast<void*>( info->dlpi_addr +
+                                                         info->dlpi_phdr[info->dlpi_phnum - 1].p_vaddr + info->dlpi_phdr[info->dlpi_phnum - 1].p_memsz );
 
         ImageEntry* image = cache->m_images.push_next();
         image->m_startAddress = startAddress;
@@ -171,8 +175,7 @@ class ImageCache
 
     bool Contains( void* startAddress ) const
     {
-        return std::any_of( m_images.begin(), m_images.end(), [startAddress]( const ImageEntry& entry )
-                            { return startAddress == entry.m_startAddress; } );
+        return std::any_of( m_images.begin(), m_images.end(), [startAddress]( const ImageEntry& entry ) { return startAddress == entry.m_startAddress; } );
     }
 
     void Refresh()
@@ -182,11 +185,10 @@ class ImageCache
 
         if( m_updated )
         {
-            std::sort( m_images.begin(), m_images.end(), []( const ImageEntry& lhs, const ImageEntry& rhs )
-                       { return lhs.m_startAddress > rhs.m_startAddress; } );
+            std::sort( m_images.begin(), m_images.end(),
+                       []( const ImageEntry& lhs, const ImageEntry& rhs ) { return lhs.m_startAddress > rhs.m_startAddress; } );
 
-            // patch the main executable image name here, as calling dl_* functions inside the dl_iterate_phdr callback
-            // might cause deadlocks
+            // patch the main executable image name here, as calling dl_* functions inside the dl_iterate_phdr callback might cause deadlocks
             UpdateMainImageName();
         }
     }
@@ -244,22 +246,22 @@ class ImageCache
         m_haveMainImageName = false;
     }
 };
-#    endif // #ifdef TRACY_USE_IMAGE_CACHE
+#  endif // #ifdef TRACY_USE_IMAGE_CACHE
 
 // when "TRACY_SYMBOL_OFFLINE_RESOLVE" is set, instead of fully resolving symbols at runtime,
 // simply resolve the offset and image name (which will be enough the resolving to be done offline)
-#    ifdef TRACY_SYMBOL_OFFLINE_RESOLVE
+#  ifdef TRACY_SYMBOL_OFFLINE_RESOLVE
 constexpr bool s_shouldResolveSymbolsOffline = true;
-#    else
+#  else
 static bool s_shouldResolveSymbolsOffline = false;
 bool ShouldResolveSymbolsOffline()
 {
     const char* symbolOfflineResolve = GetEnvVar( "TRACY_SYMBOL_OFFLINE_RESOLVE" );
     return ( symbolOfflineResolve && symbolOfflineResolve[0] == '1' );
 }
-#    endif // #ifdef TRACY_SYMBOL_OFFLINE_RESOLVE
+#  endif // #ifdef TRACY_SYMBOL_OFFLINE_RESOLVE
 
-#    if TRACY_HAS_CALLSTACK == 1
+#  if TRACY_HAS_CALLSTACK == 1
 
 enum
 {
@@ -276,14 +278,9 @@ CallstackEntry cb_data[MaxCbTrace];
 extern "C"
 {
     typedef DWORD( __stdcall* t_SymAddrIncludeInlineTrace )( HANDLE hProcess, DWORD64 Address );
-    typedef BOOL( __stdcall* t_SymQueryInlineTrace )( HANDLE hProcess, DWORD64 StartAddress, DWORD StartContext,
-                                                      DWORD64 StartRetAddress, DWORD64 CurAddress, LPDWORD CurContext,
-                                                      LPDWORD CurFrameIndex );
-    typedef BOOL( __stdcall* t_SymFromInlineContext )( HANDLE hProcess, DWORD64 Address, ULONG InlineContext,
-                                                       PDWORD64 Displacement, PSYMBOL_INFO Symbol );
-    typedef BOOL( __stdcall* t_SymGetLineFromInlineContext )( HANDLE hProcess, DWORD64 qwAddr, ULONG InlineContext,
-                                                              DWORD64 qwModuleBaseAddress, PDWORD pdwDisplacement,
-                                                              PIMAGEHLP_LINE64 Line64 );
+    typedef BOOL( __stdcall* t_SymQueryInlineTrace )( HANDLE hProcess, DWORD64 StartAddress, DWORD StartContext, DWORD64 StartRetAddress, DWORD64 CurAddress, LPDWORD CurContext, LPDWORD CurFrameIndex );
+    typedef BOOL( __stdcall* t_SymFromInlineContext )( HANDLE hProcess, DWORD64 Address, ULONG InlineContext, PDWORD64 Displacement, PSYMBOL_INFO Symbol );
+    typedef BOOL( __stdcall* t_SymGetLineFromInlineContext )( HANDLE hProcess, DWORD64 qwAddr, ULONG InlineContext, DWORD64 qwModuleBaseAddress, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line64 );
 
     t_SymAddrIncludeInlineTrace _SymAddrIncludeInlineTrace = 0;
     t_SymQueryInlineTrace _SymQueryInlineTrace = 0;
@@ -319,34 +316,29 @@ size_t s_krnlCacheCnt;
 
 void InitCallstackCritical()
 {
-    ___tracy_RtlWalkFrameChainPtr =
-        (___tracy_t_RtlWalkFrameChain)GetProcAddress( GetModuleHandleA( "ntdll.dll" ), "RtlWalkFrameChain" );
+    ___tracy_RtlWalkFrameChainPtr = (___tracy_t_RtlWalkFrameChain)GetProcAddress( GetModuleHandleA( "ntdll.dll" ), "RtlWalkFrameChain" );
 }
 
 void DbgHelpInit()
 {
     if( s_shouldResolveSymbolsOffline ) return;
 
-    _SymAddrIncludeInlineTrace =
-        (t_SymAddrIncludeInlineTrace)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymAddrIncludeInlineTrace" );
-    _SymQueryInlineTrace =
-        (t_SymQueryInlineTrace)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymQueryInlineTrace" );
-    _SymFromInlineContext =
-        (t_SymFromInlineContext)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymFromInlineContext" );
-    _SymGetLineFromInlineContext = (t_SymGetLineFromInlineContext)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ),
-                                                                                  "SymGetLineFromInlineContext" );
+    _SymAddrIncludeInlineTrace = (t_SymAddrIncludeInlineTrace)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymAddrIncludeInlineTrace" );
+    _SymQueryInlineTrace = (t_SymQueryInlineTrace)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymQueryInlineTrace" );
+    _SymFromInlineContext = (t_SymFromInlineContext)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymFromInlineContext" );
+    _SymGetLineFromInlineContext = (t_SymGetLineFromInlineContext)GetProcAddress( GetModuleHandleA( "dbghelp.dll" ), "SymGetLineFromInlineContext" );
 
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_INIT;
     DBGHELP_LOCK;
-#        endif
+#    endif
 
     SymInitialize( GetCurrentProcess(), nullptr, true );
     SymSetOptions( SYMOPT_LOAD_LINES );
 
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_UNLOCK;
-#        endif
+#    endif
 }
 
 DWORD64 DbgHelpLoadSymbolsForModule( const char* imageName, uint64_t baseOfDll, uint32_t bllSize )
@@ -355,8 +347,7 @@ DWORD64 DbgHelpLoadSymbolsForModule( const char* imageName, uint64_t baseOfDll, 
     return SymLoadModuleEx( GetCurrentProcess(), nullptr, imageName, nullptr, baseOfDll, bllSize, nullptr, 0 );
 }
 
-ModuleCache* LoadSymbolsForModuleAndCache( const char* imageName, uint32_t imageNameLength, uint64_t baseOfDll,
-                                           uint32_t dllSize )
+ModuleCache* LoadSymbolsForModuleAndCache( const char* imageName, uint32_t imageNameLength, uint64_t baseOfDll, uint32_t dllSize )
 {
     DbgHelpLoadSymbolsForModule( imageName, baseOfDll, dllSize );
 
@@ -389,9 +380,9 @@ ModuleCache* LoadSymbolsForModuleAndCache( const char* imageName, uint32_t image
 
 void InitCallstack()
 {
-#        ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
+#    ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
     s_shouldResolveSymbolsOffline = ShouldResolveSymbolsOffline();
-#        endif // #ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
+#    endif // #ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
     if( s_shouldResolveSymbolsOffline )
     {
         TracyDebug( "TRACY: enabling offline symbol resolving!\n" );
@@ -399,9 +390,9 @@ void InitCallstack()
 
     DbgHelpInit();
 
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_LOCK;
-#        endif
+#    endif
 
     // use TRACY_NO_DBGHELP_INIT_LOAD=1 to disable preloading of driver
     // and process module symbol loading at startup time - they will be loaded on demand later
@@ -463,8 +454,7 @@ void InitCallstack()
             }
         }
         s_krnlCacheCnt = cnt;
-        std::sort( s_krnlCache, s_krnlCache + s_krnlCacheCnt,
-                   []( const KernelDriver& lhs, const KernelDriver& rhs ) { return lhs.addr > rhs.addr; } );
+        std::sort( s_krnlCache, s_krnlCache + s_krnlCacheCnt, []( const KernelDriver& lhs, const KernelDriver& rhs ) { return lhs.addr > rhs.addr; } );
     }
 
     s_modCache = (FastVector<ModuleCache>*)tracy_malloc( sizeof( FastVector<ModuleCache> ) );
@@ -492,12 +482,14 @@ void InitCallstack()
         }
     }
 
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_UNLOCK;
-#        endif
+#    endif
 }
 
-void EndCallstack() {}
+void EndCallstack()
+{
+}
 
 const char* DecodeCallstackPtrFast( uint64_t ptr )
 {
@@ -511,9 +503,9 @@ const char* DecodeCallstackPtrFast( uint64_t ptr )
     si->SizeOfStruct = sizeof( SYMBOL_INFO );
     si->MaxNameLen = MaxNameSize;
 
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_LOCK;
-#        endif
+#    endif
     if( SymFromAddr( proc, ptr, nullptr, si ) == 0 )
     {
         *ret = '\0';
@@ -523,9 +515,9 @@ const char* DecodeCallstackPtrFast( uint64_t ptr )
         memcpy( ret, si->Name, si->NameLen );
         ret[si->NameLen] = '\0';
     }
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_UNLOCK;
-#        endif
+#    endif
     return ret;
 }
 
@@ -533,8 +525,7 @@ const char* GetKernelModulePath( uint64_t addr )
 {
     assert( addr >> 63 != 0 );
     if( !s_krnlCache ) return nullptr;
-    auto it = std::lower_bound( s_krnlCache, s_krnlCache + s_krnlCacheCnt, addr,
-                                []( const KernelDriver& lhs, const uint64_t& rhs ) { return lhs.addr > rhs; } );
+    auto it = std::lower_bound( s_krnlCache, s_krnlCache + s_krnlCacheCnt, addr, []( const KernelDriver& lhs, const uint64_t& rhs ) { return lhs.addr > rhs; } );
     if( it == s_krnlCache + s_krnlCacheCnt ) return nullptr;
     return it->path;
 }
@@ -551,8 +542,7 @@ ModuleNameAndBaseAddress GetModuleNameAndPrepareSymbols( uint64_t addr )
     {
         if( s_krnlCache )
         {
-            auto it = std::lower_bound( s_krnlCache, s_krnlCache + s_krnlCacheCnt, addr,
-                                        []( const KernelDriver& lhs, const uint64_t& rhs ) { return lhs.addr > rhs; } );
+            auto it = std::lower_bound( s_krnlCache, s_krnlCache + s_krnlCacheCnt, addr, []( const KernelDriver& lhs, const uint64_t& rhs ) { return lhs.addr > rhs; } );
             if( it != s_krnlCache + s_krnlCacheCnt )
             {
                 return ModuleNameAndBaseAddress{ it->mod, it->addr };
@@ -589,10 +579,8 @@ ModuleNameAndBaseAddress GetModuleNameAndPrepareSymbols( uint64_t addr )
                     const auto nameLength = GetModuleFileNameA( mod[i], name, 1021 );
                     if( nameLength > 0 )
                     {
-                        // since this is the first time we encounter this module, load its symbols (needed for modules
-                        // loaded after SymInitialize)
-                        ModuleCache* cachedModule = LoadSymbolsForModuleAndCache(
-                            name, nameLength, (DWORD64)info.lpBaseOfDll, info.SizeOfImage );
+                        // since this is the first time we encounter this module, load its symbols (needed for modules loaded after SymInitialize)
+                        ModuleCache* cachedModule = LoadSymbolsForModuleAndCache( name, nameLength, (DWORD64)info.lpBaseOfDll, info.SizeOfImage );
                         return ModuleNameAndBaseAddress{ cachedModule->name, cachedModule->start };
                     }
                 }
@@ -618,9 +606,9 @@ CallstackSymbolData DecodeSymbolAddress( uint64_t ptr )
     IMAGEHLP_LINE64 line;
     DWORD displacement = 0;
     line.SizeOfStruct = sizeof( IMAGEHLP_LINE64 );
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_LOCK;
-#        endif
+#    endif
     const auto res = SymGetLineFromAddr64( GetCurrentProcess(), ptr, &displacement, &line );
     if( res == 0 || line.LineNumber >= 0xF00000 )
     {
@@ -634,17 +622,17 @@ CallstackSymbolData DecodeSymbolAddress( uint64_t ptr )
         sym.line = line.LineNumber;
         sym.needFree = true;
     }
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_UNLOCK;
-#        endif
+#    endif
     return sym;
 }
 
 CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
 {
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_LOCK;
-#        endif
+#    endif
 
     InitRpmalloc();
 
@@ -652,9 +640,9 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
 
     if( s_shouldResolveSymbolsOffline )
     {
-#        ifdef TRACY_DBGHELP_LOCK
+#    ifdef TRACY_DBGHELP_LOCK
         DBGHELP_UNLOCK;
-#        endif
+#    endif
 
         cb_data[0].symAddr = ptr - moduleNameAndAddress.baseAddr;
         cb_data[0].symLen = 0;
@@ -669,7 +657,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
     int write;
     const auto proc = GetCurrentProcess();
 
-#        if !defined TRACY_NO_CALLSTACK_INLINES
+#    if !defined TRACY_NO_CALLSTACK_INLINES
     BOOL doInline = FALSE;
     DWORD ctx = 0;
     DWORD inlineNum = 0;
@@ -686,7 +674,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
         cb_num = 1 + inlineNum;
     }
     else
-#        endif
+#    endif
     {
         write = 0;
         cb_num = 1;
@@ -717,8 +705,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
             cb_data[write].line = line.LineNumber;
         }
 
-        cb_data[write].name =
-            symValid ? CopyStringFast( si->Name, si->NameLen ) : CopyStringFast( moduleNameAndAddress.name );
+        cb_data[write].name = symValid ? CopyStringFast( si->Name, si->NameLen ) : CopyStringFast( moduleNameAndAddress.name );
         cb_data[write].file = CopyStringFast( filename );
         if( symValid )
         {
@@ -732,7 +719,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
         }
     }
 
-#        if !defined TRACY_NO_CALLSTACK_INLINES
+#    if !defined TRACY_NO_CALLSTACK_INLINES
     if( doInline )
     {
         for( DWORD i = 0; i < inlineNum; i++ )
@@ -751,8 +738,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
                 cb.line = line.LineNumber;
             }
 
-            cb.name =
-                symInlineValid ? CopyStringFast( si->Name, si->NameLen ) : CopyStringFast( moduleNameAndAddress.name );
+            cb.name = symInlineValid ? CopyStringFast( si->Name, si->NameLen ) : CopyStringFast( moduleNameAndAddress.name );
             cb.file = CopyStringFast( filename );
             if( symInlineValid )
             {
@@ -768,15 +754,15 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
             ctx++;
         }
     }
-#        endif
-#        ifdef TRACY_DBGHELP_LOCK
+#    endif
+#    ifdef TRACY_DBGHELP_LOCK
     DBGHELP_UNLOCK;
-#        endif
+#    endif
 
     return { cb_data, uint8_t( cb_num ), moduleNameAndAddress.name };
 }
 
-#    elif TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
+#  elif TRACY_HAS_CALLSTACK == 2 || TRACY_HAS_CALLSTACK == 3 || TRACY_HAS_CALLSTACK == 4 || TRACY_HAS_CALLSTACK == 6
 
 enum
 {
@@ -788,11 +774,11 @@ struct backtrace_state* cb_bts = nullptr;
 int cb_num;
 CallstackEntry cb_data[MaxCbTrace];
 int cb_fixup;
-#        ifdef TRACY_USE_IMAGE_CACHE
+#    ifdef TRACY_USE_IMAGE_CACHE
 static ImageCache* s_imageCache = nullptr;
-#        endif // #ifdef TRACY_USE_IMAGE_CACHE
+#    endif // #ifdef TRACY_USE_IMAGE_CACHE
 
-#        ifdef TRACY_DEBUGINFOD
+#    ifdef TRACY_DEBUGINFOD
 debuginfod_client* s_debuginfod;
 
 struct DebugInfo
@@ -804,9 +790,9 @@ struct DebugInfo
 };
 
 static FastVector<DebugInfo>* s_di_known;
-#        endif
+#    endif
 
-#        ifdef __linux
+#    ifdef __linux
 struct KernelSymbol
 {
     uint64_t addr;
@@ -823,7 +809,7 @@ static void InitKernelSymbols()
     FILE* f = fopen( "/proc/kallsyms", "rb" );
     if( !f ) return;
     tracy::FastVector<KernelSymbol> tmpSym( 512 * 1024 );
-    size_t linelen = 16 * 1024; // linelen must be big enough to prevent reallocs in getline()
+    size_t linelen = 16 * 1024;     // linelen must be big enough to prevent reallocs in getline()
     auto linebuf = (char*)tracy_malloc( linelen );
     ssize_t sz;
     size_t validCnt = 0;
@@ -903,8 +889,7 @@ static void InitKernelSymbols()
     fclose( f );
     if( tmpSym.empty() ) return;
 
-    std::sort( tmpSym.begin(), tmpSym.end(),
-               []( const KernelSymbol& lhs, const KernelSymbol& rhs ) { return lhs.addr < rhs.addr; } );
+    std::sort( tmpSym.begin(), tmpSym.end(), []( const KernelSymbol& lhs, const KernelSymbol& rhs ) { return lhs.addr < rhs.addr; } );
     for( size_t i = 0; i < tmpSym.size() - 1; i++ )
     {
         if( tmpSym[i].name ) tmpSym[i].size = tmpSym[i + 1].addr - tmpSym[i].addr;
@@ -921,7 +906,7 @@ static void InitKernelSymbols()
 
     TracyDebug( "Loaded %zu kernel symbols (%zu code sections)\n", tmpSym.size(), validCnt );
 }
-#        endif
+#    endif
 
 char* NormalizePath( const char* path )
 {
@@ -978,20 +963,22 @@ char* NormalizePath( const char* path )
     return res;
 }
 
-void InitCallstackCritical() {}
+void InitCallstackCritical()
+{
+}
 
 void InitCallstack()
 {
     InitRpmalloc();
 
-#        ifdef TRACY_USE_IMAGE_CACHE
+#    ifdef TRACY_USE_IMAGE_CACHE
     s_imageCache = (ImageCache*)tracy_malloc( sizeof( ImageCache ) );
     new( s_imageCache ) ImageCache();
-#        endif // #ifdef TRACY_USE_IMAGE_CACHE
+#    endif // #ifdef TRACY_USE_IMAGE_CACHE
 
-#        ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
+#    ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
     s_shouldResolveSymbolsOffline = ShouldResolveSymbolsOffline();
-#        endif // #ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
+#    endif // #ifndef TRACY_SYMBOL_OFFLINE_RESOLVE
     if( s_shouldResolveSymbolsOffline )
     {
         cb_bts = nullptr; // disable use of libbacktrace calls
@@ -1002,21 +989,21 @@ void InitCallstack()
         cb_bts = backtrace_create_state( nullptr, 0, nullptr, nullptr );
     }
 
-#        ifndef TRACY_DEMANGLE
+#    ifndef TRACY_DEMANGLE
     ___tracy_init_demangle_buffer();
-#        endif
+#    endif
 
-#        ifdef __linux
+#    ifdef __linux
     InitKernelSymbols();
-#        endif
-#        ifdef TRACY_DEBUGINFOD
+#    endif
+#    ifdef TRACY_DEBUGINFOD
     s_debuginfod = debuginfod_begin();
     s_di_known = (FastVector<DebugInfo>*)tracy_malloc( sizeof( FastVector<DebugInfo> ) );
     new( s_di_known ) FastVector<DebugInfo>( 16 );
-#        endif
+#    endif
 }
 
-#        ifdef TRACY_DEBUGINFOD
+#    ifdef TRACY_DEBUGINFOD
 void ClearDebugInfoVector( FastVector<DebugInfo>& vec )
 {
     for( auto& v : vec )
@@ -1073,28 +1060,31 @@ const uint8_t* GetBuildIdForImage( const char* image, size_t& size )
     return nullptr;
 }
 
-debuginfod_client* GetDebuginfodClient() { return s_debuginfod; }
-#        endif
+debuginfod_client* GetDebuginfodClient()
+{
+    return s_debuginfod;
+}
+#    endif
 
 void EndCallstack()
 {
-#        ifdef TRACY_USE_IMAGE_CACHE
+#    ifdef TRACY_USE_IMAGE_CACHE
     if( s_imageCache )
     {
         s_imageCache->~ImageCache();
         tracy_free( s_imageCache );
     }
-#        endif // #ifdef TRACY_USE_IMAGE_CACHE
-#        ifndef TRACY_DEMANGLE
+#    endif // #ifdef TRACY_USE_IMAGE_CACHE
+#    ifndef TRACY_DEMANGLE
     ___tracy_free_demangle_buffer();
-#        endif
-#        ifdef TRACY_DEBUGINFOD
+#    endif
+#    ifdef TRACY_DEBUGINFOD
     ClearDebugInfoVector( *s_di_known );
     s_di_known->~FastVector<DebugInfo>();
     tracy_free( s_di_known );
 
     debuginfod_end( s_debuginfod );
-#        endif
+#    endif
 }
 
 const char* DecodeCallstackPtrFast( uint64_t ptr )
@@ -1118,8 +1108,7 @@ const char* DecodeCallstackPtrFast( uint64_t ptr )
     return ret;
 }
 
-static int SymbolAddressDataCb( void* data, uintptr_t pc, uintptr_t lowaddr, const char* fn, int lineno,
-                                const char* function )
+static int SymbolAddressDataCb( void* data, uintptr_t pc, uintptr_t lowaddr, const char* fn, int lineno, const char* function )
 {
     auto& sym = *(CallstackSymbolData*)data;
     if( !fn )
@@ -1162,8 +1151,7 @@ CallstackSymbolData DecodeSymbolAddress( uint64_t ptr )
     return sym;
 }
 
-static int CallstackDataCb( void* /*data*/, uintptr_t pc, uintptr_t lowaddr, const char* fn, int lineno,
-                            const char* function )
+static int CallstackDataCb( void* /*data*/, uintptr_t pc, uintptr_t lowaddr, const char* fn, int lineno, const char* function )
 {
     cb_data[cb_num].symLen = 0;
     cb_data[cb_num].symAddr = (uint64_t)lowaddr;
@@ -1281,21 +1269,21 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
         const char* imageName = nullptr;
         uint64_t imageBaseAddress = 0x0;
 
-#        ifdef TRACY_USE_IMAGE_CACHE
+#    ifdef TRACY_USE_IMAGE_CACHE
         const auto* image = s_imageCache->GetImageForAddress( (void*)ptr );
         if( image )
         {
             imageName = image->m_name;
             imageBaseAddress = uint64_t( image->m_startAddress );
         }
-#        else
+#    else
         Dl_info dlinfo;
         if( dladdr( (void*)ptr, &dlinfo ) )
         {
             imageName = dlinfo.dli_fname;
             imageBaseAddress = uint64_t( dlinfo.dli_fbase );
         }
-#        endif
+#    endif
 
         if( s_shouldResolveSymbolsOffline )
         {
@@ -1313,12 +1301,10 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
 
         return { cb_data, uint8_t( cb_num ), imageName ? imageName : "[unknown]" };
     }
-#        ifdef __linux
+#    ifdef __linux
     else if( s_kernelSym )
     {
-        auto it = std::lower_bound( s_kernelSym, s_kernelSym + s_kernelSymCnt, ptr,
-                                    []( const KernelSymbol& lhs, const uint64_t& rhs )
-                                    { return lhs.addr + lhs.size < rhs; } );
+        auto it = std::lower_bound( s_kernelSym, s_kernelSym + s_kernelSymCnt, ptr, []( const KernelSymbol& lhs, const uint64_t& rhs ) { return lhs.addr + lhs.size < rhs; } );
         if( it != s_kernelSym + s_kernelSymCnt )
         {
             cb_data[0].name = CopyStringFast( it->name );
@@ -1329,7 +1315,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
             return { cb_data, 1, it->mod ? it->mod : "<kernel>" };
         }
     }
-#        endif
+#    endif
 
     cb_data[0].name = CopyStringFast( "[unknown]" );
     cb_data[0].file = CopyStringFast( "<kernel>" );
@@ -1339,13 +1325,21 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
     return { cb_data, 1, "<kernel>" };
 }
 
-#    elif TRACY_HAS_CALLSTACK == 5
+#  elif TRACY_HAS_CALLSTACK == 5
 
-void InitCallstackCritical() {}
+void InitCallstackCritical()
+{
+}
 
-void InitCallstack() { ___tracy_init_demangle_buffer(); }
+void InitCallstack()
+{
+    ___tracy_init_demangle_buffer();
+}
 
-void EndCallstack() { ___tracy_free_demangle_buffer(); }
+void EndCallstack()
+{
+    ___tracy_free_demangle_buffer();
+}
 
 const char* DecodeCallstackPtrFast( uint64_t ptr )
 {
@@ -1426,7 +1420,7 @@ CallstackEntryData DecodeCallstackPtr( uint64_t ptr )
     return { &cb, 1, symloc };
 }
 
-#    endif
+#  endif
 
 }
 

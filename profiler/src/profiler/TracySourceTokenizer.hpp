@@ -9,7 +9,7 @@ namespace tracy
 
 class Tokenizer
 {
-  public:
+public:
     enum class TokenColor : uint8_t
     {
         Default,
@@ -40,11 +40,11 @@ class Tokenizer
 
     enum class AsmTokenColor : uint8_t
     {
-        Label,         // no-op, padding
-        Default,       // '+', '[', '*', etc
-        SizeDirective, // byte, word, dword, etc
-        Register,      // rax, rip, etc
-        Literal,       // 0x04, etc
+        Label,          // no-op, padding
+        Default,        // '+', '[', '*', etc
+        SizeDirective,  // byte, word, dword, etc
+        Register,       // rax, rip, etc
+        Literal,        // 0x04, etc
     };
 
     struct AsmToken
@@ -59,7 +59,7 @@ class Tokenizer
     std::vector<Token> Tokenize( const char* begin, const char* end );
     std::vector<AsmToken> TokenizeAsm( const char* begin, const char* end );
 
-  private:
+private:
     TokenColor IdentifyToken( const char*& begin, const char* end );
     AsmTokenColor IdentifyAsmToken( const char*& begin, const char* end );
 

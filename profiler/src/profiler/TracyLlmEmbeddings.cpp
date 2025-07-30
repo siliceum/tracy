@@ -1,8 +1,8 @@
 #ifdef _WIN32
-#    include <io.h>
-#    include <windows.h>
+#  include <io.h>
+#  include <windows.h>
 #else
-#    include <unistd.h>
+#  include <unistd.h>
 #endif
 
 #include "TracyLlmEmbeddings.hpp"
@@ -37,8 +37,7 @@ TracyLlmEmbeddings::TracyLlmEmbeddings( const char* file, uint64_t hash )
     }
 
     m_data.resize( size );
-    auto loaded =
-        fread( m_data.data(), 1, m_data.size() * sizeof( uint32_t ), f ) == m_data.size() * sizeof( uint32_t );
+    auto loaded = fread( m_data.data(), 1, m_data.size() * sizeof( uint32_t ), f ) == m_data.size() * sizeof( uint32_t );
     fclose( f );
     if( !loaded ) throw std::runtime_error( "Failed to read embeddings data from file: " + std::string( file ) );
 
@@ -55,15 +54,16 @@ void TracyLlmEmbeddings::Add( uint32_t idx, const std::vector<float>& embedding 
     m_data.emplace_back( idx );
 }
 
-std::vector<TracyLlmEmbeddings::Result> TracyLlmEmbeddings::Search( const std::vector<float>& embedding,
-                                                                    size_t k ) const
+std::vector<TracyLlmEmbeddings::Result> TracyLlmEmbeddings::Search( const std::vector<float>& embedding, size_t k ) const
 {
     std::vector<Result> ret;
     auto result = m_index.search( embedding.data(), k );
     ret.reserve( result.size() );
     for( size_t i = 0; i < result.size(); i++ )
     {
-        ret.emplace_back( Result{ .idx = result[i].member.key, .distance = result[i].distance } );
+        ret.emplace_back( Result{
+            .idx = result[i].member.key,
+            .distance = result[i].distance } );
     }
     return ret;
 }

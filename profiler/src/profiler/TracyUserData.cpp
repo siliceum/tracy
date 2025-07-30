@@ -2,9 +2,9 @@
 #include <memory>
 
 #ifdef _WIN32
-#    include <stdio.h>
+#  include <stdio.h>
 #else
-#    include <unistd.h>
+#  include <unistd.h>
 #endif
 
 #include "../ini.h"
@@ -217,7 +217,10 @@ void UserData::SaveState( const ViewData& data )
     }
 }
 
-void UserData::StateShouldBePreserved() { m_preserveState = true; }
+void UserData::StateShouldBePreserved()
+{
+    m_preserveState = true;
+}
 
 void UserData::LoadAnnotations( std::vector<std::unique_ptr<Annotation>>& data )
 {

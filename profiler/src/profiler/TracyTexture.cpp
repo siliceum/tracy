@@ -2,16 +2,16 @@
 #include <string.h>
 
 #ifdef __EMSCRIPTEN__
-#    include <GLES2/gl2.h>
-#    include <emscripten/html5.h>
+#  include <GLES2/gl2.h>
+#  include <emscripten/html5.h>
 #else
-#    include <backends/imgui_impl_opengl3_loader.h>
+#  include <backends/imgui_impl_opengl3_loader.h>
 #endif
 #include "../public/common/TracyForceInline.hpp"
 #include "TracyTexture.hpp"
 
 #ifndef COMPRESSED_RGB_S3TC_DXT1_EXT
-#    define COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
+#  define COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
 #endif
 
 namespace tracy
@@ -22,8 +22,7 @@ static bool s_hardwareS3tc;
 void InitTexture()
 {
 #ifdef __EMSCRIPTEN__
-    s_hardwareS3tc =
-        emscripten_webgl_enable_extension( emscripten_webgl_get_current_context(), "WEBGL_compressed_texture_s3tc" );
+    s_hardwareS3tc = emscripten_webgl_enable_extension( emscripten_webgl_get_current_context(), "WEBGL_compressed_texture_s3tc" );
 #else
     s_hardwareS3tc = false;
     GLint num;

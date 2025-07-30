@@ -210,9 +210,7 @@ void View::DrawMessages()
     ImGui::Separator();
     ImGui::BeginChild( "##messages" );
     const int colNum = hasCallstack ? 4 : 3;
-    if( ImGui::BeginTable( "##messages", colNum,
-                           ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY |
-                               ImGuiTableFlags_Hideable ) )
+    if( ImGui::BeginTable( "##messages", colNum, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Hideable ) )
     {
         ImGui::TableSetupScrollFreeze( 0, 1 );
         ImGui::TableSetupColumn( "Time", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
@@ -259,8 +257,7 @@ void View::DrawMessageLine( const MessageData& msg, bool hasCallstack, int& idx 
     const auto text = m_worker.GetString( msg.ref );
     const auto tid = m_worker.DecompressThread( msg.thread );
     ImGui::PushID( &msg );
-    if( ImGui::Selectable( TimeToStringExact( msg.time ), m_msgHighlight == &msg,
-                           ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap ) )
+    if( ImGui::Selectable( TimeToStringExact( msg.time ), m_msgHighlight == &msg, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap ) )
     {
         CenterAtTime( msg.time );
     }

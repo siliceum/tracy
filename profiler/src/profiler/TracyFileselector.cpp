@@ -1,11 +1,11 @@
 #include "TracyFileselector.hpp"
 
 #ifndef TRACY_NO_FILESELECTOR
-#    ifdef __EMSCRIPTEN__
-#        include <emscripten.h>
-#    else
-#        include <nfd.h>
-#    endif
+#  ifdef __EMSCRIPTEN__
+#    include <emscripten.h>
+#  else
+#    include <nfd.h>
+#  endif
 #endif
 
 namespace tracy::Fileselector
@@ -53,32 +53,31 @@ extern "C" int nativeOpenFile()
 static bool OpenFileImpl( const char* ext, const char* desc, const std::function<void( const char* )>& callback )
 {
 #ifndef TRACY_NO_FILESELECTOR
-#    ifdef __EMSCRIPTEN__
+#  ifdef __EMSCRIPTEN__
     s_openFileCallback = callback;
-    EM_ASM(
+    EM_ASM( {
+        var input = document.createElement( 'input' );
+        input.type = 'file';
+        input.accept = UTF8ToString( $0 );
+        input.onchange = ( e ) = >
         {
-            var input = document.createElement( 'input' );
-            input.type = 'file';
-            input.accept = UTF8ToString( $0 );
-            input.onchange = ( e ) = >
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            reader.readAsArrayBuffer( file );
+            reader.onload = () = >
             {
-                var file = e.target.files[0];
-                var reader = new FileReader();
-                reader.readAsArrayBuffer( file );
-                reader.onload = () = >
-                {
-                    var buf = reader.result;
-                    var view = new Uint8Array( buf );
-                    FS.createDataFile( '/', 'upload.tracy', view, true, true );
-                    Module.ccall( 'nativeOpenFile', 'number', [], [] );
-                    FS.unlink( '/upload.tracy' );
-                };
+                var buf = reader.result;
+                var view = new Uint8Array( buf );
+                FS.createDataFile( '/', 'upload.tracy', view, true, true );
+                Module.ccall( 'nativeOpenFile', 'number', [], [] );
+                FS.unlink( '/upload.tracy' );
             };
-            input.click();
-        },
-        ext );
+        };
+        input.click();
+    },
+            ext );
     return true;
-#    else
+#  else
     nfdu8filteritem_t filter = { desc, ext };
     nfdu8char_t* fn;
     const auto res = NFD_OpenDialogU8( &fn, &filter, 1, nullptr );
@@ -92,7 +91,7 @@ static bool OpenFileImpl( const char* ext, const char* desc, const std::function
     {
         return res != NFD_ERROR;
     }
-#    endif
+#  endif
 #endif
     return false;
 }

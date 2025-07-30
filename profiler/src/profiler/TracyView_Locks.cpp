@@ -16,8 +16,7 @@ namespace tracy
 
 constexpr float MinVisSize = 3;
 
-void View::DrawLockHeader( uint32_t id, const LockMap& lockmap, const SourceLocation& srcloc, bool hover,
-                           ImDrawList* draw, const ImVec2& wpos, float w, float ty, float offset, uint8_t tid )
+void View::DrawLockHeader( uint32_t id, const LockMap& lockmap, const SourceLocation& srcloc, bool hover, ImDrawList* draw, const ImVec2& wpos, float w, float ty, float offset, uint8_t tid )
 {
     char buf[1024];
     if( lockmap.customName.Active() )
@@ -35,8 +34,7 @@ void View::DrawLockHeader( uint32_t id, const LockMap& lockmap, const SourceLoca
     {
         m_lockHoverHighlight = id;
 
-        if( ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, offset ),
-                                        wpos + ImVec2( ty + ImGui::CalcTextSize( buf ).x, offset + ty + 1 ) ) )
+        if( ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, offset ), wpos + ImVec2( ty + ImGui::CalcTextSize( buf ).x, offset + ty + 1 ) ) )
         {
             const auto& range = lockmap.range[tid];
             const auto activity = range.end - range.start;
@@ -109,8 +107,7 @@ void View::DrawLockHeader( uint32_t id, const LockMap& lockmap, const SourceLoca
     }
 }
 
-int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_ptr<LockDraw>>& lockDraw, uint64_t tid,
-                     int _offset, LockHighlight& highlight )
+int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_ptr<LockDraw>>& lockDraw, uint64_t tid, int _offset, LockHighlight& highlight )
 {
     const auto w = ctx.w;
     const auto ty = ctx.sty;
@@ -155,12 +152,11 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
             const auto t0 = le.ptr->Time();
             const auto t1 = v.t1.Val();
             const auto px0 = ( t0 - vStart ) * pxns;
-            // The usual method of collapsing single small zones into zig-zags would be very bad here. Lock wait zones
-            // should be easily visible without having to zoom in first. This sets a minimum width for any lock zone.
+            // The usual method of collapsing single small zones into zig-zags would be very bad here. Lock wait zones should
+            // be easily visible without having to zoom in first. This sets a minimum width for any lock zone.
             const auto px1 = std::max( ( t1 - vStart ) * pxns, px0 + MinVisPx );
 
-            bool itemHovered = hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset ),
-                                                                    wpos + ImVec2( px1, offset + ostep ) );
+            bool itemHovered = hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, offset ), wpos + ImVec2( px1, offset + ostep ) );
             if( itemHovered )
             {
                 if( IsMouseClicked( 0 ) )
@@ -239,8 +235,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                     {
                         if( it->ptr->thread == lock.thread )
                         {
-                            if( ( it->lockingThread == lock.thread || IsThreadWaiting( it->waitList, threadBit ) ) &&
-                                it->ptr->SrcLoc() != 0 )
+                            if( ( it->lockingThread == lock.thread || IsThreadWaiting( it->waitList, threadBit ) ) && it->ptr->SrcLoc() != 0 )
                             {
                                 markloc = it->ptr->SrcLoc();
                                 break;
@@ -254,8 +249,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                         const auto& marklocdata = m_worker.GetSourceLocation( markloc );
                         ImGui::TextUnformatted( "Lock event location:" );
                         ImGui::TextUnformatted( m_worker.GetString( marklocdata.function ) );
-                        ImGui::TextUnformatted(
-                            LocationToString( m_worker.GetString( marklocdata.file ), marklocdata.line ) );
+                        ImGui::TextUnformatted( LocationToString( m_worker.GetString( marklocdata.file ), marklocdata.line ) );
                         ImGui::Separator();
                     }
 
@@ -266,13 +260,11 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                         case LockState::HasLock:
                             if( v.ptr->lockCount == 1 )
                             {
-                                ImGui::Text( "Thread \"%s\" has lock. No other threads are waiting.",
-                                             m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Thread \"%s\" has lock. No other threads are waiting.", m_worker.GetThreadName( tid ) );
                             }
                             else
                             {
-                                ImGui::Text( "Thread \"%s\" has %i locks. No other threads are waiting.",
-                                             m_worker.GetThreadName( tid ), v.ptr->lockCount );
+                                ImGui::Text( "Thread \"%s\" has %i locks. No other threads are waiting.", m_worker.GetThreadName( tid ), v.ptr->lockCount );
                             }
                             if( v.ptr->waitList != 0 )
                             {
@@ -280,18 +272,14 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                                 ImGui::TextUnformatted( "Recursive lock acquire in thread." );
                             }
                             break;
-                        case LockState::HasBlockingLock:
-                        {
+                        case LockState::HasBlockingLock: {
                             if( v.ptr->lockCount == 1 )
                             {
-                                ImGui::Text( "Thread \"%s\" has lock. Blocked threads (%" PRIu64 "):",
-                                             m_worker.GetThreadName( tid ), TracyCountBits( v.ptr->waitList ) );
+                                ImGui::Text( "Thread \"%s\" has lock. Blocked threads (%" PRIu64 "):", m_worker.GetThreadName( tid ), TracyCountBits( v.ptr->waitList ) );
                             }
                             else
                             {
-                                ImGui::Text( "Thread \"%s\" has %i locks. Blocked threads (%" PRIu64 "):",
-                                             m_worker.GetThreadName( tid ), v.ptr->lockCount,
-                                             TracyCountBits( v.ptr->waitList ) );
+                                ImGui::Text( "Thread \"%s\" has %i locks. Blocked threads (%" PRIu64 "):", m_worker.GetThreadName( tid ), v.ptr->lockCount, TracyCountBits( v.ptr->waitList ) );
                             }
                             auto waitList = v.ptr->waitList;
                             int t = 0;
@@ -308,17 +296,14 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                             ImGui::Unindent( ty );
                             break;
                         }
-                        case LockState::WaitLock:
-                        {
+                        case LockState::WaitLock: {
                             if( v.ptr->lockCount > 0 )
                             {
-                                ImGui::Text( "Thread \"%s\" is blocked by other thread:",
-                                             m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Thread \"%s\" is blocked by other thread:", m_worker.GetThreadName( tid ) );
                             }
                             else
                             {
-                                ImGui::Text( "Thread \"%s\" waits to obtain lock after release by thread:",
-                                             m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Thread \"%s\" waits to obtain lock after release by thread:", m_worker.GetThreadName( tid ) );
                             }
                             ImGui::Indent( ty );
                             ImGui::Text( "\"%s\"", m_worker.GetThreadName( lockmap.threadList[v.ptr->lockingThread] ) );
@@ -340,20 +325,16 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                             if( ptr->sharedList == 0 )
                             {
                                 assert( v.ptr->lockCount == 1 );
-                                ImGui::Text( "Thread \"%s\" has lock. No other threads are waiting.",
-                                             m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Thread \"%s\" has lock. No other threads are waiting.", m_worker.GetThreadName( tid ) );
                             }
                             else if( TracyCountBits( ptr->sharedList ) == 1 )
                             {
-                                ImGui::Text( "Thread \"%s\" has a sole shared lock. No other threads are waiting.",
-                                             m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Thread \"%s\" has a sole shared lock. No other threads are waiting.", m_worker.GetThreadName( tid ) );
                             }
                             else
                             {
-                                ImGui::Text( "Thread \"%s\" has shared lock. No other threads are waiting.",
-                                             m_worker.GetThreadName( tid ) );
-                                ImGui::Text( "Threads sharing the lock (%" PRIu64 "):",
-                                             TracyCountBits( ptr->sharedList ) - 1 );
+                                ImGui::Text( "Thread \"%s\" has shared lock. No other threads are waiting.", m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Threads sharing the lock (%" PRIu64 "):", TracyCountBits( ptr->sharedList ) - 1 );
                                 auto sharedList = ptr->sharedList;
                                 int t = 0;
                                 ImGui::Indent( ty );
@@ -369,26 +350,20 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                                 ImGui::Unindent( ty );
                             }
                             break;
-                        case LockState::HasBlockingLock:
-                        {
+                        case LockState::HasBlockingLock: {
                             if( ptr->sharedList == 0 )
                             {
                                 assert( v.ptr->lockCount == 1 );
-                                ImGui::Text( "Thread \"%s\" has lock. Blocked threads (%" PRIu64 "):",
-                                             m_worker.GetThreadName( tid ),
-                                             TracyCountBits( v.ptr->waitList ) + TracyCountBits( ptr->waitShared ) );
+                                ImGui::Text( "Thread \"%s\" has lock. Blocked threads (%" PRIu64 "):", m_worker.GetThreadName( tid ), TracyCountBits( v.ptr->waitList ) + TracyCountBits( ptr->waitShared ) );
                             }
                             else if( TracyCountBits( ptr->sharedList ) == 1 )
                             {
-                                ImGui::Text( "Thread \"%s\" has a sole shared lock. Blocked threads (%" PRIu64 "):",
-                                             m_worker.GetThreadName( tid ),
-                                             TracyCountBits( v.ptr->waitList ) + TracyCountBits( ptr->waitShared ) );
+                                ImGui::Text( "Thread \"%s\" has a sole shared lock. Blocked threads (%" PRIu64 "):", m_worker.GetThreadName( tid ), TracyCountBits( v.ptr->waitList ) + TracyCountBits( ptr->waitShared ) );
                             }
                             else
                             {
                                 ImGui::Text( "Thread \"%s\" has shared lock.", m_worker.GetThreadName( tid ) );
-                                ImGui::Text( "Threads sharing the lock (%" PRIu64 "):",
-                                             TracyCountBits( ptr->sharedList ) - 1 );
+                                ImGui::Text( "Threads sharing the lock (%" PRIu64 "):", TracyCountBits( ptr->sharedList ) - 1 );
                                 auto sharedList = ptr->sharedList;
                                 int t = 0;
                                 ImGui::Indent( ty );
@@ -402,8 +377,7 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                                     t++;
                                 }
                                 ImGui::Unindent( ty );
-                                ImGui::Text( "Blocked threads (%" PRIu64 "):",
-                                             TracyCountBits( v.ptr->waitList ) + TracyCountBits( ptr->waitShared ) );
+                                ImGui::Text( "Blocked threads (%" PRIu64 "):", TracyCountBits( v.ptr->waitList ) + TracyCountBits( ptr->waitShared ) );
                             }
 
                             auto waitList = v.ptr->waitList;
@@ -432,25 +406,20 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                             ImGui::Unindent( ty );
                             break;
                         }
-                        case LockState::WaitLock:
-                        {
+                        case LockState::WaitLock: {
                             assert( v.ptr->lockCount == 0 || v.ptr->lockCount == 1 );
                             if( v.ptr->lockCount != 0 || ptr->sharedList != 0 )
                             {
-                                ImGui::Text( "Thread \"%s\" is blocked by other threads (%" PRIu64 "):",
-                                             m_worker.GetThreadName( tid ),
-                                             v.ptr->lockCount + TracyCountBits( ptr->sharedList ) );
+                                ImGui::Text( "Thread \"%s\" is blocked by other threads (%" PRIu64 "):", m_worker.GetThreadName( tid ), v.ptr->lockCount + TracyCountBits( ptr->sharedList ) );
                             }
                             else
                             {
-                                ImGui::Text( "Thread \"%s\" waits to obtain lock after release by thread:",
-                                             m_worker.GetThreadName( tid ) );
+                                ImGui::Text( "Thread \"%s\" waits to obtain lock after release by thread:", m_worker.GetThreadName( tid ) );
                             }
                             ImGui::Indent( ty );
                             if( v.ptr->lockCount != 0 )
                             {
-                                ImGui::Text( "\"%s\"",
-                                             m_worker.GetThreadName( lockmap.threadList[v.ptr->lockingThread] ) );
+                                ImGui::Text( "\"%s\"", m_worker.GetThreadName( lockmap.threadList[v.ptr->lockingThread] ) );
                             }
                             auto sharedList = ptr->sharedList;
                             int t = 0;
@@ -475,35 +444,18 @@ int View::DrawLocks( const TimelineContext& ctx, const std::vector<std::unique_p
                 }
             }
 
-            const auto cfilled = v.state == LockState::HasLock
-                                     ? 0xFF228A22
-                                     : ( v.state == LockState::HasBlockingLock ? 0xFF228A8A : 0xFF2222BD );
-            draw->AddRectFilled( wpos + ImVec2( std::max( px0, -10.0 ), offset ),
-                                 wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ), cfilled );
-            if( m_lockHighlight.thread != lock.thread &&
-                ( v.state == LockState::HasBlockingLock ) != m_lockHighlight.blocked &&
-                v.next != lockmap.timeline.end() && m_lockHighlight.id == int64_t( lock.id ) &&
-                m_lockHighlight.begin <= v.ptr->ptr->Time() && m_lockHighlight.end >= v.next->ptr->Time() )
+            const auto cfilled = v.state == LockState::HasLock ? 0xFF228A22 : ( v.state == LockState::HasBlockingLock ? 0xFF228A8A : 0xFF2222BD );
+            draw->AddRectFilled( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ), cfilled );
+            if( m_lockHighlight.thread != lock.thread && ( v.state == LockState::HasBlockingLock ) != m_lockHighlight.blocked && v.next != lockmap.timeline.end() && m_lockHighlight.id == int64_t( lock.id ) && m_lockHighlight.begin <= v.ptr->ptr->Time() && m_lockHighlight.end >= v.next->ptr->Time() )
             {
-                const auto t = uint8_t( ( sin( std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                   std::chrono::system_clock::now().time_since_epoch() )
-                                                   .count() *
-                                               0.01 ) *
-                                              0.5 +
-                                          0.5 ) *
-                                        255 );
-                draw->AddRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ),
-                               wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ),
-                               0x00FFFFFF | ( t << 24 ), 0.f, -1, 2.f );
+                const auto t = uint8_t( ( sin( std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() ).count() * 0.01 ) * 0.5 + 0.5 ) * 255 );
+                draw->AddRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ), 0x00FFFFFF | ( t << 24 ), 0.f, -1, 2.f );
                 m_wasActive = true;
             }
             else if( v.condensed == 0 )
             {
-                const auto coutline = v.state == LockState::HasLock
-                                          ? 0xFF3BA33B
-                                          : ( v.state == LockState::HasBlockingLock ? 0xFF3BA3A3 : 0xFF3B3BD6 );
-                draw->AddRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ),
-                               wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ), coutline );
+                const auto coutline = v.state == LockState::HasLock ? 0xFF3BA33B : ( v.state == LockState::HasBlockingLock ? 0xFF3BA3A3 : 0xFF3B3BD6 );
+                draw->AddRect( wpos + ImVec2( std::max( px0, -10.0 ), offset ), wpos + ImVec2( std::min( px1, double( w + 10 ) ), offset + ty ), coutline );
             }
             else if( v.condensed > 1 )
             {

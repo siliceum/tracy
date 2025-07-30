@@ -60,24 +60,20 @@ bool TracyLlmApi::Connect( const char* url )
             m_models.emplace_back( LlmModel{ .name = id } );
 
             std::string buf2;
-            if( ( m_type == Type::Unknown || m_type == Type::LlamaSwap ) &&
-                GetRequest( m_url + "/running", buf2 ) == 200 && buf2.starts_with( "{\"running\":" ) )
+            if( ( m_type == Type::Unknown || m_type == Type::LlamaSwap ) && GetRequest( m_url + "/running", buf2 ) == 200 && buf2.starts_with( "{\"running\":" ) )
             {
                 m_type = Type::LlamaSwap;
                 if( id.find( "embed" ) != std::string::npos ) m_models.back().embeddings = true;
             }
-            else if( ( m_type == Type::Unknown || m_type == Type::LmStudio ) &&
-                     GetRequest( m_url + "/api/v0/models/" + id, buf2 ) == 200 )
+            else if( ( m_type == Type::Unknown || m_type == Type::LmStudio ) && GetRequest( m_url + "/api/v0/models/" + id, buf2 ) == 200 )
             {
                 m_type = Type::LmStudio;
                 auto json2 = nlohmann::json::parse( buf2 );
                 if( json2["type"] == "embeddings" ) m_models.back().embeddings = true;
                 m_models.back().quant = json2["quantization"].get_ref<const std::string&>();
-                if( json2.contains( "loaded_context_length" ) )
-                    m_models.back().contextSize = json2["loaded_context_length"].get<int>();
+                if( json2.contains( "loaded_context_length" ) ) m_models.back().contextSize = json2["loaded_context_length"].get<int>();
             }
-            else if( ( m_type == Type::Unknown || m_type == Type::Ollama ) &&
-                     PostRequest( m_url + "/api/show", "{\"name\":\"" + id + "\"}", buf2 ) == 200 )
+            else if( ( m_type == Type::Unknown || m_type == Type::Ollama ) && PostRequest( m_url + "/api/show", "{\"name\":\"" + id + "\"}", buf2 ) == 200 )
             {
                 m_type = Type::Ollama;
                 auto json2 = nlohmann::json::parse( buf2 );
@@ -151,8 +147,7 @@ static size_t StreamFn( void* _data, size_t size, size_t num, void* ptr )
     return sz;
 }
 
-bool TracyLlmApi::ChatCompletion( const nlohmann::json& req,
-                                  const std::function<bool( const nlohmann::json& )>& callback, int modelIdx )
+bool TracyLlmApi::ChatCompletion( const nlohmann::json& req, const std::function<bool( const nlohmann::json& )>& callback, int modelIdx )
 {
     assert( m_curl );
     StreamData data = { .callback = callback };
@@ -205,8 +200,7 @@ bool TracyLlmApi::ChatCompletion( const nlohmann::json& req,
                     if( json.contains( "default_generation_settings" ) )
                     {
                         auto& settings = json["default_generation_settings"];
-                        if( settings.contains( "n_ctx" ) )
-                            m_models[modelIdx].contextSize = settings["n_ctx"].get<int>();
+                        if( settings.contains( "n_ctx" ) ) m_models[modelIdx].contextSize = settings["n_ctx"].get<int>();
                     }
                 }
             }
@@ -218,8 +212,7 @@ bool TracyLlmApi::ChatCompletion( const nlohmann::json& req,
                 if( GetRequest( m_url + "/api/v0/models/" + m_models[modelIdx].name, buf ) == 200 )
                 {
                     auto json = nlohmann::json::parse( buf );
-                    if( json.contains( "loaded_context_length" ) )
-                        m_models[modelIdx].contextSize = json["loaded_context_length"].get<int>();
+                    if( json.contains( "loaded_context_length" ) ) m_models[modelIdx].contextSize = json["loaded_context_length"].get<int>();
                 }
             }
         }
@@ -238,9 +231,7 @@ bool TracyLlmApi::Embeddings( const nlohmann::json& req, nlohmann::json& respons
     assert( m_curl );
 
     std::string buf;
-    auto res =
-        PostRequest( m_url + "/v1/embeddings", req.dump( -1, ' ', false, nlohmann::json::error_handler_t::replace ),
-                     buf, separateConnection );
+    auto res = PostRequest( m_url + "/v1/embeddings", req.dump( -1, ' ', false, nlohmann::json::error_handler_t::replace ), buf, separateConnection );
     if( res != 200 ) return false;
 
     response = nlohmann::json::parse( buf );
@@ -253,8 +244,7 @@ int TracyLlmApi::Tokenize( const std::string& text, int modelIdx )
     {
         std::string buf;
         nlohmann::json req = { { "content", text } };
-        auto res = PostRequest( m_url + "/upstream/" + m_models[modelIdx].name + "/tokenize",
-                                req.dump( -1, ' ', false, nlohmann::json::error_handler_t::replace ), buf, true );
+        auto res = PostRequest( m_url + "/upstream/" + m_models[modelIdx].name + "/tokenize", req.dump( -1, ' ', false, nlohmann::json::error_handler_t::replace ), buf, true );
         if( res != 200 ) return -1;
 
         try
@@ -294,8 +284,7 @@ int64_t TracyLlmApi::GetRequest( const std::string& url, std::string& response )
     return http_code;
 }
 
-int64_t TracyLlmApi::PostRequest( const std::string& url, const std::string& data, std::string& response,
-                                  bool separateConnection )
+int64_t TracyLlmApi::PostRequest( const std::string& url, const std::string& data, std::string& response, bool separateConnection )
 {
     assert( m_curl );
     response.clear();

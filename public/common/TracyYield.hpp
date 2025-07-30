@@ -2,9 +2,9 @@
 #define __TRACYYIELD_HPP__
 
 #if defined __SSE2__ || defined _M_AMD64 || ( defined _M_IX86_FP && _M_IX86_FP == 2 )
-#    include <emmintrin.h>
+#  include <emmintrin.h>
 #else
-#    include <thread>
+#  include <thread>
 #endif
 
 #include "TracyForceInline.hpp"

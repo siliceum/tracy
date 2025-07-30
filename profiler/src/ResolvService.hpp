@@ -18,13 +18,13 @@ class ResolvService
         std::function<void( std::string&& )> callback;
     };
 
-  public:
+public:
     ResolvService( uint16_t port );
     ~ResolvService();
 
     void Query( uint32_t ip, const std::function<void( std::string&& )>& callback );
 
-  private:
+private:
     void Worker();
 
     std::atomic<bool> m_exit;

@@ -5,11 +5,11 @@
 
 class ImGuiTracyContext
 {
-  public:
+public:
     ImGuiTracyContext();
     ~ImGuiTracyContext();
 
-  private:
+private:
     std::string m_iniFilename;
 };
 

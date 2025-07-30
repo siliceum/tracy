@@ -3,9 +3,9 @@
 
 #ifdef __linux__
 
-#    include <stdint.h>
+#  include <stdint.h>
 
-#    include "TracyFastVector.hpp"
+#  include "TracyFastVector.hpp"
 
 namespace tracy
 {
@@ -19,13 +19,13 @@ class KCore
         uint64_t offset;
     };
 
-  public:
+public:
     KCore();
     ~KCore();
 
     void* Retrieve( uint64_t addr, uint64_t size ) const;
 
-  private:
+private:
     int m_fd;
     FastVector<Offset> m_offsets;
 };

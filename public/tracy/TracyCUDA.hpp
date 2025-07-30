@@ -3,51 +3,51 @@
 
 #ifndef TRACY_ENABLE
 
-#    define TracyCUDAContext() nullptr
-#    define TracyCUDAContextDestroy( ctx )
-#    define TracyCUDAContextName( ctx, name, size )
+#  define TracyCUDAContext() nullptr
+#  define TracyCUDAContextDestroy( ctx )
+#  define TracyCUDAContextName( ctx, name, size )
 
-#    define TracyCUDAStartProfiling( ctx )
-#    define TracyCUDAStopProfiling( ctx )
+#  define TracyCUDAStartProfiling( ctx )
+#  define TracyCUDAStopProfiling( ctx )
 
-#    define TracyCUDACollect( ctx )
+#  define TracyCUDACollect( ctx )
 
 #else
-#    include <cupti.h>
+#  include <cupti.h>
 
-#    include <atomic>
-#    include <cassert>
-#    include <cmath>
-#    include <condition_variable>
-#    include <mutex>
-#    include <shared_mutex>
-#    include <string>
-#    include <string_view>
-#    include <unordered_map>
-#    include <unordered_set>
-#    include <vector>
+#  include <atomic>
+#  include <cassert>
+#  include <cmath>
+#  include <condition_variable>
+#  include <mutex>
+#  include <shared_mutex>
+#  include <string>
+#  include <string_view>
+#  include <unordered_map>
+#  include <unordered_set>
+#  include <vector>
 
-#    ifndef _MSC_VER
-#        include <cxxabi.h>
-#    endif
+#  ifndef _MSC_VER
+#    include <cxxabi.h>
+#  endif
 
-#    include <tracy/Tracy.hpp>
+#  include <tracy/Tracy.hpp>
 
-#    ifndef UNREFERENCED
-#        define UNREFERENCED( x ) (void)x
-#    endif // UNREFERENCED
+#  ifndef UNREFERENCED
+#    define UNREFERENCED( x ) (void)x
+#  endif// UNREFERENCED
 
-#    ifndef TRACY_CUDA_CALIBRATED_CONTEXT
-#        define TRACY_CUDA_CALIBRATED_CONTEXT ( 1 )
-#    endif // TRACY_CUDA_CALIBRATED_CONTEXT
+#  ifndef TRACY_CUDA_CALIBRATED_CONTEXT
+#    define TRACY_CUDA_CALIBRATED_CONTEXT ( 1 )
+#  endif// TRACY_CUDA_CALIBRATED_CONTEXT
 
-#    ifndef TRACY_CUDA_ENABLE_COLLECTOR_THREAD
-#        define TRACY_CUDA_ENABLE_COLLECTOR_THREAD ( 1 )
-#    endif // TRACY_CUDA_ENABLE_COLLECTOR_THREAD
+#  ifndef TRACY_CUDA_ENABLE_COLLECTOR_THREAD
+#    define TRACY_CUDA_ENABLE_COLLECTOR_THREAD ( 1 )
+#  endif// TRACY_CUDA_ENABLE_COLLECTOR_THREAD
 
-#    ifndef TRACY_CUDA_ENABLE_CUDA_CALL_STATS
-#        define TRACY_CUDA_ENABLE_CUDA_CALL_STATS ( 0 )
-#    endif // TRACY_CUDA_ENABLE_CUDA_CALL_STATS
+#  ifndef TRACY_CUDA_ENABLE_CUDA_CALL_STATS
+#    define TRACY_CUDA_ENABLE_CUDA_CALL_STATS ( 0 )
+#  endif// TRACY_CUDA_ENABLE_CUDA_CALL_STATS
 
 namespace
 {
@@ -81,7 +81,7 @@ struct IncrementalRegression
     auto orthogonal() const
     {
         // NOTE(marcos): orthogonal regression is Deming regression with delta = 1
-        float_t delta = float_t( 1 ); // delta = 1 -> orthogonal regression
+        float_t delta = float_t( 1 );   // delta = 1 -> orthogonal regression
         float_t k = y_svar - delta * x_svar;
         float_t slope = ( k + sqrt( k * k + 4 * delta * xy_scov * xy_scov ) ) / ( 2 * xy_scov );
         float_t intercept = y_mean - slope * x_mean;
@@ -101,7 +101,10 @@ struct IncrementalRegression
     }
 };
 
-tracy_force_inline TracyTimestamp tracyGetTimestamp() { return tracy::Profiler::GetTime(); }
+tracy_force_inline TracyTimestamp tracyGetTimestamp()
+{
+    return tracy::Profiler::GetTime();
+}
 
 auto& getCachedRegressionParameters()
 {
@@ -122,16 +125,22 @@ TracyTimestamp tracyFromCUpti( CUptiTimestamp cuptiTime )
     return tracyTime;
 }
 
-template <typename T, typename U>
+template<typename T, typename U>
 tracy_force_inline void tracyMemWrite( T& where, U what )
 {
     static_assert( std::is_same_v<T, U>, "tracy::MemWrite: type mismatch." );
     tracy::MemWrite( &where, what );
 }
 
-void* tracyMalloc( size_t bytes ) { return tracy::tracy_malloc( bytes ); }
+void* tracyMalloc( size_t bytes )
+{
+    return tracy::tracy_malloc( bytes );
+}
 
-void tracyFree( void* ptr ) { tracy::tracy_free( ptr ); }
+void tracyFree( void* ptr )
+{
+    tracy::tracy_free( ptr );
+}
 
 void tracyZoneBegin( TracyTimestamp time, tracy::SourceLocationData* srcLoc )
 {
@@ -165,8 +174,7 @@ void tracyPlot( const char* name, float value, CUptiTimestamp time )
     tracyPlot( name, value, tracyFromCUpti( time ) );
 }
 
-void tracyPlotActivity( const char* name, TracyTimestamp start, TracyTimestamp end, float value = 1.0f,
-                        float baseline = 0.0f )
+void tracyPlotActivity( const char* name, TracyTimestamp start, TracyTimestamp end, float value = 1.0f, float baseline = 0.0f )
 {
     tracyPlot( name, baseline, start );
     tracyPlot( name, value, start + 3 );
@@ -174,8 +182,7 @@ void tracyPlotActivity( const char* name, TracyTimestamp start, TracyTimestamp e
     tracyPlot( name, baseline, end );
 }
 
-void tracyPlotActivity( const char* name, CUptiTimestamp start, CUptiTimestamp end, float value = 1.0f,
-                        float baseline = 0.0f )
+void tracyPlotActivity( const char* name, CUptiTimestamp start, CUptiTimestamp end, float value = 1.0f, float baseline = 0.0f )
 {
     tracyPlotActivity( name, tracyFromCUpti( start ), tracyFromCUpti( end ), value, baseline );
 }
@@ -250,7 +257,8 @@ void tracyEmitMemFree( const char* name, const void* ptr, CUptiTimestamp cuptiTi
     tracyEmitMemFree( name, ptr, tracyFromCUpti( cuptiTime ) );
 }
 
-void tracyAnnounceGpuTimestamp( TracyTimestamp apiStart, TracyTimestamp apiEnd, uint16_t queryId, uint8_t gpuContextId,
+void tracyAnnounceGpuTimestamp( TracyTimestamp apiStart, TracyTimestamp apiEnd,
+                                uint16_t queryId, uint8_t gpuContextId,
                                 const tracy::SourceLocationData* sourceLocation, uint32_t threadId )
 {
     using namespace tracy;
@@ -273,7 +281,8 @@ void tracyAnnounceGpuTimestamp( TracyTimestamp apiStart, TracyTimestamp apiEnd, 
     Profiler::QueueSerialFinish();
 }
 
-void tracySubmitGpuTimestamp( CUptiTimestamp gpuStart, CUptiTimestamp gpuEnd, uint16_t queryId, uint8_t gpuContextId )
+void tracySubmitGpuTimestamp( CUptiTimestamp gpuStart, CUptiTimestamp gpuEnd,
+                              uint16_t queryId, uint8_t gpuContextId )
 {
     using namespace tracy;
 
@@ -292,15 +301,16 @@ void tracySubmitGpuTimestamp( CUptiTimestamp gpuStart, CUptiTimestamp gpuEnd, ui
     Profiler::QueueSerialFinish();
 }
 
-#    define CUPTI_API_CALL( call ) CUptiCallChecked( call, #call, __FILE__, __LINE__ )
+#  define CUPTI_API_CALL( call ) CUptiCallChecked( call, #call, __FILE__, __LINE__ )
 
-#    define DRIVER_API_CALL( call ) cudaDriverCallChecked( call, #call, __FILE__, __LINE__ )
+#  define DRIVER_API_CALL( call ) cudaDriverCallChecked( call, #call, __FILE__, __LINE__ )
 
 CUptiResult CUptiCallChecked( CUptiResult result, const char* call, const char* file, int line ) noexcept
 {
-    if( result == CUPTI_SUCCESS ) return result;
+    if( result == CUPTI_SUCCESS )
+        return result;
     const char* resultMsg = "";
-    CUPTI_API_CALL( cuptiGetResultString( result, &resultMsg ) ); // maybe not a good idea to recurse here...
+    CUPTI_API_CALL( cuptiGetResultString( result, &resultMsg ) );   // maybe not a good idea to recurse here...
     fprintf( stderr, "ERROR:\t%s:%d:\n\tfunction '%s' failed with error '%s'.\n", file, line, call, resultMsg );
     // assert(result == CUPTI_SUCCESS);
     return result;
@@ -308,27 +318,30 @@ CUptiResult CUptiCallChecked( CUptiResult result, const char* call, const char* 
 
 CUresult cudaDriverCallChecked( CUresult result, const char* call, const char* file, int line ) noexcept
 {
-    if( result == CUDA_SUCCESS ) return result;
+    if( result == CUDA_SUCCESS )
+        return result;
     const char* resultMsg = "";
-    DRIVER_API_CALL( cuGetErrorString( result, &resultMsg ) ); // maybe not a good idea to recurse here...
+    DRIVER_API_CALL( cuGetErrorString( result, &resultMsg ) );   // maybe not a good idea to recurse here...
     fprintf( stderr, "ERROR:\t%s:%d:\n\tfunction '%s' failed with error '%s'.\n", file, line, call, resultMsg );
     // assert(result == CUDA_SUCCESS);
     return result;
 }
 
-template <typename TKey, typename TValue>
+template<typename TKey, typename TValue>
 struct ConcurrentHashMap
 {
     static constexpr bool instrument = false;
     auto acquire_read_lock()
     {
-        if( m.try_lock_shared() ) return std::shared_lock<std::shared_mutex>( m, std::adopt_lock );
+        if( m.try_lock_shared() )
+            return std::shared_lock<std::shared_mutex>( m, std::adopt_lock );
         ZoneNamedC( rwlock, tracy::Color::Tomato, instrument );
         return std::shared_lock<std::shared_mutex>( m );
     }
     auto acquire_write_lock()
     {
-        if( m.try_lock() ) return std::unique_lock<std::shared_mutex>( m, std::adopt_lock );
+        if( m.try_lock() )
+            return std::unique_lock<std::shared_mutex>( m, std::adopt_lock );
         ZoneNamedC( wxlock, tracy::Color::Tomato, instrument );
         return std::unique_lock<std::shared_mutex>( m );
     }
@@ -369,7 +382,7 @@ struct ConcurrentHashMap
         auto lock = acquire_read_lock();
         return mapping.end();
     }
-    template <typename... Args>
+    template<typename... Args>
     auto emplace( TKey key, Args&&... args )
     {
         ZoneNamed( emplace, instrument );
@@ -384,7 +397,7 @@ struct ConcurrentHashMap
     }
 };
 
-#    if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
+#  if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
 struct ProfilerStats
 {
     static constexpr bool instrument = false;
@@ -403,7 +416,7 @@ struct ProfilerStats
         it->second.fetch_add( 1, std::memory_order::memory_order_relaxed );
     }
 };
-#    endif
+#  endif
 
 // StringTable: string memoization/interning
 struct StringTable
@@ -463,8 +476,7 @@ struct SourceLocationMap
         assert( *function.end() == '\0' );
         assert( *file.end() == '\0' );
         void* bytes = tracyMalloc( sizeof( tracy::SourceLocationData ) );
-        auto pSrcLoc = new( bytes )
-            tracy::SourceLocationData{ function.data(), TracyFunction, file.data(), (uint32_t)line, color };
+        auto pSrcLoc = new( bytes ) tracy::SourceLocationData{ function.data(), TracyFunction, file.data(), (uint32_t)line, color };
         auto [it, inserted] = locations.emplace( function, pSrcLoc );
         if( !inserted )
         {
@@ -485,8 +497,7 @@ struct SourceLocationLUT
     tracy::SourceLocationData runtime[CUpti_runtime_api_trace_cbid::CUPTI_RUNTIME_TRACE_CBID_SIZE] = {};
     tracy::SourceLocationData driver[CUpti_driver_api_trace_cbid::CUPTI_DRIVER_TRACE_CBID_SIZE] = {};
 
-    tracy::SourceLocationData* retrieve( CUpti_CallbackDomain domain, CUpti_CallbackId cbid,
-                                         CUpti_CallbackData* apiInfo )
+    tracy::SourceLocationData* retrieve( CUpti_CallbackDomain domain, CUpti_CallbackId cbid, CUpti_CallbackData* apiInfo )
     {
         ZoneNamed( retrieve, instrument );
         tracy::SourceLocationData* pSrcLoc = nullptr;
@@ -534,7 +545,7 @@ namespace tracy
 {
 class CUDACtx
 {
-  public:
+public:
     static CUDACtx* Create()
     {
         auto& s = Singleton::Get();
@@ -570,7 +581,7 @@ class CUDACtx
 
     void printStats()
     {
-#    if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
+#  if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
         fprintf( stdout, "\nCUDA API stats:\n" );
         {
             struct Stats
@@ -587,8 +598,7 @@ class CUDACtx
                 int count = api.second;
                 sorted.emplace_back( Stats{ domain, cbid, count } );
             }
-            std::sort( sorted.begin(), sorted.end(),
-                       []( const Stats& x, const Stats& y ) { return x.count > y.count; } );
+            std::sort( sorted.begin(), sorted.end(), []( const Stats& x, const Stats& y ) { return x.count > y.count; } );
             for( auto&& api : sorted )
             {
                 const char* function = "";
@@ -596,7 +606,7 @@ class CUDACtx
                 printf( "- %s : %d\n", function, api.count );
             }
         }
-#    endif
+#  endif
     }
 
     void StartProfiling()
@@ -627,9 +637,9 @@ class CUDACtx
 
     tracy_force_inline void SubmitQueueItem( tracy::QueueItem* item )
     {
-#    ifdef TRACY_ON_DEMAND
+#  ifdef TRACY_ON_DEMAND
         GetProfiler().DeferItem( *item );
-#    endif
+#  endif
         Profiler::QueueSerialFinish();
     }
 
@@ -638,26 +648,27 @@ class CUDACtx
         TracyTimestamp tTracy1 = tracyGetTimestamp();
         CUPTI_API_CALL( cuptiGetTimestamp( &tCUpti ) );
         TracyTimestamp tTracy2 = tracyGetTimestamp();
-        // NOTE(marcos): giving more weight to 'tTracy2'
+            // NOTE(marcos): giving more weight to 'tTracy2'
         tTracy = ( 3 * tTracy1 + 5 * tTracy2 ) / 8;
     }
 
-    // NOTE(marcos): recalibration is 'static' since Tracy and CUPTI timestamps
-    // are "global" across all contexts; that said, each Tracy GPU context needs
-    // its own GpuCalibration message, but for now there's just a singleton context.
+        // NOTE(marcos): recalibration is 'static' since Tracy and CUPTI timestamps
+        // are "global" across all contexts; that said, each Tracy GPU context needs
+        // its own GpuCalibration message, but for now there's just a singleton context.
     void Recalibrate()
     {
         ZoneScoped;
-        // NOTE(marcos): only one thread should do the calibration, but there's
-        // no good reason to block threads that also trying to do the same
+            // NOTE(marcos): only one thread should do the calibration, but there's
+            // no good reason to block threads that also trying to do the same
         static std::mutex m;
-        if( !m.try_lock() ) return;
+        if( !m.try_lock() )
+            return;
         std::unique_lock<std::mutex> lock( m, std::adopt_lock );
         ZoneNamedNC( zone, "tracy::CUDACtx::Recalibrate[effective]", tracy::Color::Goldenrod, true );
         TracyTimestamp tTracy;
         CUptiTimestamp tCUpti;
         QueryTimestamps( tTracy, tCUpti );
-#    if TRACY_CUDA_CALIBRATED_CONTEXT
+#  if TRACY_CUDA_CALIBRATED_CONTEXT
         static CUptiTimestamp prevCUptiTime = tCUpti;
         int64_t deltaTicksCUpti = tCUpti - prevCUptiTime;
         if( deltaTicksCUpti > 0 )
@@ -671,28 +682,33 @@ class CUDACtx
             tracyMemWrite( item->gpuCalibration.context, m_tracyGpuContext );
             Profiler::QueueSerialFinish();
         }
-#    endif
-        // NOTE(marcos): update linear regression incrementally, which will refine
-        // the estimation of Tracy timestamps (Y) from CUpti timestamps (X)
+#  endif
+            // NOTE(marcos): update linear regression incrementally, which will refine
+            // the estimation of Tracy timestamps (Y) from CUpti timestamps (X)
         static IncrementalRegression model;
         model.addSample( double( tCUpti ), double( tTracy ) );
-        // NOTE(marcos): using orthogonal regression because the independet variable
-        // (X: CUpti timestamps) measurements are also imprecise
+            // NOTE(marcos): using orthogonal regression because the independet variable
+            // (X: CUpti timestamps) measurements are also imprecise
         getCachedRegressionParameters() = model.orthogonal();
     }
 
-  protected:
-    void EmitGpuZone( TracyTimestamp apiStart, TracyTimestamp apiEnd, CUptiTimestamp gpuStart, CUptiTimestamp gpuEnd,
-                      const tracy::SourceLocationData* pSrcLoc, uint32_t cudaContextId, uint32_t cudaStreamId )
+protected:
+    void EmitGpuZone( TracyTimestamp apiStart, TracyTimestamp apiEnd,
+                      CUptiTimestamp gpuStart, CUptiTimestamp gpuEnd,
+                      const tracy::SourceLocationData* pSrcLoc,
+                      uint32_t cudaContextId, uint32_t cudaStreamId )
     {
-        // uint32_t timelineId = tracy::GetThreadHandle();
+            // uint32_t timelineId = tracy::GetThreadHandle();
         uint32_t timelineId = tracyTimelineId( cudaContextId, cudaStreamId );
         uint16_t queryId = m_queryIdGen.fetch_add( 2 );
         tracyAnnounceGpuTimestamp( apiStart, apiEnd, queryId, m_tracyGpuContext, pSrcLoc, timelineId );
         tracySubmitGpuTimestamp( gpuStart, gpuEnd, queryId, m_tracyGpuContext );
     }
 
-    void OnEventsProcessed() { Recalibrate(); }
+    void OnEventsProcessed()
+    {
+        Recalibrate();
+    }
 
     struct CUPTI
     {
@@ -708,8 +724,7 @@ class CUDACtx
             FlushActivityAsync();
         }
 
-        static void CUPTIAPI OnBufferCompleted( CUcontext ctx, uint32_t streamId, uint8_t* buffer, size_t size,
-                                                size_t validSize )
+        static void CUPTIAPI OnBufferCompleted( CUcontext ctx, uint32_t streamId, uint8_t* buffer, size_t size, size_t validSize )
         {
             // CUDA 6.0 onwards: all buffers from this callback are "global" buffers
             // (i.e. there is no context/stream specific buffer; ctx is always NULL)
@@ -741,8 +756,11 @@ class CUDACtx
             CUDACtx* host = nullptr;
         };
 
-        static void CUPTIAPI OnCallbackAPI( void* userdata, CUpti_CallbackDomain domain, CUpti_CallbackId cbid,
-                                            const void* cbdata )
+        static void CUPTIAPI OnCallbackAPI(
+            void* userdata,
+            CUpti_CallbackDomain domain,
+            CUpti_CallbackId cbid,
+            const void* cbdata )
         {
             static constexpr bool instrument = false;
 
@@ -754,8 +772,7 @@ class CUDACtx
             case CUPTI_CB_DOMAIN_RUNTIME_API:
             case CUPTI_CB_DOMAIN_DRIVER_API:
                 break;
-            case CUPTI_CB_DOMAIN_RESOURCE:
-            {
+            case CUPTI_CB_DOMAIN_RESOURCE: {
                 // match 'callbackId' with CUpti_CallbackIdResource
                 // interpret 'cbdata' as CUpti_ResourceData,
                 //                 or as CUpti_ModuleResourceData,
@@ -764,20 +781,17 @@ class CUDACtx
                 //                 or as ... (what else?)
                 return;
             }
-            case CUPTI_CB_DOMAIN_SYNCHRONIZE:
-            {
+            case CUPTI_CB_DOMAIN_SYNCHRONIZE: {
                 // match 'callbackId' with CUpti_CallbackIdSync
                 // interpret 'cbdata' as CUpti_SynchronizeData
                 return;
             }
-            case CUPTI_CB_DOMAIN_STATE:
-            {
+            case CUPTI_CB_DOMAIN_STATE: {
                 // match 'callbackId' with CUpti_CallbackIdState
                 // interpret 'cbdata' as CUpti_StateData
                 return;
             }
-            case CUPTI_CB_DOMAIN_NVTX:
-            {
+            case CUPTI_CB_DOMAIN_NVTX: {
                 // match 'callbackId' with CUpti_nvtx_api_trace_cbid
                 // interpret 'cbdata' as CUpti_NvtxData
                 return;
@@ -798,9 +812,9 @@ class CUDACtx
             // TODO(marcos): a RAII object could be useful here...
             if( apiInfo->callbackSite == CUPTI_API_ENTER )
             {
-#    if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
+#  if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
                 ctx->stats.update( domain, cbid );
-#    endif
+#  endif
 
                 auto& cudaCallSourceLocation = PersistentState::Get().cudaCallSourceLocation;
                 auto pSrcLoc = cudaCallSourceLocation.retrieve( domain, cbid, apiInfo );
@@ -808,7 +822,8 @@ class CUDACtx
                 // HACK(marcos): the SourceLocationLUT::retrieve zone (above) should
                 // not be emitted before its enclosing zone (below) actually begins,
                 // so we delay the beginning of the enclosing zone to "unstack" them
-                if( SourceLocationLUT::instrument ) apiCallStartTime = tracyGetTimestamp();
+                if( SourceLocationLUT::instrument )
+                    apiCallStartTime = tracyGetTimestamp();
                 tracyZoneBegin( apiCallStartTime, pSrcLoc );
             }
 
@@ -820,40 +835,32 @@ class CUDACtx
                 CUstream hStream = nullptr;
                 if( domain == CUPTI_CB_DOMAIN_RUNTIME_API )
                 {
-#    define GET_STREAM_FUNC( Params, field )                                                                           \
-        []( CUpti_CallbackData* api ) { return ( (Params*)api->functionParams )->field; }
-#    define NON_STREAM_FUNC() []( CUpti_CallbackData* ) { return cudaStream_t( nullptr ); }
-                    static std::unordered_map<CUpti_runtime_api_trace_cbid, cudaStream_t ( * )( CUpti_CallbackData* )>
-                        cbidRuntimeTrackers = {
-                            // Runtime: Kernel
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernel_v7000,
-                              GET_STREAM_FUNC( cudaLaunchKernel_v7000_params, stream ) },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernel_ptsz_v7000,
-                              GET_STREAM_FUNC( cudaLaunchKernel_ptsz_v7000_params, stream ) },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernelExC_v11060,
-                              GET_STREAM_FUNC( cudaLaunchKernelExC_v11060_params, config->stream ) },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernelExC_ptsz_v11060,
-                              GET_STREAM_FUNC( cudaLaunchKernelExC_ptsz_v11060_params, config->stream ) },
-                            // Runtime: Memory
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaMalloc_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaFree_v3020, NON_STREAM_FUNC() },
-                            // Runtime: Memcpy
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaMemcpyAsync_v3020,
-                              GET_STREAM_FUNC( cudaMemcpyAsync_v3020_params, stream ) },
-                            // Runtime: Memset
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaMemset_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaMemsetAsync_v3020,
-                              GET_STREAM_FUNC( cudaMemsetAsync_v3020_params, stream ) },
-                            // Runtime: Synchronization
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaStreamSynchronize_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaEventSynchronize_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaEventQuery_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaStreamWaitEvent_v3020, NON_STREAM_FUNC() },
-                            { CUPTI_RUNTIME_TRACE_CBID_cudaDeviceSynchronize_v3020, NON_STREAM_FUNC() },
-                        };
-#    undef NON_STREAM_FUNC
-#    undef GET_STREAM_FUNC
+#  define GET_STREAM_FUNC( Params, field ) []( CUpti_CallbackData* api ) { return ( (Params*)api->functionParams )->field; }
+#  define NON_STREAM_FUNC() []( CUpti_CallbackData* ) { return cudaStream_t( nullptr ); }
+                    static std::unordered_map<CUpti_runtime_api_trace_cbid, cudaStream_t ( * )( CUpti_CallbackData* )> cbidRuntimeTrackers = {
+                        // Runtime: Kernel
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernel_v7000, GET_STREAM_FUNC( cudaLaunchKernel_v7000_params, stream ) },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernel_ptsz_v7000, GET_STREAM_FUNC( cudaLaunchKernel_ptsz_v7000_params, stream ) },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernelExC_v11060, GET_STREAM_FUNC( cudaLaunchKernelExC_v11060_params, config->stream ) },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaLaunchKernelExC_ptsz_v11060, GET_STREAM_FUNC( cudaLaunchKernelExC_ptsz_v11060_params, config->stream ) },
+                        // Runtime: Memory
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaMalloc_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaFree_v3020, NON_STREAM_FUNC() },
+                        // Runtime: Memcpy
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaMemcpyAsync_v3020, GET_STREAM_FUNC( cudaMemcpyAsync_v3020_params, stream ) },
+                        // Runtime: Memset
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaMemset_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaMemsetAsync_v3020, GET_STREAM_FUNC( cudaMemsetAsync_v3020_params, stream ) },
+                        // Runtime: Synchronization
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaStreamSynchronize_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaEventSynchronize_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaEventQuery_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaStreamWaitEvent_v3020, NON_STREAM_FUNC() },
+                        { CUPTI_RUNTIME_TRACE_CBID_cudaDeviceSynchronize_v3020, NON_STREAM_FUNC() },
+                    };
+#  undef NON_STREAM_FUNC
+#  undef GET_STREAM_FUNC
                     auto it = cbidRuntimeTrackers.find( CUpti_runtime_api_trace_cbid( cbid ) );
                     if( it != cbidRuntimeTrackers.end() )
                     {
@@ -863,23 +870,17 @@ class CUDACtx
                 }
                 if( domain == CUPTI_CB_DOMAIN_DRIVER_API )
                 {
-#    define GET_STREAM_FUNC( Params, field )                                                                           \
-        []( CUpti_CallbackData* api ) { return ( (Params*)api->functionParams )->field; }
-#    define NON_STREAM_FUNC() []( CUpti_CallbackData* ) { return CUstream( nullptr ); }
-                    static std::unordered_map<CUpti_driver_api_trace_cbid, CUstream ( * )( CUpti_CallbackData* )>
-                        cbidDriverTrackers = {
-                            // Driver: Kernel
-                            { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel,
-                              GET_STREAM_FUNC( cuLaunchKernel_params, hStream ) },
-                            { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel_ptsz,
-                              GET_STREAM_FUNC( cuLaunchKernel_ptsz_params, hStream ) },
-                            { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernelEx,
-                              GET_STREAM_FUNC( cuLaunchKernelEx_params, config->hStream ) },
-                            { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernelEx_ptsz,
-                              GET_STREAM_FUNC( cuLaunchKernelEx_params, config->hStream ) },
-                        };
-#    undef NON_STREAM_FUNC
-#    undef GET_STREAM_FUNC
+#  define GET_STREAM_FUNC( Params, field ) []( CUpti_CallbackData* api ) { return ( (Params*)api->functionParams )->field; }
+#  define NON_STREAM_FUNC() []( CUpti_CallbackData* ) { return CUstream( nullptr ); }
+                    static std::unordered_map<CUpti_driver_api_trace_cbid, CUstream ( * )( CUpti_CallbackData* )> cbidDriverTrackers = {
+                        // Driver: Kernel
+                        { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel, GET_STREAM_FUNC( cuLaunchKernel_params, hStream ) },
+                        { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel_ptsz, GET_STREAM_FUNC( cuLaunchKernel_ptsz_params, hStream ) },
+                        { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernelEx, GET_STREAM_FUNC( cuLaunchKernelEx_params, config->hStream ) },
+                        { CUPTI_DRIVER_TRACE_CBID_cuLaunchKernelEx_ptsz, GET_STREAM_FUNC( cuLaunchKernelEx_params, config->hStream ) },
+                    };
+#  undef NON_STREAM_FUNC
+#  undef GET_STREAM_FUNC
                     auto it = cbidDriverTrackers.find( CUpti_driver_api_trace_cbid( cbid ) );
                     if( it != cbidDriverTrackers.end() )
                     {
@@ -900,8 +901,7 @@ class CUDACtx
                     // TODO(marcos): do a "reverse-estimate" to obtain CUpti time from Tracy time instead?
                     CUPTI_API_CALL( cuptiGetTimestamp( &tgpu ) );
                     auto& cudaCallSiteInfo = PersistentState::Get().cudaCallSiteInfo;
-                    cudaCallSiteInfo.emplace( apiInfo->correlationId,
-                                              APICallInfo{ apiCallStartTime, apiCallStartTime, tgpu, profilerHost } );
+                    cudaCallSiteInfo.emplace( apiInfo->correlationId, APICallInfo{ apiCallStartTime, apiCallStartTime, tgpu, profilerHost } );
                 }
                 auto& entryFlags = *apiInfo->correlationData;
                 assert( entryFlags == 0 );
@@ -910,8 +910,7 @@ class CUDACtx
 
             if( apiInfo->callbackSite == CUPTI_API_EXIT )
             {
-                APICallInfo* pApiInterval = []( CUpti_CallbackData* apiInfo )
-                {
+                APICallInfo* pApiInterval = []( CUpti_CallbackData* apiInfo ) {
                     ZoneNamedN( exit, "tracy::CUDACtx::OnCUptiCallback[exit]", instrument );
                     auto entryFlags = *apiInfo->correlationData;
                     bool trackDeviceActivity = ( entryFlags & 0x8000 ) != 0;
@@ -952,8 +951,7 @@ class CUDACtx
         static void matchError( uint32_t correlationId, const char* kind )
         {
             char msg[128];
-            snprintf( msg, sizeof( msg ), "ERROR: device activity '%s' has no matching CUDA API call (id=%u).", kind,
-                      correlationId );
+            snprintf( msg, sizeof( msg ), "ERROR: device activity '%s' has no matching CUDA API call (id=%u).", kind, correlationId );
             TracyMessageC( msg, strlen( msg ), tracy::Color::Tomato );
         }
 
@@ -1026,16 +1024,16 @@ class CUDACtx
         {
             auto& kernelSrcLoc = PersistentState::Get().kernelSrcLoc;
             std::string_view demangledName;
-#    ifndef _MSC_VER
+#  ifndef _MSC_VER
             // TODO(marcos): extractActualNameNested is the main bottleneck right now;
             // we need a specialized StringTable mapping from "peristent" kernel names
             // (const char*/uintptr_t) to memoized, lazily initialized demangled names
             auto& demangledNameTable = PersistentState::Get().demangledNameTable;
             std::string demangled = extractActualNameNested( kernelName );
             demangledName = demangledNameTable[demangled];
-#    else
+#  else
             demangledName = kernelName;
-#    endif
+#  endif
             auto pSrcLoc = kernelSrcLoc.retrieve( demangledName );
             if( pSrcLoc == nullptr )
             {
@@ -1051,8 +1049,7 @@ class CUDACtx
 
             switch( record->kind )
             {
-            case CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL:
-            {
+            case CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL: {
                 ZoneNamedN( kernel, "tracy::CUDACtx::DoProcessDeviceEvent[kernel]", instrument );
                 CUpti_ActivityKernel9* kernel9 = (CUpti_ActivityKernel9*)record;
                 APICallInfo apiCall;
@@ -1060,16 +1057,13 @@ class CUDACtx
                 {
                     return matchError( kernel9->correlationId, "KERNEL" );
                 }
-                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, kernel9->start, kernel9->end,
-                                           getKernelSourceLocation( kernel9->name ), kernel9->contextId,
-                                           kernel9->streamId );
+                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, kernel9->start, kernel9->end, getKernelSourceLocation( kernel9->name ), kernel9->contextId, kernel9->streamId );
                 auto latency_ms = ( kernel9->start - apiCall.cupti ) / 1'000'000.0;
                 tracyPlotBlip( "Kernel Latency (ms)", kernel9->start, latency_ms );
                 break;
             }
 
-            case CUPTI_ACTIVITY_KIND_MEMCPY:
-            {
+            case CUPTI_ACTIVITY_KIND_MEMCPY: {
                 ZoneNamedN( kernel, "tracy::CUDACtx::DoProcessDeviceEvent[memcpy]", instrument );
                 CUpti_ActivityMemcpy5* memcpy5 = (CUpti_ActivityMemcpy5*)record;
                 APICallInfo apiCall;
@@ -1077,19 +1071,15 @@ class CUDACtx
                 {
                     return matchError( memcpy5->correlationId, "MEMCPY" );
                 }
-                static constexpr tracy::SourceLocationData TracyCUPTISrcLocDeviceMemcpy{
-                    "CUDA::memcpy", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Blue };
-                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, memcpy5->start, memcpy5->end,
-                                           &TracyCUPTISrcLocDeviceMemcpy, memcpy5->contextId, memcpy5->streamId );
+                static constexpr tracy::SourceLocationData TracyCUPTISrcLocDeviceMemcpy{ "CUDA::memcpy", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Blue };
+                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, memcpy5->start, memcpy5->end, &TracyCUPTISrcLocDeviceMemcpy, memcpy5->contextId, memcpy5->streamId );
                 static constexpr const char* graph_name = "CUDA Memory Copy";
-                tracyEmitMemAlloc( graph_name, (void*)(uintptr_t)memcpy5->correlationId, memcpy5->bytes,
-                                   memcpy5->start );
+                tracyEmitMemAlloc( graph_name, (void*)(uintptr_t)memcpy5->correlationId, memcpy5->bytes, memcpy5->start );
                 tracyEmitMemFree( graph_name, (void*)(uintptr_t)memcpy5->correlationId, memcpy5->end );
                 break;
             }
 
-            case CUPTI_ACTIVITY_KIND_MEMSET:
-            {
+            case CUPTI_ACTIVITY_KIND_MEMSET: {
                 ZoneNamedN( kernel, "tracy::CUDACtx::DoProcessDeviceEvent[memset]", instrument );
                 CUpti_ActivityMemset4* memset4 = (CUpti_ActivityMemset4*)record;
                 APICallInfo apiCall;
@@ -1097,19 +1087,15 @@ class CUDACtx
                 {
                     return matchError( memset4->correlationId, "MEMSET" );
                 }
-                static constexpr tracy::SourceLocationData TracyCUPTISrcLocDeviceMemset{
-                    "CUDA::memset", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Blue };
-                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, memset4->start, memset4->end,
-                                           &TracyCUPTISrcLocDeviceMemset, memset4->contextId, memset4->streamId );
+                static constexpr tracy::SourceLocationData TracyCUPTISrcLocDeviceMemset{ "CUDA::memset", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Blue };
+                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, memset4->start, memset4->end, &TracyCUPTISrcLocDeviceMemset, memset4->contextId, memset4->streamId );
                 static constexpr const char* graph_name = "CUDA Memory Set";
-                tracyEmitMemAlloc( graph_name, (void*)(uintptr_t)memset4->correlationId, memset4->bytes,
-                                   memset4->start );
+                tracyEmitMemAlloc( graph_name, (void*)(uintptr_t)memset4->correlationId, memset4->bytes, memset4->start );
                 tracyEmitMemFree( graph_name, (void*)(uintptr_t)memset4->correlationId, memset4->end );
                 break;
             }
 
-            case CUPTI_ACTIVITY_KIND_SYNCHRONIZATION:
-            {
+            case CUPTI_ACTIVITY_KIND_SYNCHRONIZATION: {
                 ZoneNamedN( kernel, "tracy::CUDACtx::DoProcessDeviceEvent[sync]", instrument );
                 CUpti_ActivitySynchronization* synchronization = (CUpti_ActivitySynchronization*)record;
                 APICallInfo apiCall;
@@ -1121,37 +1107,31 @@ class CUDACtx
                 // a. on the entire context : cuCtxSynchronize()    -> timeline(ctx,0)
                 // b. on a specific stream  : cuStreamSynchronize() -> timeline(ctx,stream)
                 // c. on a specific event   : cuEventSynchronize()  -> timeline(ctx,0xffff)
-                static constexpr tracy::SourceLocationData TracyCUPTISrcLocContextSynchronization{
-                    "CUDA::Context::sync", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Magenta };
+                static constexpr tracy::SourceLocationData TracyCUPTISrcLocContextSynchronization{ "CUDA::Context::sync", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Magenta };
                 auto* pSrcLoc = &TracyCUPTISrcLocContextSynchronization;
                 uint32_t cudaContextId = synchronization->contextId;
                 uint32_t cudaStreamId = 0;
                 if( synchronization->streamId != CUPTI_SYNCHRONIZATION_INVALID_VALUE )
                 {
-                    static constexpr tracy::SourceLocationData TracyCUPTISrcLocStreamSynchronization{
-                        "CUDA::Stream::sync", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Magenta3 };
+                    static constexpr tracy::SourceLocationData TracyCUPTISrcLocStreamSynchronization{ "CUDA::Stream::sync", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Magenta3 };
                     pSrcLoc = &TracyCUPTISrcLocStreamSynchronization;
                     cudaStreamId = synchronization->streamId;
                 }
                 if( synchronization->cudaEventId != CUPTI_SYNCHRONIZATION_INVALID_VALUE )
                 {
-                    static constexpr tracy::SourceLocationData TracyCUPTISrcLocEventSynchronization{
-                        "CUDA::Event::sync", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Magenta4 };
+                    static constexpr tracy::SourceLocationData TracyCUPTISrcLocEventSynchronization{ "CUDA::Event::sync", TracyFunction, TracyFile, (uint32_t)TracyLine, tracy::Color::Magenta4 };
                     pSrcLoc = &TracyCUPTISrcLocEventSynchronization;
                     cudaStreamId = 0xFFFFFFFF;
                     // TODO(marcos): CUpti_ActivitySynchronization2 introduces a new
                     // field 'cudaEventSyncId' which complements 'cudaEventId'
                 }
-                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, synchronization->start, synchronization->end,
-                                           pSrcLoc, cudaContextId, cudaStreamId );
+                apiCall.host->EmitGpuZone( apiCall.start, apiCall.end, synchronization->start, synchronization->end, pSrcLoc, cudaContextId, cudaStreamId );
                 static constexpr const char* graph_name = "CUDA Synchronization";
-                tracyEmitMemAlloc( graph_name, (void*)(uintptr_t)synchronization->correlationId, 1,
-                                   synchronization->start );
+                tracyEmitMemAlloc( graph_name, (void*)(uintptr_t)synchronization->correlationId, 1, synchronization->start );
                 tracyEmitMemFree( graph_name, (void*)(uintptr_t)synchronization->correlationId, synchronization->end );
                 break;
             }
-            case CUPTI_ACTIVITY_KIND_MEMORY2:
-            {
+            case CUPTI_ACTIVITY_KIND_MEMORY2: {
                 ZoneNamedN( kernel, "tracy::CUDACtx::DoProcessDeviceEvent[malloc/free]", instrument );
                 CUpti_ActivityMemory3* memory3 = (CUpti_ActivityMemory3*)record;
                 APICallInfo apiCall;
@@ -1186,16 +1166,14 @@ class CUDACtx
                 }
                 break;
             }
-            case CUPTI_ACTIVITY_KIND_CUDA_EVENT:
-            {
+            case CUPTI_ACTIVITY_KIND_CUDA_EVENT: {
                 // NOTE(marcos): a byproduct of CUPTI_ACTIVITY_KIND_SYNCHRONIZATION
                 // (I think this is related to cudaEvent*() API calls)
                 CUpti_ActivityCudaEvent2* event = (CUpti_ActivityCudaEvent2*)record;
                 UNREFERENCED( event );
                 break;
             }
-            default:
-            {
+            default: {
                 char buffer[64];
                 snprintf( buffer, sizeof( buffer ), "Unknown activity record (kind is %d)", record->kind );
                 TracyMessageC( buffer, strlen( buffer ), tracy::Color::Crimson );
@@ -1205,7 +1183,8 @@ class CUDACtx
         }
 
         static constexpr CUpti_CallbackDomain domains[] = {
-            CUPTI_CB_DOMAIN_RUNTIME_API, CUPTI_CB_DOMAIN_DRIVER_API,
+            CUPTI_CB_DOMAIN_RUNTIME_API,
+            CUPTI_CB_DOMAIN_DRIVER_API,
             // CUPTI_CB_DOMAIN_RESOURCE,
             // CUPTI_CB_DOMAIN_SYNCHRONIZE,
             // CUPTI_CB_DOMAIN_NVTX,
@@ -1214,8 +1193,11 @@ class CUDACtx
 
         static constexpr CUpti_ActivityKind activities[] = {
             // CUPTI_ACTIVITY_KIND_KERNEL, // mutually exclusive with CONCURRENT_KERNEL
-            CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL, CUPTI_ACTIVITY_KIND_MEMCPY,  CUPTI_ACTIVITY_KIND_MEMSET,
-            CUPTI_ACTIVITY_KIND_SYNCHRONIZATION,   CUPTI_ACTIVITY_KIND_MEMORY2,
+            CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL,
+            CUPTI_ACTIVITY_KIND_MEMCPY,
+            CUPTI_ACTIVITY_KIND_MEMSET,
+            CUPTI_ACTIVITY_KIND_SYNCHRONIZATION,
+            CUPTI_ACTIVITY_KIND_MEMORY2,
             // CUPTI_ACTIVITY_KIND_MEMCPY2,
             // CUPTI_ACTIVITY_KIND_OVERHEAD,
             // CUPTI_ACTIVITY_KIND_INTERNAL_LAUNCH_API,
@@ -1248,11 +1230,11 @@ class CUDACtx
                 CUPTI_API_CALL( cuptiActivityEnable( activity ) );
             }
 
-#    if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
+#  if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
             auto& collector = PersistentState::Get().collector;
             collector.period = 160;
             collector.signal.notify_one();
-#    endif
+#  endif
         }
 
         static void EndInstrumentation()
@@ -1281,11 +1263,11 @@ class CUDACtx
             // TODO(marcos): is here a counterpart for 'cuptiActivityRegisterCallbacks()'?
             CUPTI_API_CALL( cuptiUnsubscribe( subscriber ) );
 
-#    if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
+#  if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
             auto& collector = PersistentState::Get().collector;
             collector.period = ~uint32_t( 0 );
             collector.signal.notify_one();
-#    endif
+#  endif
 
             currentProfilerHost = nullptr;
         }
@@ -1295,13 +1277,14 @@ class CUDACtx
             // NOTE(marcos): only one thread should do the collection at any given time,
             // but there's no reason to block threads that are also trying to do the same
             static std::mutex m;
-            if( !m.try_lock() ) return;
+            if( !m.try_lock() )
+                return;
             std::unique_lock<std::mutex> lock( m, std::adopt_lock );
             ZoneNamedNC( zone, "cuptiActivityFlushAll", tracy::Color::Red4, true );
             CUPTI_API_CALL( cuptiActivityFlushAll( CUPTI_ACTIVITY_FLAG_NONE ) );
         }
 
-#    if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
+#  if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
         // WARN(marcos): technically, CUPTI already offers async flushing of
         // activity records through cuptiActivityFlushPeriod(), but I haven't
         // had much luck getting reliable, consistent delivery with it...
@@ -1312,36 +1295,33 @@ class CUDACtx
             std::mutex mtx;
             std::condition_variable signal;
             std::thread thread = std::thread(
-                [this]()
-                {
-                    tracy::SetThreadName( "Tracy CUDA Collector" );
-                    atexit(
-                        []()
-                        {
-                            auto& collector = CUPTI::PersistentState::Get().collector;
-                            collector.running = false;
-                            collector.signal.notify_one();
-                            collector.thread.join();
-                        } );
-                    while( running )
-                    {
-                        {
-                            std::unique_lock<std::mutex> lock( mtx );
-                            signal.wait_for( lock, std::chrono::milliseconds( period ) );
-                        }
-                        FlushActivity();
-                    }
+                [this]() {
+                tracy::SetThreadName( "Tracy CUDA Collector" );
+                atexit( []() {
+                    auto& collector = CUPTI::PersistentState::Get().collector;
+                    collector.running = false;
+                    collector.signal.notify_one();
+                    collector.thread.join();
                 } );
+                while( running )
+                {
+                    {
+                        std::unique_lock<std::mutex> lock( mtx );
+                        signal.wait_for( lock, std::chrono::milliseconds( period ) );
+                    }
+                    FlushActivity();
+                }
+            } );
         };
-#    endif
+#  endif
 
         static void FlushActivityAsync()
         {
-#    if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
+#  if TRACY_CUDA_ENABLE_COLLECTOR_THREAD
             ZoneScoped;
             auto& collector = PersistentState::Get().collector;
             collector.signal.notify_one();
-#    endif
+#  endif
         }
 
         struct PersistentState
@@ -1387,7 +1367,7 @@ class CUDACtx
         CUptiTimestamp tCUpti;
         QueryTimestamps( tTracy, tCUpti );
 
-        // Announce to Tracy about a new GPU context/timeline:
+            // Announce to Tracy about a new GPU context/timeline:
         auto item = Profiler::QueueSerial();
         tracyMemWrite( item->hdr.type, QueueType::GpuNewContext );
         tracyMemWrite( item->gpuNewContext.cpuTime, tTracy );
@@ -1396,18 +1376,18 @@ class CUDACtx
         tracyMemWrite( item->gpuNewContext.period, 1.0f );
         tracyMemWrite( item->gpuNewContext.type, GpuContextType::CUDA );
         tracyMemWrite( item->gpuNewContext.context, m_tracyGpuContext );
-#    if TRACY_CUDA_CALIBRATED_CONTEXT
+#  if TRACY_CUDA_CALIBRATED_CONTEXT
         tracyMemWrite( item->gpuNewContext.flags, GpuContextCalibration );
-#    else
+#  else
         tracyMemWrite( item->gpuNewContext.flags, tracy::GpuContextFlags( 0 ) );
-#    endif
+#  endif
         Profiler::QueueSerialFinish();
 
         constexpr const char* tracyCtxName = "CUDA GPU/Device Activity";
         this->Name( tracyCtxName, uint16_t( strlen( tracyCtxName ) ) );
 
-        // NOTE(marcos): a few rounds of calibation amorthized over 1 second
-        // in order to get a meaningful linear regression estimator
+            // NOTE(marcos): a few rounds of calibation amorthized over 1 second
+            // in order to get a meaningful linear regression estimator
         Recalibrate();
         std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
         Recalibrate();
@@ -1419,7 +1399,10 @@ class CUDACtx
         Recalibrate();
     }
 
-    ~CUDACtx() { ZoneScoped; }
+    ~CUDACtx()
+    {
+        ZoneScoped;
+    }
 
     struct Singleton
     {
@@ -1434,9 +1417,9 @@ class CUDACtx
         }
     };
 
-#    if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
+#  if TRACY_CUDA_ENABLE_CUDA_CALL_STATS
     ProfilerStats stats = {};
-#    endif
+#  endif
 
     uint8_t m_tracyGpuContext = 255;
     static constexpr size_t cacheline = 64;
@@ -1445,14 +1428,14 @@ class CUDACtx
 
 }
 
-#    define TracyCUDAContext() tracy::CUDACtx::Create()
-#    define TracyCUDAContextDestroy( ctx ) tracy::CUDACtx::Destroy( ctx )
-#    define TracyCUDAContextName( ctx, name, size ) ctx->Name( name, size )
+#  define TracyCUDAContext() tracy::CUDACtx::Create()
+#  define TracyCUDAContextDestroy( ctx ) tracy::CUDACtx::Destroy( ctx )
+#  define TracyCUDAContextName( ctx, name, size ) ctx->Name( name, size )
 
-#    define TracyCUDAStartProfiling( ctx ) ctx->StartProfiling()
-#    define TracyCUDAStopProfiling( ctx ) ctx->StopProfiling()
+#  define TracyCUDAStartProfiling( ctx ) ctx->StartProfiling()
+#  define TracyCUDAStopProfiling( ctx ) ctx->StopProfiling()
 
-#    define TracyCUDACollect( ctx ) ctx->Collect()
+#  define TracyCUDACollect( ctx ) ctx->Collect()
 
 #endif
 

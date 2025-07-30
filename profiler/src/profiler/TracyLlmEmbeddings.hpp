@@ -10,7 +10,7 @@ namespace tracy
 
 class TracyLlmEmbeddings
 {
-  public:
+public:
     struct Result
     {
         size_t idx;
@@ -26,7 +26,7 @@ class TracyLlmEmbeddings
 
     bool Save( const char* file, uint64_t hash ) const;
 
-  private:
+private:
     unum::usearch::index_dense_t m_index;
     std::vector<uint32_t> m_data;
 };

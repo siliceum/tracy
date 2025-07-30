@@ -16,7 +16,7 @@
 #include <unordered_map>
 
 #ifdef _WIN32
-#    include <windows.h>
+#  include <windows.h>
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -126,18 +126,23 @@ tracy::AchievementsMgr* s_achievements;
 static const tracy::data::AchievementItem* s_achievementItem = nullptr;
 static bool s_switchAchievementCategory = false;
 
-static float smoothstep( float x ) { return x * x * ( 3.0f - 2.0f * x ); }
+static float smoothstep( float x )
+{
+    return x * x * ( 3.0f - 2.0f * x );
+}
 
 static void SetWindowTitleCallback( const char* title )
 {
     char tmp[1024];
-    sprintf( tmp, "%s - Tracy Profiler %i.%i.%i", title, tracy::Version::Major, tracy::Version::Minor,
-             tracy::Version::Patch );
+    sprintf( tmp, "%s - Tracy Profiler %i.%i.%i", title, tracy::Version::Major, tracy::Version::Minor, tracy::Version::Patch );
     bptr->SetTitle( tmp );
     s_customTitle = true;
 }
 
-static void AttentionCallback() { bptr->Attention(); }
+static void AttentionCallback()
+{
+    bptr->Attention();
+}
 
 static void DrawContents();
 
@@ -294,45 +299,28 @@ int main( int argc, char** argv )
     s_achievements = &achievements;
 
 #ifndef __EMSCRIPTEN__
-    updateThread = std::thread(
-        []
-        {
-            HttpRequest( "nereid.pl", "/tracy/version", 8099,
-                         []( int size, char* data )
-                         {
-                             if( size == 4 )
-                             {
-                                 uint32_t ver;
-                                 memcpy( &ver, data, 4 );
-                                 RunOnMainThread(
-                                     [ver]
-                                     {
-                                         updateVersion = ver;
-                                         tracy::s_wasActive = true;
-                                     } );
-                             }
-                             delete[] data;
-                         } );
+    updateThread = std::thread( [] {
+        HttpRequest( "nereid.pl", "/tracy/version", 8099, []( int size, char* data ) {
+            if( size == 4 )
+            {
+                uint32_t ver;
+                memcpy( &ver, data, 4 );
+                RunOnMainThread( [ver] { updateVersion = ver; tracy::s_wasActive = true; } );
+            }
+            delete[] data;
         } );
+    } );
 #endif
 
-    auto iconThread = std::thread(
-        []
-        {
-            iconPx = stbi_load_from_memory( (const stbi_uc*)Icon_data, Icon_size, &iconX, &iconY, nullptr, 4 );
-            zigzagPx[0] = stbi_load_from_memory( (const stbi_uc*)ZigZag32_data, ZigZag32_size, &zigzagX[0], &zigzagY[0],
-                                                 nullptr, 4 );
-            zigzagPx[1] = stbi_load_from_memory( (const stbi_uc*)ZigZag16_data, ZigZag16_size, &zigzagX[1], &zigzagY[1],
-                                                 nullptr, 4 );
-            zigzagPx[2] = stbi_load_from_memory( (const stbi_uc*)ZigZag08_data, ZigZag08_size, &zigzagX[2], &zigzagY[2],
-                                                 nullptr, 4 );
-            zigzagPx[3] = stbi_load_from_memory( (const stbi_uc*)ZigZag04_data, ZigZag04_size, &zigzagX[3], &zigzagY[3],
-                                                 nullptr, 4 );
-            zigzagPx[4] = stbi_load_from_memory( (const stbi_uc*)ZigZag02_data, ZigZag02_size, &zigzagX[4], &zigzagY[4],
-                                                 nullptr, 4 );
-            zigzagPx[5] = stbi_load_from_memory( (const stbi_uc*)ZigZag01_data, ZigZag01_size, &zigzagX[5], &zigzagY[5],
-                                                 nullptr, 4 );
-        } );
+    auto iconThread = std::thread( [] {
+        iconPx = stbi_load_from_memory( (const stbi_uc*)Icon_data, Icon_size, &iconX, &iconY, nullptr, 4 );
+        zigzagPx[0] = stbi_load_from_memory( (const stbi_uc*)ZigZag32_data, ZigZag32_size, &zigzagX[0], &zigzagY[0], nullptr, 4 );
+        zigzagPx[1] = stbi_load_from_memory( (const stbi_uc*)ZigZag16_data, ZigZag16_size, &zigzagX[1], &zigzagY[1], nullptr, 4 );
+        zigzagPx[2] = stbi_load_from_memory( (const stbi_uc*)ZigZag08_data, ZigZag08_size, &zigzagX[2], &zigzagY[2], nullptr, 4 );
+        zigzagPx[3] = stbi_load_from_memory( (const stbi_uc*)ZigZag04_data, ZigZag04_size, &zigzagX[3], &zigzagY[3], nullptr, 4 );
+        zigzagPx[4] = stbi_load_from_memory( (const stbi_uc*)ZigZag02_data, ZigZag02_size, &zigzagX[4], &zigzagY[4], nullptr, 4 );
+        zigzagPx[5] = stbi_load_from_memory( (const stbi_uc*)ZigZag01_data, ZigZag01_size, &zigzagX[5], &zigzagY[5], nullptr, 4 );
+    } );
 
     tracy::LoadConfig();
 
@@ -364,14 +352,12 @@ int main( int argc, char** argv )
 
     if( initFileOpen )
     {
-        view = std::make_unique<tracy::View>( RunOnMainThread, *initFileOpen, SetWindowTitleCallback,
-                                              SetupScaleCallback, AttentionCallback, s_achievements );
+        view = std::make_unique<tracy::View>( RunOnMainThread, *initFileOpen, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
         initFileOpen.reset();
     }
     else if( connectTo )
     {
-        view = std::make_unique<tracy::View>( RunOnMainThread, connectTo, port, SetWindowTitleCallback,
-                                              SetupScaleCallback, AttentionCallback, s_achievements );
+        view = std::make_unique<tracy::View>( RunOnMainThread, connectTo, port, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
     }
 
     tracy::Fileselector::Init();
@@ -398,9 +384,7 @@ static void UpdateBroadcastClients()
 {
     if( !view )
     {
-        const auto time =
-            std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() )
-                .count();
+        const auto time = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() ).count();
         if( !broadcastListen )
         {
             broadcastListen = std::make_unique<tracy::UdpListen>();
@@ -430,8 +414,7 @@ static void UpdateBroadcastClients()
 
                     switch( broadcastVersion )
                     {
-                    case 3:
-                    {
+                    case 3: {
                         tracy::BroadcastMessage bm;
                         memcpy( &bm, msg, len );
                         protoVer = bm.protocolVersion;
@@ -441,8 +424,7 @@ static void UpdateBroadcastClients()
                         pid = bm.pid;
                         break;
                     }
-                    case 2:
-                    {
+                    case 2: {
                         if( len > sizeof( tracy::BroadcastMessage_v2 ) ) continue;
                         tracy::BroadcastMessage_v2 bm;
                         memcpy( &bm, msg, len );
@@ -453,8 +435,7 @@ static void UpdateBroadcastClients()
                         pid = 0;
                         break;
                     }
-                    case 1:
-                    {
+                    case 1: {
                         if( len > sizeof( tracy::BroadcastMessage_v1 ) ) continue;
                         tracy::BroadcastMessage_v1 bm;
                         memcpy( &bm, msg, len );
@@ -465,8 +446,7 @@ static void UpdateBroadcastClients()
                         pid = 0;
                         break;
                     }
-                    case 0:
-                    {
+                    case 0: {
                         if( len > sizeof( tracy::BroadcastMessage_v0 ) ) continue;
                         tracy::BroadcastMessage_v0 bm;
                         memcpy( &bm, msg, len );
@@ -495,18 +475,15 @@ static void UpdateBroadcastClients()
                             if( resolvMap.find( ip ) == resolvMap.end() )
                             {
                                 resolvMap.emplace( ip, ip );
-                                resolv.Query( ipNumerical,
-                                              [ip]( std::string&& name )
-                                              {
-                                                  std::lock_guard<std::mutex> lock( resolvLock );
-                                                  auto it = resolvMap.find( ip );
-                                                  assert( it != resolvMap.end() );
-                                                  std::swap( it->second, name );
-                                              } );
+                                resolv.Query( ipNumerical, [ip]( std::string&& name ) {
+                                    std::lock_guard<std::mutex> lock( resolvLock );
+                                    auto it = resolvMap.find( ip );
+                                    assert( it != resolvMap.end() );
+                                    std::swap( it->second, name );
+                                } );
                             }
                             resolvLock.unlock();
-                            clients.emplace( clientId, ClientData{ time, protoVer, activeTime, listenPort, pid,
-                                                                   procname, std::move( ip ) } );
+                            clients.emplace( clientId, ClientData{ time, protoVer, activeTime, listenPort, pid, procname, std::move( ip ) } );
                         }
                         else
                         {
@@ -528,7 +505,7 @@ static void UpdateBroadcastClients()
             while( it != clients.end() )
             {
                 const auto diff = time - it->second.time;
-                if( diff > 4000 ) // 4s
+                if( diff > 4000 )  // 4s
                 {
                     it = clients.erase( it );
                 }
@@ -659,9 +636,7 @@ static void DrawContents()
 
         auto& style = ImGui::GetStyle();
         style.Colors[ImGuiCol_WindowBg] = ImVec4( 0.129f, 0.137f, 0.11f, 1.f );
-        ImGui::Begin( "Get started", nullptr,
-                      ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse |
-                          ImGuiWindowFlags_NoSavedSettings );
+        ImGui::Begin( "Get started", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings );
         char buf[128];
         sprintf( buf, "Tracy Profiler %i.%i.%i", tracy::Version::Major, tracy::Version::Minor, tracy::Version::Patch );
         ImGui::PushFont( g_fonts.bold, FontNormal * 1.6f );
@@ -707,8 +682,7 @@ static void DrawContents()
             ImGui::PopFont();
 #endif
             ImGui::Spacing();
-            ImGui::TextUnformatted(
-                "A real time, nanosecond resolution, remote telemetry, hybrid\nframe and sampling profiler for games and other applications." );
+            ImGui::TextUnformatted( "A real time, nanosecond resolution, remote telemetry, hybrid\nframe and sampling profiler for games and other applications." );
             ImGui::Spacing();
             ImGui::TextUnformatted( "Created by Bartosz Taudul" );
             ImGui::SameLine();
@@ -729,8 +703,7 @@ static void DrawContents()
                     tracy::SaveConfig();
                 }
                 ImGui::SameLine();
-                tracy::DrawHelpMarker(
-                    "Uses multiple CPU cores for rendering. May affect performance of the profiled application when running on the same machine." );
+                tracy::DrawHelpMarker( "Uses multiple CPU cores for rendering. May affect performance of the profiled application when running on the same machine." );
                 if( ImGui::RadioButton( "Disabled", !tracy::s_config.threadedRendering ) )
                 {
                     tracy::s_config.threadedRendering = false;
@@ -741,14 +714,12 @@ static void DrawContents()
                 ImGui::Unindent();
 
                 ImGui::Spacing();
-                if( ImGui::Checkbox( "Reduce render rate when focus is lost", &tracy::s_config.focusLostLimit ) )
-                    tracy::SaveConfig();
+                if( ImGui::Checkbox( "Reduce render rate when focus is lost", &tracy::s_config.focusLostLimit ) ) tracy::SaveConfig();
 
                 ImGui::Spacing();
                 ImGui::TextUnformatted( "Target FPS" );
                 ImGui::SameLine();
-                tracy::DrawHelpMarker(
-                    "The default target frame rate for your application. Frames displayed in the frame time graph will be colored accordingly if they are within the target frame rate. This can be adjusted later for each individual trace." );
+                tracy::DrawHelpMarker( "The default target frame rate for your application. Frames displayed in the frame time graph will be colored accordingly if they are within the target frame rate. This can be adjusted later for each individual trace." );
                 ImGui::SameLine();
                 int tmp = tracy::s_config.targetFps;
                 ImGui::SetNextItemWidth( 90 * dpiScale );
@@ -773,21 +744,17 @@ static void DrawContents()
                 ImGui::Indent();
                 ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 0, 0 ) );
                 ImGui::RadioButton( "Disabled##zns", &tracy::s_config.shortenName, (uint8_t)tracy::ShortenName::Never );
-                ImGui::RadioButton( "Minimal length", &tracy::s_config.shortenName,
-                                    (uint8_t)tracy::ShortenName::Always );
-                ImGui::RadioButton( "Only normalize", &tracy::s_config.shortenName,
-                                    (uint8_t)tracy::ShortenName::OnlyNormalize );
+                ImGui::RadioButton( "Minimal length", &tracy::s_config.shortenName, (uint8_t)tracy::ShortenName::Always );
+                ImGui::RadioButton( "Only normalize", &tracy::s_config.shortenName, (uint8_t)tracy::ShortenName::OnlyNormalize );
                 ImGui::RadioButton( "As needed", &tracy::s_config.shortenName, (uint8_t)tracy::ShortenName::NoSpace );
-                ImGui::RadioButton( "As needed + normalize", &tracy::s_config.shortenName,
-                                    (uint8_t)tracy::ShortenName::NoSpaceAndNormalize );
+                ImGui::RadioButton( "As needed + normalize", &tracy::s_config.shortenName, (uint8_t)tracy::ShortenName::NoSpaceAndNormalize );
                 ImGui::PopStyleVar();
                 ImGui::Unindent();
 
                 ImGui::Spacing();
                 ImGui::TextUnformatted( "Scroll multipliers" );
                 ImGui::SameLine();
-                tracy::DrawHelpMarker(
-                    "The multipliers to the amount to scroll by horizontally and vertically. This is used in the timeline and setting this value can help compensate for scroll wheel sensitivity." );
+                tracy::DrawHelpMarker( "The multipliers to the amount to scroll by horizontally and vertically. This is used in the timeline and setting this value can help compensate for scroll wheel sensitivity." );
                 ImGui::SameLine();
                 double tmpScroll = tracy::s_config.horizontalScrollMultiplier;
                 ImGui::SetNextItemWidth( 45 * dpiScale );
@@ -814,8 +781,7 @@ static void DrawContents()
                 ImGui::Spacing();
                 if( ImGui::Checkbox( "Memory limit", &tracy::s_config.memoryLimit ) ) tracy::SaveConfig();
                 ImGui::SameLine();
-                tracy::DrawHelpMarker(
-                    "When enabled, profiler will stop recording data when memory usage exceeds the specified percentage of available memory. Values greater than 100% will rely on swap. You need to make sure that memory is actually available." );
+                tracy::DrawHelpMarker( "When enabled, profiler will stop recording data when memory usage exceeds the specified percentage of available memory. Values greater than 100% will rely on swap. You need to make sure that memory is actually available." );
                 ImGui::SameLine();
                 ImGui::SetNextItemWidth( 70 * dpiScale );
                 if( ImGui::InputInt( "##memorylimit", &tracy::s_config.memoryLimitPercent ) )
@@ -828,8 +794,7 @@ static void DrawContents()
                 if( s_totalMem != 0 )
                 {
                     ImGui::SameLine();
-                    ImGui::TextDisabled(
-                        "(%s)", tracy::MemSizeToString( s_totalMem * tracy::s_config.memoryLimitPercent / 100 ) );
+                    ImGui::TextDisabled( "(%s)", tracy::MemSizeToString( s_totalMem * tracy::s_config.memoryLimitPercent / 100 ) );
                 }
                 else
                 {
@@ -879,8 +844,7 @@ static void DrawContents()
                 tracy::OpenWebpage( "https://github.com/wolfpld/tracy" );
             }
             ImGui::Separator();
-            if( ImGui::Selectable( ICON_FA_VIDEO
-                                   " An Introduction to Tracy Profiler in C++ - Marcos Slomp - CppCon 2023" ) )
+            if( ImGui::Selectable( ICON_FA_VIDEO " An Introduction to Tracy Profiler in C++ - Marcos Slomp - CppCon 2023" ) )
             {
                 tracy::OpenWebpage( "https://youtu.be/ghXk3Bk5F2U?t=37" );
             }
@@ -935,30 +899,20 @@ static void DrawContents()
         if( updateVersion > tracy::FileVersion( tracy::Version::Major, tracy::Version::Minor, tracy::Version::Patch ) )
         {
             ImGui::Separator();
-            ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), ICON_FA_EXCLAMATION " Update to %i.%i.%i is available!",
-                                ( updateVersion >> 16 ) & 0xFF, ( updateVersion >> 8 ) & 0xFF, updateVersion & 0xFF );
+            ImGui::TextColored( ImVec4( 1, 1, 0, 1 ), ICON_FA_EXCLAMATION " Update to %i.%i.%i is available!", ( updateVersion >> 16 ) & 0xFF, ( updateVersion >> 8 ) & 0xFF, updateVersion & 0xFF );
             ImGui::SameLine();
             if( ImGui::SmallButton( ICON_FA_GIFT " Get it!" ) )
             {
                 showReleaseNotes = true;
                 if( !updateNotesThread.joinable() )
                 {
-                    updateNotesThread = std::thread(
-                        []
-                        {
-                            HttpRequest( "nereid.pl", "/tracy/notes", 8099,
-                                         []( int size, char* data )
-                                         {
-                                             std::string notes( data, data + size );
-                                             delete[] data;
-                                             RunOnMainThread(
-                                                 [notes = std::move( notes )]() mutable
-                                                 {
-                                                     releaseNotes = std::move( notes );
-                                                     tracy::s_wasActive = true;
-                                                 } );
-                                         } );
+                    updateNotesThread = std::thread( [] {
+                        HttpRequest( "nereid.pl", "/tracy/notes", 8099, []( int size, char* data ) {
+                            std::string notes( data, data + size );
+                            delete[] data;
+                            RunOnMainThread( [notes = std::move( notes )]() mutable { releaseNotes = std::move( notes ); tracy::s_wasActive = true; } );
                         } );
+                    } );
                 }
             }
         }
@@ -966,8 +920,7 @@ static void DrawContents()
         {
             ImGui::Separator();
             ImGui::PushStyleColor( ImGuiCol_Text, ImVec4( 1.f, 0.25f, 0.25f, 1.f ) );
-            tracy::TextCentered( ICON_FA_TRIANGLE_EXCLAMATION
-                                 " Profiler has elevated privileges! " ICON_FA_TRIANGLE_EXCLAMATION );
+            tracy::TextCentered( ICON_FA_TRIANGLE_EXCLAMATION " Profiler has elevated privileges! " ICON_FA_TRIANGLE_EXCLAMATION );
             ImGui::PushFont( g_fonts.normal, FontSmall );
             tracy::TextCentered( "You are running the profiler interface with admin privileges. This is" );
             tracy::TextCentered( "most likely a mistake, as there is no reason to do so. Instead, you" );
@@ -979,8 +932,7 @@ static void DrawContents()
         ImGui::Separator();
         ImGui::TextUnformatted( "Client address" );
         bool connectClicked = false;
-        connectClicked |= ImGui::InputTextWithHint( "###connectaddress", "Enter address", addr, 1024,
-                                                    ImGuiInputTextFlags_EnterReturnsTrue );
+        connectClicked |= ImGui::InputTextWithHint( "###connectaddress", "Enter address", addr, 1024, ImGuiInputTextFlags_EnterReturnsTrue );
         if( !connHist->empty() )
         {
             ImGui::SameLine();
@@ -1034,15 +986,11 @@ static void DrawContents()
                 {
                     std::string addrPart = std::string( adata, ptr );
                     uint16_t portPart = (uint16_t)atoi( ptr + 1 );
-                    view = std::make_unique<tracy::View>( RunOnMainThread, addrPart.c_str(), portPart,
-                                                          SetWindowTitleCallback, SetupScaleCallback, AttentionCallback,
-                                                          s_achievements );
+                    view = std::make_unique<tracy::View>( RunOnMainThread, addrPart.c_str(), portPart, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
                 }
                 else
                 {
-                    view =
-                        std::make_unique<tracy::View>( RunOnMainThread, address.c_str(), port, SetWindowTitleCallback,
-                                                       SetupScaleCallback, AttentionCallback, s_achievements );
+                    view = std::make_unique<tracy::View>( RunOnMainThread, address.c_str(), port, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
                 }
             }
         }
@@ -1057,51 +1005,44 @@ static void DrawContents()
 #ifndef TRACY_NO_FILESELECTOR
         if( ImGui::Button( ICON_FA_FOLDER_OPEN " Open saved trace" ) && !loadThread.joinable() )
         {
-            tracy::Fileselector::OpenFile(
-                "tracy", "Tracy Profiler trace file",
-                []( const char* fn )
+            tracy::Fileselector::OpenFile( "tracy", "Tracy Profiler trace file", []( const char* fn ) {
+                try
                 {
-                    try
+                    auto f = std::shared_ptr<tracy::FileRead>( tracy::FileRead::Open( fn ) );
+                    if( f )
                     {
-                        auto f = std::shared_ptr<tracy::FileRead>( tracy::FileRead::Open( fn ) );
-                        if( f )
-                        {
-                            loadThread = std::thread(
-                                [f]
-                                {
-                                    try
-                                    {
-                                        view = std::make_unique<tracy::View>(
-                                            RunOnMainThread, *f, SetWindowTitleCallback, SetupScaleCallback,
-                                            AttentionCallback, s_achievements );
-                                    }
-                                    catch( const tracy::UnsupportedVersion& e )
-                                    {
-                                        badVer.state = tracy::BadVersionState::UnsupportedVersion;
-                                        badVer.version = e.version;
-                                    }
-                                    catch( const tracy::LegacyVersion& e )
-                                    {
-                                        badVer.state = tracy::BadVersionState::LegacyVersion;
-                                        badVer.version = e.version;
-                                    }
-                                    catch( const tracy::LoadFailure& e )
-                                    {
-                                        badVer.state = tracy::BadVersionState::LoadFailure;
-                                        badVer.msg = e.msg;
-                                    }
-                                } );
-                        }
+                        loadThread = std::thread( [f] {
+                            try
+                            {
+                                view = std::make_unique<tracy::View>( RunOnMainThread, *f, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
+                            }
+                            catch( const tracy::UnsupportedVersion& e )
+                            {
+                                badVer.state = tracy::BadVersionState::UnsupportedVersion;
+                                badVer.version = e.version;
+                            }
+                            catch( const tracy::LegacyVersion& e )
+                            {
+                                badVer.state = tracy::BadVersionState::LegacyVersion;
+                                badVer.version = e.version;
+                            }
+                            catch( const tracy::LoadFailure& e )
+                            {
+                                badVer.state = tracy::BadVersionState::LoadFailure;
+                                badVer.msg = e.msg;
+                            }
+                        } );
                     }
-                    catch( const tracy::NotTracyDump& )
-                    {
-                        badVer.state = tracy::BadVersionState::BadFile;
-                    }
-                    catch( const tracy::FileReadError& )
-                    {
-                        badVer.state = tracy::BadVersionState::ReadError;
-                    }
-                } );
+                }
+                catch( const tracy::NotTracyDump& )
+                {
+                    badVer.state = tracy::BadVersionState::BadFile;
+                }
+                catch( const tracy::FileReadError& )
+                {
+                    badVer.state = tracy::BadVersionState::ReadError;
+                }
+            } );
         }
 #endif
 
@@ -1151,9 +1092,7 @@ static void DrawContents()
                 ImGui::SetColumnWidth( 1, w * 0.175f );
                 ImGui::SetColumnWidth( 2, w * 0.425f );
             }
-            const auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                  std::chrono::system_clock::now().time_since_epoch() )
-                                  .count();
+            const auto time = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch() ).count();
             int idx = 0;
             int passed = 0;
             std::lock_guard<std::mutex> lock( resolvLock );
@@ -1181,21 +1120,17 @@ static void DrawContents()
                         tracy::TextColoredUnformatted( 0xFF0000FF, "Incompatible protocol!" );
                         ImGui::SameLine();
                         auto ph = tracy::ProtocolHistory;
-                        ImGui::TextDisabled( "(used: %i, required: %i)", v.second.protocolVersion,
-                                             tracy::ProtocolVersion );
+                        ImGui::TextDisabled( "(used: %i, required: %i)", v.second.protocolVersion, tracy::ProtocolVersion );
                         while( ph->protocol && ph->protocol != v.second.protocolVersion ) ph++;
                         if( ph->protocol )
                         {
                             if( ph->maxVer )
                             {
-                                ImGui::TextDisabled( "Compatible Tracy versions: %i.%i.%i to %i.%i.%i",
-                                                     ph->minVer >> 16, ( ph->minVer >> 8 ) & 0xFF, ph->minVer & 0xFF,
-                                                     ph->maxVer >> 16, ( ph->maxVer >> 8 ) & 0xFF, ph->maxVer & 0xFF );
+                                ImGui::TextDisabled( "Compatible Tracy versions: %i.%i.%i to %i.%i.%i", ph->minVer >> 16, ( ph->minVer >> 8 ) & 0xFF, ph->minVer & 0xFF, ph->maxVer >> 16, ( ph->maxVer >> 8 ) & 0xFF, ph->maxVer & 0xFF );
                             }
                             else
                             {
-                                ImGui::TextDisabled( "Compatible Tracy version: %i.%i.%i", ph->minVer >> 16,
-                                                     ( ph->minVer >> 8 ) & 0xFF, ph->minVer & 0xFF );
+                                ImGui::TextDisabled( "Compatible Tracy version: %i.%i.%i", ph->minVer >> 16, ( ph->minVer >> 8 ) & 0xFF, ph->minVer & 0xFF );
                             }
                         }
                         ImGui::Separator();
@@ -1215,9 +1150,7 @@ static void DrawContents()
                 }
                 if( selected && !loadThread.joinable() )
                 {
-                    view = std::make_unique<tracy::View>( RunOnMainThread, v.second.address.c_str(), v.second.port,
-                                                          SetWindowTitleCallback, SetupScaleCallback, AttentionCallback,
-                                                          s_achievements );
+                    view = std::make_unique<tracy::View>( RunOnMainThread, v.second.address.c_str(), v.second.port, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
                 }
                 ImGui::NextColumn();
                 const auto acttime = ( v.second.activeTime + ( time - v.second.time ) / 1000 ) * 1000000000ll;
@@ -1295,12 +1228,10 @@ static void DrawContents()
                 reconnectAddr = view->GetAddress();
                 reconnectPort = view->GetPort();
             }
-            loadThread = std::thread(
-                [view = std::move( view )]() mutable
-                {
-                    view.reset();
-                    viewShutdown.store( ViewShutdown::Join, std::memory_order_relaxed );
-                } );
+            loadThread = std::thread( [view = std::move( view )]() mutable {
+                view.reset();
+                viewShutdown.store( ViewShutdown::Join, std::memory_order_relaxed );
+            } );
         }
     }
     auto& progress = tracy::Worker::GetLoadProgress();
@@ -1309,8 +1240,7 @@ static void DrawContents()
     {
         ImGui::OpenPopup( "Loading trace..." );
     }
-    if( ImGui::BeginPopupModal( "Loading trace...", nullptr,
-                                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings ) )
+    if( ImGui::BeginPopupModal( "Loading trace...", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings ) )
     {
         ImGui::PushFont( g_fonts.normal, FontNormal * 2.f );
         ImGui::Spacing();
@@ -1391,9 +1321,7 @@ static void DrawContents()
         viewShutdown.store( ViewShutdown::False, std::memory_order_relaxed );
         if( reconnect )
         {
-            view = std::make_unique<tracy::View>( RunOnMainThread, reconnectAddr.c_str(), reconnectPort,
-                                                  SetWindowTitleCallback, SetupScaleCallback, AttentionCallback,
-                                                  s_achievements );
+            view = std::make_unique<tracy::View>( RunOnMainThread, reconnectAddr.c_str(), reconnectPort, SetWindowTitleCallback, SetupScaleCallback, AttentionCallback, s_achievements );
         }
         break;
     default:
@@ -1485,8 +1413,7 @@ Would you like to enable achievements?
 
         if( aItem )
         {
-            aSize = ImGui::CalcTextSize( aItem->name ).x + ImGui::GetStyle().ItemSpacing.x +
-                    ImGui::GetStyle().WindowPadding.x * 0.5f;
+            aSize = ImGui::CalcTextSize( aItem->name ).x + ImGui::GetStyle().ItemSpacing.x + ImGui::GetStyle().WindowPadding.x * 0.5f;
             if( animStage == 0 )
             {
                 animStage = 1;
@@ -1518,16 +1445,9 @@ Would you like to enable achievements?
             }
         }
 
-        ImGui::SetNextWindowPos( ImVec2( display_w - starSize.x - ImGui::GetStyle().WindowPadding.x * 1.5f -
-                                             aSize * smoothstep( animProgress ),
-                                         display_h - starSize.y * 2 - ImGui::GetStyle().WindowPadding.y * 2 ) );
-        ImGui::SetNextWindowSize(
-            ImVec2( starSize.x + aSize + 100, starSize.y + ImGui::GetStyle().WindowPadding.y * 2 ) );
-        ImGui::Begin( "###achievements", nullptr,
-                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
-                          ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
-                          ImGuiWindowFlags_Tooltip );
+        ImGui::SetNextWindowPos( ImVec2( display_w - starSize.x - ImGui::GetStyle().WindowPadding.x * 1.5f - aSize * smoothstep( animProgress ), display_h - starSize.y * 2 - ImGui::GetStyle().WindowPadding.y * 2 ) );
+        ImGui::SetNextWindowSize( ImVec2( starSize.x + aSize + 100, starSize.y + ImGui::GetStyle().WindowPadding.y * 2 ) );
+        ImGui::Begin( "###achievements", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_Tooltip );
 
         const auto cursor = ImGui::GetCursorPos();
         const auto cursorScreen = ImGui::GetCursorScreenPos();
@@ -1539,9 +1459,7 @@ Would you like to enable achievements?
             const auto c1 = uint32_t( std::lerp( 0x88, 0xFF, t ) );
             color = 0xFF000000 | ( c0 << 16 ) | ( c1 << 8 ) | c1;
         }
-        if( ( animStage == 0 || animStage == 2 ) &&
-            ImGui::IsMouseHoveringRect( cursorScreen - ImVec2( dpiScale * 2, dpiScale * 2 ),
-                                        cursorScreen + starSize + ImVec2( dpiScale * 4, dpiScale * 4 ) ) )
+        if( ( animStage == 0 || animStage == 2 ) && ImGui::IsMouseHoveringRect( cursorScreen - ImVec2( dpiScale * 2, dpiScale * 2 ), cursorScreen + starSize + ImVec2( dpiScale * 4, dpiScale * 4 ) ) )
         {
             color = 0xFFFFFFFF;
             if( ImGui::IsMouseClicked( 0 ) )
@@ -1575,9 +1493,7 @@ Would you like to enable achievements?
             ImGui::PopFont();
             if( animStage == 2 )
             {
-                if( ImGui::IsMouseHoveringRect( dismiss - ImVec2( 0, dpiScale * 6 ),
-                                                dismiss + ImVec2( aSize, th * 1.5f + dpiScale * 4 ) ) &&
-                    ImGui::IsMouseClicked( 0 ) )
+                if( ImGui::IsMouseHoveringRect( dismiss - ImVec2( 0, dpiScale * 6 ), dismiss + ImVec2( aSize, th * 1.5f + dpiScale * 4 ) ) && ImGui::IsMouseClicked( 0 ) )
                 {
                     s_achievementItem = aItem;
                     s_switchAchievementCategory = true;

@@ -13,7 +13,7 @@ namespace tracy
 
 class LockableCtx
 {
-  public:
+public:
     tracy_force_inline LockableCtx( const SourceLocationData* srcloc )
         : m_id( GetLockCounter().fetch_add( 1, std::memory_order_relaxed ) )
 #ifdef TRACY_ON_DEMAND
@@ -168,7 +168,7 @@ class LockableCtx
         Profiler::QueueSerialFinish();
     }
 
-  private:
+private:
     uint32_t m_id;
 
 #ifdef TRACY_ON_DEMAND
@@ -177,10 +177,10 @@ class LockableCtx
 #endif
 };
 
-template <class T>
+template<class T>
 class Lockable
 {
-  public:
+public:
     tracy_force_inline Lockable( const SourceLocationData* srcloc )
         : m_ctx( srcloc )
     {
@@ -209,19 +209,25 @@ class Lockable
         return acquired;
     }
 
-    tracy_force_inline void Mark( const SourceLocationData* srcloc ) { m_ctx.Mark( srcloc ); }
+    tracy_force_inline void Mark( const SourceLocationData* srcloc )
+    {
+        m_ctx.Mark( srcloc );
+    }
 
-    tracy_force_inline void CustomName( const char* name, size_t size ) { m_ctx.CustomName( name, size ); }
+    tracy_force_inline void CustomName( const char* name, size_t size )
+    {
+        m_ctx.CustomName( name, size );
+    }
 
     T m_lockable;
 
-  private:
+private:
     LockableCtx m_ctx;
 };
 
 class SharedLockableCtx
 {
-  public:
+public:
     tracy_force_inline SharedLockableCtx( const SourceLocationData* srcloc )
         : m_id( GetLockCounter().fetch_add( 1, std::memory_order_relaxed ) )
 #ifdef TRACY_ON_DEMAND
@@ -458,7 +464,7 @@ class SharedLockableCtx
         Profiler::QueueSerialFinish();
     }
 
-  private:
+private:
     uint32_t m_id;
 
 #ifdef TRACY_ON_DEMAND
@@ -467,10 +473,10 @@ class SharedLockableCtx
 #endif
 };
 
-template <class T>
+template<class T>
 class SharedLockable
 {
-  public:
+public:
     tracy_force_inline SharedLockable( const SourceLocationData* srcloc )
         : m_ctx( srcloc )
     {
@@ -519,13 +525,19 @@ class SharedLockable
         return acquired;
     }
 
-    tracy_force_inline void Mark( const SourceLocationData* srcloc ) { m_ctx.Mark( srcloc ); }
+    tracy_force_inline void Mark( const SourceLocationData* srcloc )
+    {
+        m_ctx.Mark( srcloc );
+    }
 
-    tracy_force_inline void CustomName( const char* name, size_t size ) { m_ctx.CustomName( name, size ); }
+    tracy_force_inline void CustomName( const char* name, size_t size )
+    {
+        m_ctx.CustomName( name, size );
+    }
 
     T m_lockable;
 
-  private:
+private:
     SharedLockableCtx m_ctx;
 };
 

@@ -2,10 +2,10 @@
 
 #ifdef TRACY_USE_RPMALLOC
 
-#    include <atomic>
+#  include <atomic>
 
-#    include "../common/TracyForceInline.hpp"
-#    include "../common/TracyYield.hpp"
+#  include "../common/TracyForceInline.hpp"
+#  include "../common/TracyYield.hpp"
 
 namespace tracy
 {

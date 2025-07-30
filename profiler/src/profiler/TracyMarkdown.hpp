@@ -10,13 +10,13 @@ namespace tracy
 
 class Markdown
 {
-  public:
+public:
     Markdown();
     ~Markdown();
 
     void Print( const char* str, size_t size );
 
-  private:
+private:
     MD_PARSER* m_parser;
 };
 

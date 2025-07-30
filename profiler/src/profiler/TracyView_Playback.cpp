@@ -95,8 +95,7 @@ void View::DrawPlayback()
     {
         if( fi->flip )
         {
-            ImGui::Image( m_playback.texture, ImVec2( fi->w * 2 * scale, fi->h * 2 * scale ), ImVec2( 0, 1 ),
-                          ImVec2( 1, 0 ) );
+            ImGui::Image( m_playback.texture, ImVec2( fi->w * 2 * scale, fi->h * 2 * scale ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
         }
         else
         {
@@ -138,10 +137,8 @@ void View::DrawPlayback()
     }
     if( changed )
     {
-        if( tmp < 1 )
-            tmp = 1;
-        else if( (uint32_t)tmp > ficnt )
-            tmp = ficnt;
+        if( tmp < 1 ) tmp = 1;
+        else if( (uint32_t)tmp > ficnt ) tmp = ficnt;
         SetPlaybackFrame( uint32_t( tmp - 1 ) );
         m_playback.pause = true;
     }

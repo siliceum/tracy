@@ -8,7 +8,7 @@
 
 class ConnectionHistory
 {
-  public:
+public:
     ConnectionHistory();
     ~ConnectionHistory();
 
@@ -20,7 +20,7 @@ class ConnectionHistory
     bool empty() const { return m_connHistVec.empty(); }
     size_t size() const { return m_connHistVec.size(); }
 
-  private:
+private:
     void Rebuild();
 
     std::string m_fn;

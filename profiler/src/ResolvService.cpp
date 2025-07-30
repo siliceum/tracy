@@ -1,12 +1,12 @@
 #ifdef _WIN32
-#    include <ws2tcpip.h>
+#  include <ws2tcpip.h>
 #else
-#    ifdef __FreeBSD__
-#        include <netinet/in.h>
-#    endif
-#    include <arpa/inet.h>
-#    include <netdb.h>
-#    include <sys/socket.h>
+#  ifdef __FreeBSD__
+#    include <netinet/in.h>
+#  endif
+#  include <arpa/inet.h>
+#  include <netdb.h>
+#  include <sys/socket.h>
 #endif
 
 #include "ResolvService.hpp"

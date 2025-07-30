@@ -8,13 +8,13 @@
 
 class RunQueue
 {
-  public:
+public:
     RunQueue();
 
     void Queue( const std::function<void()>& cb, bool forceDelay = false );
     void Run();
 
-  private:
+private:
     std::vector<std::function<void()>> m_queue;
     std::mutex m_lock;
     std::thread::id m_mainThread;

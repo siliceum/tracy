@@ -2,13 +2,13 @@
 #define __TRACYTHREAD_HPP__
 
 #if defined _WIN32
-#    include <windows.h>
+#  include <windows.h>
 #else
-#    include <pthread.h>
+#  include <pthread.h>
 #endif
 
 #ifdef TRACY_MANUAL_LIFETIME
-#    include "tracy_rpmalloc.hpp"
+#  include "tracy_rpmalloc.hpp"
 #endif
 
 namespace tracy
@@ -20,7 +20,7 @@ extern thread_local bool RpThreadInitDone;
 
 class ThreadExitHandler
 {
-  public:
+public:
     ~ThreadExitHandler()
     {
 #ifdef TRACY_MANUAL_LIFETIME
@@ -34,7 +34,7 @@ class ThreadExitHandler
 
 class Thread
 {
-  public:
+public:
     Thread( void ( *func )( void* ptr ), void* ptr )
         : m_func( func )
         , m_ptr( ptr )
@@ -50,7 +50,7 @@ class Thread
 
     HANDLE Handle() const { return m_hnd; }
 
-  private:
+private:
     static DWORD WINAPI Launch( void* ptr )
     {
         ( (Thread*)ptr )->m_func( ( (Thread*)ptr )->m_ptr );
@@ -66,7 +66,7 @@ class Thread
 
 class Thread
 {
-  public:
+public:
     Thread( void ( *func )( void* ptr ), void* ptr )
         : m_func( func )
         , m_ptr( ptr )
@@ -74,11 +74,14 @@ class Thread
         pthread_create( &m_thread, nullptr, Launch, this );
     }
 
-    ~Thread() { pthread_join( m_thread, nullptr ); }
+    ~Thread()
+    {
+        pthread_join( m_thread, nullptr );
+    }
 
     pthread_t Handle() const { return m_thread; }
 
-  private:
+private:
     static void* Launch( void* ptr )
     {
         ( (Thread*)ptr )->m_func( ( (Thread*)ptr )->m_ptr );

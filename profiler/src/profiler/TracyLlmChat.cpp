@@ -40,7 +40,10 @@ TracyLlmChat::TracyLlmChat()
 {
 }
 
-TracyLlmChat::~TracyLlmChat() { delete[] m_width; }
+TracyLlmChat::~TracyLlmChat()
+{
+    delete[] m_width;
+}
 
 void TracyLlmChat::Begin()
 {
@@ -91,13 +94,10 @@ bool TracyLlmChat::Turn( TurnRole role, const std::string& content )
             m_role = role;
             ImGui::Spacing();
         }
-        int trashIdx = ( role == TurnRole::Assistant || role == TurnRole::AssistantDebug ) ? (int)TurnRole::Regenerate
-                                                                                           : (int)TurnRole::Trash;
+        int trashIdx = ( role == TurnRole::Assistant || role == TurnRole::AssistantDebug ) ? (int)TurnRole::Regenerate : (int)TurnRole::Trash;
         ImGui::PushID( m_roleIdx++ );
         auto diff = m_maxWidth - m_width[(int)role];
-        if( ImGui::IsMouseHoveringRect( ImGui::GetCursorScreenPos(),
-                                        ImGui::GetCursorScreenPos() +
-                                            ImVec2( m_maxWidth, ImGui::GetTextLineHeight() ) ) )
+        if( ImGui::IsMouseHoveringRect( ImGui::GetCursorScreenPos(), ImGui::GetCursorScreenPos() + ImVec2( m_maxWidth, ImGui::GetTextLineHeight() ) ) )
         {
             diff = m_maxWidth - m_width[trashIdx];
             hover = true;
@@ -237,9 +237,9 @@ bool TracyLlmChat::Turn( TurnRole role, const std::string& content )
     }
     ImGui::PopStyleColor();
 
-    if( ImGui::IsMouseClicked( ImGuiMouseButton_Right ) && ImGui::IsWindowHovered() &&
-        ImGui::IsMouseHoveringRect( posStart,
-                                    ImGui::GetCursorScreenPos() + ImVec2( ImGui::GetContentRegionAvail().x, 0 ) ) )
+    if( ImGui::IsMouseClicked( ImGuiMouseButton_Right ) &&
+        ImGui::IsWindowHovered() &&
+        ImGui::IsMouseHoveringRect( posStart, ImGui::GetCursorScreenPos() + ImVec2( ImGui::GetContentRegionAvail().x, 0 ) ) )
     {
         ImGui::OpenPopup( "ContextMenu" );
     }

@@ -15,7 +15,10 @@ SourceContents::SourceContents()
 {
 }
 
-SourceContents::~SourceContents() { delete[] m_dataBuf; }
+SourceContents::~SourceContents()
+{
+    delete[] m_dataBuf;
+}
 
 void SourceContents::Parse( const char* fileName, const Worker& worker, const View& view )
 {

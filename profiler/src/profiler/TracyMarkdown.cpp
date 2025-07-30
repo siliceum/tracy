@@ -22,7 +22,7 @@ class MarkdownContext
         int num;
     };
 
-  public:
+public:
     int EnterBlock( MD_BLOCKTYPE type, void* detail )
     {
         switch( type )
@@ -37,17 +37,19 @@ class MarkdownContext
             break;
         case MD_BLOCK_UL:
             Separate();
-            lists.emplace_back( List{ .tight = ( (MD_BLOCK_UL_DETAIL*)detail )->is_tight != 0, .num = -1 } );
+            lists.emplace_back( List{
+                .tight = ( (MD_BLOCK_UL_DETAIL*)detail )->is_tight != 0,
+                .num = -1 } );
             ImGui::Indent();
             break;
         case MD_BLOCK_OL:
             Separate();
-            lists.emplace_back( List{ .tight = ( (MD_BLOCK_OL_DETAIL*)detail )->is_tight != 0,
-                                      .num = (int)( (MD_BLOCK_OL_DETAIL*)detail )->start } );
+            lists.emplace_back( List{
+                .tight = ( (MD_BLOCK_OL_DETAIL*)detail )->is_tight != 0,
+                .num = (int)( (MD_BLOCK_OL_DETAIL*)detail )->start } );
             ImGui::Indent();
             break;
-        case MD_BLOCK_LI:
-        {
+        case MD_BLOCK_LI: {
             Separate();
             auto& l = lists.back();
             if( l.num < 0 )
@@ -72,14 +74,12 @@ class MarkdownContext
             header = ( (MD_BLOCK_H_DETAIL*)detail )->level;
             glue = false;
             break;
-        case MD_BLOCK_CODE:
-        {
+        case MD_BLOCK_CODE: {
             char tmp[64];
             sprintf( tmp, "##code%d", idx++ );
             Separate();
             ImGui::PushStyleColor( ImGuiCol_FrameBg, ImVec4( 0, 0, 0, 0.2f ) );
-            ImGui::BeginChild( tmp, ImVec2( 0, 0 ),
-                               ImGuiChildFlags_FrameStyle | ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
+            ImGui::BeginChild( tmp, ImVec2( 0, 0 ), ImGuiChildFlags_FrameStyle | ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
             codeBlock = true;
         }
         default:
@@ -105,8 +105,7 @@ class MarkdownContext
             if( !lists.empty() ) lists.pop_back();
             separate = lists.empty() || !lists.back().tight;
             break;
-        case MD_BLOCK_LI:
-        {
+        case MD_BLOCK_LI: {
             ImGui::EndGroup();
             auto& l = lists.back();
             if( !l.tight ) separate = true;
@@ -171,14 +170,21 @@ class MarkdownContext
 
     int Text( MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size )
     {
-        constexpr std::array FontSizes = { 1.f, 2.05f, 1.9f, 1.75f, 1.6f, 1.45f, 1.3f, 1.15f };
+        constexpr std::array FontSizes = {
+            1.f,
+            2.05f,
+            1.9f,
+            1.75f,
+            1.6f,
+            1.45f,
+            1.3f,
+            1.15f };
 
         switch( type )
         {
         case MD_TEXT_NORMAL:
         case MD_TEXT_ENTITY:
-        case MD_TEXT_HTML:
-        {
+        case MD_TEXT_HTML: {
             auto font = g_fonts.normal;
             if( bold > 0 )
             {
@@ -249,13 +255,11 @@ class MarkdownContext
         return 0;
     }
 
-  private:
+private:
     void Glue()
     {
-        if( glue )
-            ImGui::SameLine( 0, 0 );
-        else
-            glue = true;
+        if( glue ) ImGui::SameLine( 0, 0 );
+        else glue = true;
     }
 
     void Separate()
@@ -285,19 +289,17 @@ Markdown::Markdown()
 {
     memset( m_parser, 0, sizeof( MD_PARSER ) );
     m_parser->flags = MD_FLAG_COLLAPSEWHITESPACE | MD_FLAG_PERMISSIVEAUTOLINKS | MD_FLAG_NOHTML;
-    m_parser->enter_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int
-    { return ( (MarkdownContext*)ud )->EnterBlock( type, detail ); };
-    m_parser->leave_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int
-    { return ( (MarkdownContext*)ud )->LeaveBlock( type, detail ); };
-    m_parser->enter_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int
-    { return ( (MarkdownContext*)ud )->EnterSpan( type, detail ); };
-    m_parser->leave_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int
-    { return ( (MarkdownContext*)ud )->LeaveSpan( type, detail ); };
-    m_parser->text = []( MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* ud ) -> int
-    { return ( (MarkdownContext*)ud )->Text( type, text, size ); };
+    m_parser->enter_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int { return ( (MarkdownContext*)ud )->EnterBlock( type, detail ); };
+    m_parser->leave_block = []( MD_BLOCKTYPE type, void* detail, void* ud ) -> int { return ( (MarkdownContext*)ud )->LeaveBlock( type, detail ); };
+    m_parser->enter_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int { return ( (MarkdownContext*)ud )->EnterSpan( type, detail ); };
+    m_parser->leave_span = []( MD_SPANTYPE type, void* detail, void* ud ) -> int { return ( (MarkdownContext*)ud )->LeaveSpan( type, detail ); };
+    m_parser->text = []( MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* ud ) -> int { return ( (MarkdownContext*)ud )->Text( type, text, size ); };
 }
 
-Markdown::~Markdown() { delete m_parser; }
+Markdown::~Markdown()
+{
+    delete m_parser;
+}
 
 void Markdown::Print( const char* str, size_t size )
 {

@@ -53,8 +53,7 @@ void View::DrawRangeEntry( Range& range, const char* label, uint32_t color, cons
         ImGui::TextDisabled( "(%s)", TimeToString( range.max - range.min ) );
         if( ImGui::SmallButton( ICON_FA_MICROSCOPE " Focus" ) ) ZoomToRange( range.min, range.max );
         ImGui::SameLine();
-        if( SmallButtonDisablable( ICON_FA_NOTE_STICKY " Set from annotation", m_annotations.empty() ) )
-            ImGui::OpenPopup( popupLabel );
+        if( SmallButtonDisablable( ICON_FA_NOTE_STICKY " Set from annotation", m_annotations.empty() ) ) ImGui::OpenPopup( popupLabel );
         if( ImGui::BeginPopup( popupLabel ) )
         {
             for( auto& v : m_annotations )
@@ -69,45 +68,34 @@ void View::DrawRangeEntry( Range& range, const char* label, uint32_t color, cons
                 ImGui::SameLine();
                 ImGui::Spacing();
                 ImGui::SameLine();
-                ImGui::TextDisabled( "%s - %s (%s)", TimeToStringExact( v->range.min ),
-                                     TimeToStringExact( v->range.max ), TimeToString( v->range.max - v->range.min ) );
+                ImGui::TextDisabled( "%s - %s (%s)", TimeToStringExact( v->range.min ), TimeToStringExact( v->range.max ), TimeToString( v->range.max - v->range.min ) );
             }
             ImGui::EndPopup();
         }
         if( id != 0 )
         {
             ImGui::SameLine();
-            if( SmallButtonDisablable( ICON_FA_MAGNIFYING_GLASS " Copy from find zone",
-                                       m_findZone.range.min == 0 && m_findZone.range.max == 0 ) )
-                range = m_findZone.range;
+            if( SmallButtonDisablable( ICON_FA_MAGNIFYING_GLASS " Copy from find zone", m_findZone.range.min == 0 && m_findZone.range.max == 0 ) ) range = m_findZone.range;
         }
         if( id != 1 )
         {
             ImGui::SameLine();
-            if( SmallButtonDisablable( ICON_FA_ARROW_UP_WIDE_SHORT " Copy from statistics",
-                                       m_statRange.min == 0 && m_statRange.max == 0 ) )
-                range = m_statRange;
+            if( SmallButtonDisablable( ICON_FA_ARROW_UP_WIDE_SHORT " Copy from statistics", m_statRange.min == 0 && m_statRange.max == 0 ) ) range = m_statRange;
         }
         if( id != 2 )
         {
             ImGui::SameLine();
-            if( SmallButtonDisablable( ICON_FA_FIRE_FLAME_CURVED " Copy from flame",
-                                       m_flameRange.min == 0 && m_flameRange.max == 0 ) )
-                range = m_flameRange;
+            if( SmallButtonDisablable( ICON_FA_FIRE_FLAME_CURVED " Copy from flame", m_flameRange.min == 0 && m_flameRange.max == 0 ) ) range = m_flameRange;
         }
         if( id != 3 )
         {
             ImGui::SameLine();
-            if( SmallButtonDisablable( ICON_FA_HOURGLASS_HALF " Copy from wait stacks",
-                                       m_waitStackRange.min == 0 && m_waitStackRange.max == 0 ) )
-                range = m_waitStackRange;
+            if( SmallButtonDisablable( ICON_FA_HOURGLASS_HALF " Copy from wait stacks", m_waitStackRange.min == 0 && m_waitStackRange.max == 0 ) ) range = m_waitStackRange;
         }
         if( id != 4 )
         {
             ImGui::SameLine();
-            if( SmallButtonDisablable( ICON_FA_MEMORY " Copy from memory",
-                                       m_memInfo.range.min == 0 && m_memInfo.range.max == 0 ) )
-                range = m_memInfo.range;
+            if( SmallButtonDisablable( ICON_FA_MEMORY " Copy from memory", m_memInfo.range.min == 0 && m_memInfo.range.max == 0 ) ) range = m_memInfo.range;
         }
     }
 }

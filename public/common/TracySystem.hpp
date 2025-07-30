@@ -26,7 +26,10 @@ ThreadNameData* GetThreadNameData( uint32_t id );
 
 TRACY_API uint32_t GetThreadHandle();
 #else
-static inline uint32_t GetThreadHandle() { return detail::GetThreadHandleImpl(); }
+static inline uint32_t GetThreadHandle()
+{
+    return detail::GetThreadHandleImpl();
+}
 #endif
 
 TRACY_API void SetThreadName( const char* name );

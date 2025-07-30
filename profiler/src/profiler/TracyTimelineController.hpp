@@ -19,7 +19,7 @@ class Worker;
 
 class TimelineController
 {
-  public:
+public:
     TimelineController( View& view, Worker& worker, bool threading );
     ~TimelineController();
 
@@ -27,7 +27,7 @@ class TimelineController
     void Begin();
     void End( double pxns, const ImVec2& wpos, bool hover, bool vcenter, float yMin, float yMax );
 
-    template <class T, class U>
+    template<class T, class U>
     void AddItem( U* data )
     {
         auto it = m_itemMap.find( data );
@@ -45,7 +45,7 @@ class TimelineController
         return *it->second;
     }
 
-  private:
+private:
     void UpdateCenterItem();
     std::optional<int> CalculateScrollPosition() const;
 

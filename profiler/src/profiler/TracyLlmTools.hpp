@@ -21,7 +21,7 @@ class Worker;
 
 class TracyLlmTools
 {
-  public:
+public:
     struct ToolReply
     {
         std::string reply;
@@ -57,7 +57,7 @@ class TracyLlmTools
 
     bool m_netAccess = true;
 
-  private:
+private:
     [[nodiscard]] int CalcMaxSize() const;
     [[nodiscard]] std::string TrimString( std::string&& str ) const;
 

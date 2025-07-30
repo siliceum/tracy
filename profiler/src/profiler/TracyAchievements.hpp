@@ -48,7 +48,7 @@ class AchievementsMgr
         data::AchievementCategory* category;
     };
 
-  public:
+public:
     AchievementsMgr();
     ~AchievementsMgr();
 
@@ -62,7 +62,7 @@ class AchievementsMgr
     bool NeedsAttention() const;
     bool CategoryNeedsAttention( const char* id ) const;
 
-  private:
+private:
     void FillMap( data::AchievementItem** items, data::AchievementCategory* category );
     void Save();
 

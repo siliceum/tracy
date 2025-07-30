@@ -18,7 +18,10 @@ static tracy_force_inline char* CopyString( const char* src, size_t sz )
     return dst;
 }
 
-static tracy_force_inline char* CopyString( const char* src ) { return CopyString( src, strlen( src ) ); }
+static tracy_force_inline char* CopyString( const char* src )
+{
+    return CopyString( src, strlen( src ) );
+}
 
 static tracy_force_inline char* CopyStringFast( const char* src, size_t sz )
 {
@@ -28,7 +31,10 @@ static tracy_force_inline char* CopyStringFast( const char* src, size_t sz )
     return dst;
 }
 
-static tracy_force_inline char* CopyStringFast( const char* src ) { return CopyStringFast( src, strlen( src ) ); }
+static tracy_force_inline char* CopyStringFast( const char* src )
+{
+    return CopyStringFast( src, strlen( src ) );
+}
 
 }
 

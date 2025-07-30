@@ -15,8 +15,7 @@
 namespace tracy
 {
 
-void View::DrawSampleList( const TimelineContext& ctx, const std::vector<SamplesDraw>& drawList,
-                           const Vector<SampleData>& vec, int offset )
+void View::DrawSampleList( const TimelineContext& ctx, const std::vector<SamplesDraw>& drawList, const Vector<SampleData>& vec, int offset )
 {
     const auto& wpos = ctx.wpos;
     const auto ty = ctx.ty;
@@ -46,8 +45,7 @@ void View::DrawSampleList( const TimelineContext& ctx, const std::vector<Samples
             const auto px1 = ( t1 - vStart ) * pxns;
 
             DrawZigZag( draw, wpos + ImVec2( 0, ty0375 ), px0, std::max( px1, px0 + MinVis ), ty01, 0xFF997777 );
-            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, y0 ),
-                                                     wpos + ImVec2( std::max( px1, px0 + MinVis ), y1 ) ) )
+            if( hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0, y0 ), wpos + ImVec2( std::max( px1, px0 + MinVis ), y1 ) ) )
             {
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted( "Multiple call stack samples" );
@@ -63,8 +61,7 @@ void View::DrawSampleList( const TimelineContext& ctx, const std::vector<Samples
         else
         {
             draw->AddCircleFilled( wpos + ImVec2( px0, ty0375 ), ty02, 0xFFDD8888 );
-            if( !tooltipDisplayed && hover &&
-                ImGui::IsMouseHoveringRect( wpos + ImVec2( px0 - ty02 - 2, y0 ), wpos + ImVec2( px0 + ty02 + 1, y1 ) ) )
+            if( !tooltipDisplayed && hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( px0 - ty02 - 2, y0 ), wpos + ImVec2( px0 + ty02 + 1, y1 ) ) )
             {
                 tooltipDisplayed = true;
                 CallstackTooltip( it->callstack.Val() );
@@ -125,26 +122,21 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
 
         if( accumulationMode == AccumulationMode::SelfOnly )
         {
-            pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r )
-                                { return l.excl != r.excl ? l.excl > r.excl : l.symAddr < r.symAddr; } );
+            pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r ) { return l.excl != r.excl ? l.excl > r.excl : l.symAddr < r.symAddr; } );
         }
         else
         {
-            pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r )
-                                { return l.incl != r.incl ? l.incl > r.incl : l.symAddr < r.symAddr; } );
+            pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r ) { return l.incl != r.incl ? l.incl > r.incl : l.symAddr < r.symAddr; } );
         }
 
         ImGui::BeginChild( "##statisticsSampling" );
-        if( ImGui::BeginTable( "##statisticsSampling", 5,
-                               ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable |
-                                   ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY ) )
+        if( ImGui::BeginTable( "##statisticsSampling", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY ) )
         {
             ImGui::TableSetupScrollFreeze( 0, 1 );
             ImGui::TableSetupColumn( "Name", ImGuiTableColumnFlags_NoHide );
             ImGui::TableSetupColumn( "Location", ImGuiTableColumnFlags_NoSort );
             ImGui::TableSetupColumn( "Image" );
-            ImGui::TableSetupColumn( m_statSampleTime ? "Time" : "Count",
-                                     ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
+            ImGui::TableSetupColumn( m_statSampleTime ? "Time" : "Count", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
             ImGui::TableSetupColumn( "Code size", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
             ImGui::TableHeadersRow();
 
@@ -286,8 +278,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                     }
 
                     Vector<SymList> inSymList;
-                    if( !m_statSeparateInlines && !hasNoSamples && v.count > 0 && v.symAddr != 0 &&
-                        ( expand || m_topInline ) )
+                    if( !m_statSeparateInlines && !hasNoSamples && v.count > 0 && v.symAddr != 0 && ( expand || m_topInline ) )
                     {
                         assert( v.count > 0 );
                         assert( symlen != 0 );
@@ -335,8 +326,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                         auto oit = outMap.find( symAddr );
                                         if( oit == outMap.end() )
                                         {
-                                            outMap.emplace( symAddr,
-                                                            SymList{ symAddr, sit->second.incl, sit->second.excl, 1 } );
+                                            outMap.emplace( symAddr, SymList{ symAddr, sit->second.incl, sit->second.excl, 1 } );
                                         }
                                         else
                                         {
@@ -374,17 +364,11 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
 
                         if( accumulationMode == AccumulationMode::SelfOnly )
                         {
-                            pdqsort_branchless( inSymList.begin(), inSymList.end(),
-                                                []( const auto& l, const auto& r ) {
-                                                    return l.excl != r.excl ? l.excl > r.excl : l.symAddr < r.symAddr;
-                                                } );
+                            pdqsort_branchless( inSymList.begin(), inSymList.end(), []( const auto& l, const auto& r ) { return l.excl != r.excl ? l.excl > r.excl : l.symAddr < r.symAddr; } );
                         }
                         else
                         {
-                            pdqsort_branchless( inSymList.begin(), inSymList.end(),
-                                                []( const auto& l, const auto& r ) {
-                                                    return l.incl != l.incl ? l.incl > r.incl : l.symAddr < r.symAddr;
-                                                } );
+                            pdqsort_branchless( inSymList.begin(), inSymList.end(), []( const auto& l, const auto& r ) { return l.incl != l.incl ? l.incl > r.incl : l.symAddr < r.symAddr; } );
                         }
                     }
 
@@ -426,23 +410,17 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                         if( isKernel )
                         {
                             ImGui::PushStyleColor( ImGuiCol_Text, 0xFF8888FF );
-                            clicked = ImGui::Selectable(
-                                name, m_sampleParents.withInlines && m_sampleParents.symAddr == v.symAddr,
-                                ImGuiSelectableFlags_SpanAllColumns );
+                            clicked = ImGui::Selectable( name, m_sampleParents.withInlines && m_sampleParents.symAddr == v.symAddr, ImGuiSelectableFlags_SpanAllColumns );
                             ImGui::PopStyleColor();
                         }
                         else if( m_vd.shortenName == ShortenName::Never )
                         {
-                            clicked = ImGui::Selectable(
-                                name, m_sampleParents.withInlines && m_sampleParents.symAddr == v.symAddr,
-                                ImGuiSelectableFlags_SpanAllColumns );
+                            clicked = ImGui::Selectable( name, m_sampleParents.withInlines && m_sampleParents.symAddr == v.symAddr, ImGuiSelectableFlags_SpanAllColumns );
                         }
                         else
                         {
                             const auto normalized = ShortenZoneName( ShortenName::OnlyNormalize, name );
-                            clicked = ImGui::Selectable(
-                                "", m_sampleParents.withInlines && m_sampleParents.symAddr == v.symAddr,
-                                ImGuiSelectableFlags_SpanAllColumns );
+                            clicked = ImGui::Selectable( "", m_sampleParents.withInlines && m_sampleParents.symAddr == v.symAddr, ImGuiSelectableFlags_SpanAllColumns );
                             ImGui::SameLine( 0, 0 );
                             ImGui::TextUnformatted( normalized );
                             TooltipNormalizedName( name, normalized );
@@ -451,8 +429,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                         if( ImGui::BeginPopup( "menuPopup" ) )
                         {
                             uint32_t len;
-                            const bool sfv = SourceFileValid( file, m_worker.GetCaptureTime(), *this, m_worker ) ||
-                                             ( symlen != 0 && m_worker.GetSymbolCode( codeAddr, len ) );
+                            const bool sfv = SourceFileValid( file, m_worker.GetCaptureTime(), *this, m_worker ) || ( symlen != 0 && m_worker.GetSymbolCode( codeAddr, len ) );
                             if( !sfv ) ImGui::BeginDisabled();
                             if( ImGui::MenuItem( " " ICON_FA_FILE_LINES " View symbol" ) )
                             {
@@ -472,8 +449,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                 }
                             }
                             if( !sfv ) ImGui::EndDisabled();
-                            if( ImGui::MenuItem( ICON_FA_ARROW_DOWN_SHORT_WIDE " Sample entry stacks" ) )
-                                ShowSampleParents( v.symAddr, !m_statSeparateInlines );
+                            if( ImGui::MenuItem( ICON_FA_ARROW_DOWN_SHORT_WIDE " Sample entry stacks" ) ) ShowSampleParents( v.symAddr, !m_statSeparateInlines );
                             ImGui::EndPopup();
                         }
                         ImGui::PopID();
@@ -677,16 +653,12 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                     bool clicked;
                                     if( m_vd.shortenName == ShortenName::Never )
                                     {
-                                        clicked = ImGui::Selectable(
-                                            sn, !m_sampleParents.withInlines && m_sampleParents.symAddr == iv.symAddr,
-                                            ImGuiSelectableFlags_SpanAllColumns );
+                                        clicked = ImGui::Selectable( sn, !m_sampleParents.withInlines && m_sampleParents.symAddr == iv.symAddr, ImGuiSelectableFlags_SpanAllColumns );
                                     }
                                     else
                                     {
                                         const auto normalized = ShortenZoneName( ShortenName::OnlyNormalize, sn );
-                                        clicked = ImGui::Selectable(
-                                            "", !m_sampleParents.withInlines && m_sampleParents.symAddr == iv.symAddr,
-                                            ImGuiSelectableFlags_SpanAllColumns );
+                                        clicked = ImGui::Selectable( "", !m_sampleParents.withInlines && m_sampleParents.symAddr == iv.symAddr, ImGuiSelectableFlags_SpanAllColumns );
                                         ImGui::SameLine( 0, 0 );
                                         ImGui::TextUnformatted( normalized );
                                         TooltipNormalizedName( sn, normalized );
@@ -695,9 +667,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                     if( ImGui::BeginPopup( "menuPopup" ) )
                                     {
                                         uint32_t len;
-                                        const bool sfv =
-                                            SourceFileValid( file, m_worker.GetCaptureTime(), *this, m_worker ) ||
-                                            ( symlen != 0 && m_worker.GetSymbolCode( codeAddr, len ) );
+                                        const bool sfv = SourceFileValid( file, m_worker.GetCaptureTime(), *this, m_worker ) || ( symlen != 0 && m_worker.GetSymbolCode( codeAddr, len ) );
                                         if( !sfv ) ImGui::BeginDisabled();
                                         if( ImGui::MenuItem( " " ICON_FA_FILE_LINES " View symbol" ) )
                                         {
@@ -717,8 +687,7 @@ void View::DrawSamplesStatistics( Vector<SymList>& data, int64_t timeRange, Accu
                                             }
                                         }
                                         if( !sfv ) ImGui::EndDisabled();
-                                        if( ImGui::MenuItem( ICON_FA_ARROW_DOWN_SHORT_WIDE " Sample entry stacks" ) )
-                                            ShowSampleParents( iv.symAddr, false );
+                                        if( ImGui::MenuItem( ICON_FA_ARROW_DOWN_SHORT_WIDE " Sample entry stacks" ) ) ShowSampleParents( iv.symAddr, false );
                                         ImGui::EndPopup();
                                     }
                                     ImGui::PopID();
@@ -874,8 +843,7 @@ void View::DrawSampleParents()
         assert( !stats.empty() );
 
         const auto symName = m_worker.GetString( symbol->name );
-        const char* normalized =
-            m_vd.shortenName != ShortenName::Never ? ShortenZoneName( ShortenName::OnlyNormalize, symName ) : nullptr;
+        const char* normalized = m_vd.shortenName != ShortenName::Never ? ShortenZoneName( ShortenName::OnlyNormalize, symName ) : nullptr;
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextFocused( "Function:", normalized ? normalized : symName );
         if( normalized )
@@ -954,8 +922,7 @@ void View::DrawSampleParents()
         ImGui::BeginChild( "##sampleParents" );
         switch( m_sampleParents.mode )
         {
-        case 0:
-        {
+        case 0: {
             TextDisabledUnformatted( "Entry call stack:" );
             ImGui::SameLine();
             if( ImGui::SmallButton( " " ICON_FA_CARET_LEFT " " ) )
@@ -974,20 +941,16 @@ void View::DrawSampleParents()
             {
                 int sel = m_sampleParents.sel + 1;
                 ImGui::SetNextItemWidth( 120 * scale );
-                const bool clicked =
-                    ImGui::InputInt( "##entryCallStack", &sel, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue );
+                const bool clicked = ImGui::InputInt( "##entryCallStack", &sel, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue );
                 if( clicked ) m_sampleParents.sel = std::min( std::max( sel, 1 ), int( stats.size() ) ) - 1;
                 ImGui::EndPopup();
             }
             Vector<decltype( stats.begin() )> data;
             data.reserve( stats.size() );
             for( auto it = stats.begin(); it != stats.end(); ++it ) data.push_back( it );
-            pdqsort_branchless( data.begin(), data.end(),
-                                []( const auto& l, const auto& r ) { return l->second > r->second; } );
+            pdqsort_branchless( data.begin(), data.end(), []( const auto& l, const auto& r ) { return l->second > r->second; } );
             ImGui::SameLine();
-            ImGui::TextUnformatted(
-                m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * data[m_sampleParents.sel]->second )
-                                 : RealToString( data[m_sampleParents.sel]->second ) );
+            ImGui::TextUnformatted( m_statSampleTime ? TimeToString( m_worker.GetSamplingPeriod() * data[m_sampleParents.sel]->second ) : RealToString( data[m_sampleParents.sel]->second ) );
             ImGui::SameLine();
             char buf[64];
             PrintStringPercent( buf, 100. * data[m_sampleParents.sel]->second / excl );
@@ -1013,13 +976,10 @@ void View::DrawSampleParents()
 
             auto& cs = m_worker.GetParentCallstack( data[m_sampleParents.sel]->first );
             ImGui::Separator();
-            if( ImGui::BeginTable( "##callstack", 4,
-                                   ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable |
-                                       ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY ) )
+            if( ImGui::BeginTable( "##callstack", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY ) )
             {
                 ImGui::TableSetupScrollFreeze( 0, 1 );
-                ImGui::TableSetupColumn( "Frame", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed |
-                                                      ImGuiTableColumnFlags_NoResize );
+                ImGui::TableSetupColumn( "Frame", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize );
                 ImGui::TableSetupColumn( "Function" );
                 ImGui::TableSetupColumn( "Location" );
                 ImGui::TableSetupColumn( "Image" );
@@ -1030,16 +990,14 @@ void View::DrawSampleParents()
                 int bidx = 0;
                 for( auto& entry : cs )
                 {
-                    auto frameData =
-                        entry.custom ? m_worker.GetParentCallstackFrame( entry ) : m_worker.GetCallstackFrame( entry );
+                    auto frameData = entry.custom ? m_worker.GetParentCallstackFrame( entry ) : m_worker.GetCallstackFrame( entry );
                     assert( frameData );
                     const auto fsz = frameData->size;
                     for( uint8_t f = 0; f < fsz; f++ )
                     {
                         const auto& frame = frameData->data[f];
                         auto filename = m_worker.GetString( frame.file );
-                        auto image =
-                            frameData->imageName.Active() ? m_worker.GetString( frameData->imageName ) : nullptr;
+                        auto image = frameData->imageName.Active() ? m_worker.GetString( frameData->imageName ) : nullptr;
 
                         if( IsFrameExternal( filename, image ) )
                         {
@@ -1155,8 +1113,7 @@ void View::DrawSampleParents()
                                 ImGui::SetClipboardText( tmp );
                             }
                             break;
-                        case 3:
-                        {
+                        case 3: {
                             const auto sym = m_worker.GetSymbolData( frame.symAddr );
                             if( sym )
                             {
@@ -1271,8 +1228,7 @@ void View::DrawSampleParents()
             }
             break;
         }
-        case 1:
-        {
+        case 1: {
             auto tree = GetParentsCallstackFrameTreeBottomUp( stats, m_sampleParents.groupBottomUp );
             if( !tree.empty() )
             {
@@ -1286,8 +1242,7 @@ void View::DrawSampleParents()
 
             break;
         }
-        case 2:
-        {
+        case 2: {
             auto tree = GetParentsCallstackFrameTreeTopDown( stats, m_sampleParents.groupTopDown );
             if( !tree.empty() )
             {

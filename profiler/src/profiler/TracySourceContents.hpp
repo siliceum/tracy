@@ -15,7 +15,7 @@ class Worker;
 
 class SourceContents
 {
-  public:
+public:
     SourceContents();
     ~SourceContents();
 
@@ -32,7 +32,7 @@ class SourceContents
     const char* data() const { return m_data; }
     size_t data_size() const { return m_dataSize; }
 
-  private:
+private:
     void Tokenize( const char* txt, size_t sz );
 
     const char* m_file;
