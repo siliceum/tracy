@@ -231,11 +231,17 @@ void WINAPI EventRecordCallback( PEVENT_RECORD record )
 
             uint64_t tid = tt->threadId;
             if( tid == 0 ) return;
-            uint64_t pid = tt->processId;
-            TracyLfqPrepare( QueueType::TidToPid );
-            MemWrite( &item->tidToPid.tid, tid );
-            MemWrite( &item->tidToPid.pid, pid );
-            TracyLfqCommit;
+
+            // No need to send TidToPid on thread close, we always get either the rundown or the actual thread start.
+            if( hdr.EventDescriptor.Opcode == 1 || hdr.EventDescriptor.Opcode == 3 )
+            {
+                uint64_t pid = tt->processId;
+                TracyLfqPrepare( QueueType::TidToPid );
+                MemWrite( &item->tidToPid.tid, tid );
+                MemWrite( &item->tidToPid.pid, pid );
+                TracyLfqCommit;
+            }
+            // Always send the thread name as early as possible
             if( hdr.EventDescriptor.Version >= 3 && record->UserDataLength > offsetof( ThreadTrace, threadName ) )
             {
                 SendThreadExternalName(tt->threadId, tt->threadName);
