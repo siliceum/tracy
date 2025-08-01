@@ -333,7 +333,7 @@ const ImageEntry* GetImageEntryFromPtr( uint64_t ptr )
 {
     if( IsKernelAddress( ptr ) )
     {
-        return s_krnlCache->FindEntryFromAddr( ptr);
+        return s_krnlCache->FindEntryFromAddr( ptr );
     }
     else return s_imageCache->FindEntryFromAddr( ptr );
 }
