@@ -76,7 +76,7 @@ static EVENT_TRACE_PROPERTIES* s_prop;
 static DWORD s_pid;
 
 static EVENT_TRACE_PROPERTIES* s_propVsync;
-static TRACEHANDLE s_traceVsyncControlId;
+static CONTROLTRACE_ID s_traceVsyncControlId;
 static TRACEHANDLE s_traceVsyncHandle;
 Thread* s_threadVsync = nullptr;
 
