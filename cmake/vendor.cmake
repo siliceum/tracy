@@ -161,9 +161,7 @@ target_link_libraries(TracyImGui PUBLIC TracyFreetype)
 target_compile_definitions(TracyImGui PRIVATE "IMGUI_ENABLE_FREETYPE")
 #target_compile_definitions(TracyImGui PUBLIC "IMGUI_DISABLE_OBSOLETE_FUNCTIONS")
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(TracyImGui PRIVATE "IMGUI_DISABLE_DEBUG_TOOLS" "IMGUI_DISABLE_DEMO_WINDOWS")
-endif()
+target_compile_definitions(TracyImGui PRIVATE $<$<NOT:$<CONFIG:Debug>>:"IMGUI_DISABLE_DEBUG_TOOLS"> $<$<NOT:$<CONFIG:Debug>>:"IMGUI_DISABLE_DEMO_WINDOWS">)
 
 # NFD
 
