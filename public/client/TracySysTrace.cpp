@@ -567,19 +567,27 @@ static char* GetTraceFsPath()
 bool SysTraceStart( int64_t& samplingPeriod )
 {
 #ifndef CLOCK_MONOTONIC_RAW
+    TracyDebug( "Sys Trace init failed: CLOCK_MONOTONIC_RAW not defined." );
     return false;
 #endif
 
-    const auto paranoidLevelStr = ReadFile( "/proc/sys/kernel/perf_event_paranoid" );
-    if( !paranoidLevelStr ) return false;
-#ifdef TRACY_VERBOSE
+    const char* const perfEventParanoidPath = "/proc/sys/kernel/perf_event_paranoid"; 
+    const auto paranoidLevelStr = ReadFile( perfEventParanoidPath );
+    if( !paranoidLevelStr )
+    {
+        TracyDebug( "Sys Trace init failed: Could not read %s", perfEventParanoidPath );
+        return false;
+    } 
     int paranoidLevel = 2;
     paranoidLevel = atoi( paranoidLevelStr );
     TracyDebug( "perf_event_paranoid: %i", paranoidLevel );
-#endif
 
     auto traceFsPath = GetTraceFsPath();
-    if( !traceFsPath ) return false;
+    if( !traceFsPath )
+    {
+        TracyDebug( "Sys Trace init failed: tracefs path not found." );
+        return false;
+    }
     TracyDebug( "tracefs path: %s", traceFsPath );
 
     int switchId = -1, wakingId = -1, vsyncId = -1;
