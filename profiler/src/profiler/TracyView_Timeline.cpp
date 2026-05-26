@@ -562,6 +562,10 @@ void View::DrawTimeline()
         const auto e = std::max( m_highlightZoom.start, m_highlightZoom.end );
         draw->AddRectFilled( ImVec2( wpos.x + ( s - m_vd.zvStart ) * pxns, linepos.y ), ImVec2( wpos.x + ( e - m_vd.zvStart ) * pxns, linepos.y + lineh ), 0x1688DD88 );
         draw->AddRect( ImVec2( wpos.x + ( s - m_vd.zvStart ) * pxns, linepos.y ), ImVec2( wpos.x + ( e - m_vd.zvStart ) * pxns, linepos.y + lineh ), 0x2C88DD88 );
+
+        ImGui::BeginTooltip();
+        ImGui::TextUnformatted( TimeToString( e - s ) );
+        ImGui::EndTooltip();
     }
 }
 
